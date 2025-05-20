@@ -1,5 +1,8 @@
 from astToolFactory.docstrings import FunctionDefMake_AttributeDocstring
+from astToolFactory import BitOr
+from astToolkit import Be, Grab, Make, NodeChanger, Then
 import ast
+from copy import deepcopy
 
 # `Grab` =====================================================================
 FunctionDefGrab_andDoAllOf = ast.FunctionDef('andDoAllOf'
@@ -13,22 +16,49 @@ FunctionDefGrab_andDoAllOf = ast.FunctionDef('andDoAllOf'
 	, returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Name('个')]), ast.Name('个')])))
 
 # `Make` =====================================================================
-astAssign_EndPositionT = ast.Assign([ast.Name('_EndPositionT', ast.Store())], value=ast.Call(ast.Name('typing_TypeVar'), args=[ast.Constant('_EndPositionT'), ast.Name('int'), ast.BinOp(ast.Name('int'), ast.BitOr(), ast.Constant(None))], keywords=[ast.keyword('default', value=ast.BinOp(ast.Name('int'), ast.BitOr(), ast.Constant(None)))]))
+list_keyword=[Make.keyword('default', BitOr.join([Make.Name('int'), Make.Constant(None)]))]
+astAssign_EndPositionT = Make.Assign([Make.Name('_EndPositionT', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), [Make.Constant('_EndPositionT'), Make.Name('int'), BitOr.join([Make.Name('int'), Make.Constant(None)])], list_keyword), lineno=1)
+orElse = deepcopy(astAssign_EndPositionT)
+NodeChanger(Be.Call, Grab.keywordsAttribute(Then.replaceWith([]))).visit(orElse)
+astIf_EndPositionT = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), [ast.Gt()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])])
+							, body=[astAssign_EndPositionT]
+							, orElse=[orElse])
 
-astClassDef_Attributes = ast.ClassDef('_Attributes', bases=[ast.Name('TypedDict'), ast.Subscript(ast.Name('Generic'), slice=ast.Name('_EndPositionT'))], keywords=[ast.keyword('total', value=ast.Constant(False))], body=[ast.AnnAssign(ast.Name('lineno', ast.Store()), annotation=ast.Name('int'), simple=1), ast.AnnAssign(ast.Name('col_offset', ast.Store()), annotation=ast.Name('int'), simple=1), ast.AnnAssign(ast.Name('end_lineno', ast.Store()), annotation=ast.Name('_EndPositionT'), simple=1), ast.AnnAssign(ast.Name('end_col_offset', ast.Store()), annotation=ast.Name('_EndPositionT'), simple=1)])
+astClassDef_Attributes = ast.ClassDef('_Attributes', bases=[ast.Name('TypedDict'), ast.Subscript(ast.Name('Generic'), slice=ast.Name('_EndPositionT'))], keywords=[ast.keyword('total', ast.Constant(False))], body=[ast.AnnAssign(ast.Name('lineno', ast.Store()), annotation=ast.Name('int'), simple=1), ast.AnnAssign(ast.Name('col_offset', ast.Store()), annotation=ast.Name('int'), simple=1), ast.AnnAssign(ast.Name('end_lineno', ast.Store()), annotation=ast.Name('_EndPositionT'), simple=1), ast.AnnAssign(ast.Name('end_col_offset', ast.Store()), annotation=ast.Name('_EndPositionT'), simple=1)])
+
+FunctionDef_operatorJoinMethod = Make.FunctionDef('operatorJoinMethod'
+	, Make.arguments(args=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'operator')))
+						, Make.arg('expressions', annotation=Make.Subscript(Make.Name('Iterable'), slice=Make.Attribute(Make.Name('ast'), 'expr')))]
+					, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('_Attributes'))))
+	, body=[Make.AnnAssign(Make.Name('listExpressions', ast.Store()), annotation=Make.Subscript(Make.Name('list'), slice=Make.Attribute(Make.Name('ast'), 'expr'))
+						, value=Make.Call(Make.Name('list'), args=[Make.Name('expressions')]))
+		, Make.If(Make.UnaryOp(ast.Not(), Make.Name('listExpressions'))
+			, body=[Make.Expr(Make.Call(Make.Attribute(Make.Name('listExpressions'), 'append')
+								, args=[Make.Call(Make.Attribute(Make.Name('ast'), 'Constant')
+										, args=[Make.Constant(value='')], list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))])]))])
+		, Make.AnnAssign(Make.Name('expressionsJoined', ast.Store()), annotation=Make.Attribute(Make.Name('ast'), 'expr'), value=Make.Subscript(Make.Name('listExpressions'), slice=Make.Constant(0)))
+		, Make.For(Make.Name('expression', ast.Store()), iter=Make.Subscript(Make.Name('listExpressions'), slice=Make.Slice(lower=Make.Constant(1)))
+			, body=[Make.Assign([Make.Name('expressionsJoined', ast.Store())]
+						, value=Make.Call(Make.Attribute(Make.Name('ast'), 'BinOp')
+								, list_keyword=[Make.keyword('left', Make.Name('expressionsJoined'))
+											, Make.keyword('op', Make.Call(Make.Name('ast_operator')))
+											, Make.keyword('right', Make.Name('expression'))
+											, Make.keyword(None, value=Make.Name('keywordArguments'))]))])
+		, Make.Return(Make.Name('expressionsJoined'))]
+	, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
 FunctionDefMake_Attribute: ast.FunctionDef = ast.FunctionDef('Attribute'
-	, args=ast.arguments(args=[ast.arg(arg='value', annotation=ast.Attribute(ast.Name('ast'), 'expr'))]
-						, vararg=ast.arg(arg='attribute', annotation=ast.Name('str'))
-						, kwonlyargs=[ast.arg(arg='context', annotation=ast.Attribute(ast.Name('ast'), 'expr_context'))]
+	, args=ast.arguments(args=[ast.arg('value', annotation=ast.Attribute(ast.Name('ast'), 'expr'))]
+						, vararg=ast.arg('attribute', annotation=ast.Name('str'))
+						, kwonlyargs=[ast.arg('context', annotation=ast.Attribute(ast.Name('ast'), 'expr_context'))]
 						, kw_defaults=[ast.Call(ast.Attribute(ast.Name('ast'), 'Load'))]
-						, kwarg=ast.arg(arg='keywordArguments', annotation=ast.Name('int')))
+						, kwarg=ast.arg('keywordArguments', annotation=ast.Name('int')))
 	, body=[FunctionDefMake_AttributeDocstring
 		, ast.FunctionDef('addDOTattribute'
-			, args=ast.arguments(args=[ast.arg(arg='chain', annotation=ast.Attribute(ast.Name('ast'), 'expr'))
-										, ast.arg(arg='identifier', annotation=ast.Name('str'))
-										, ast.arg(arg='context', annotation=ast.Attribute(ast.Name('ast'), 'expr_context'))]
-								, kwarg=ast.arg(arg='keywordArguments', annotation=ast.Name('int')))
+			, args=ast.arguments(args=[ast.arg('chain', annotation=ast.Attribute(ast.Name('ast'), 'expr'))
+										, ast.arg('identifier', annotation=ast.Name('str'))
+										, ast.arg('context', annotation=ast.Attribute(ast.Name('ast'), 'expr_context'))]
+								, kwarg=ast.arg('keywordArguments', annotation=ast.Name('int')))
 			, body=[ast.Return(ast.Call(ast.Attribute(ast.Name('ast'), 'Attribute')
 										, keywords=[ast.keyword('value', ast.Name('chain')), ast.keyword('attr', ast.Name('identifier'))
 													, ast.keyword('ctx', ast.Name('context')), ast.keyword(value=ast.Name('keywordArguments'))]))]
@@ -45,9 +75,9 @@ FunctionDefMake_Attribute: ast.FunctionDef = ast.FunctionDef('Attribute'
 	, returns=ast.Attribute(ast.Name('ast'), 'Attribute'))
 
 FunctionDefMake_Import: ast.FunctionDef = ast.FunctionDef('Import'
-	, args=ast.arguments(args=[ast.arg(arg='moduleWithLogicalPath', annotation=ast.Name('str_nameDOTname'))
-							, ast.arg(arg='asName', annotation=ast.BinOp(left=ast.Name('str'), op=ast.BitOr(), right=ast.Constant(None)))]
-					, kwarg=ast.arg(arg='keywordArguments', annotation=ast.Name('int'))
+	, args=ast.arguments(args=[ast.arg('moduleWithLogicalPath', annotation=ast.Name('str_nameDOTname'))
+							, ast.arg('asName', annotation=ast.BinOp(left=ast.Name('str'), op=ast.BitOr(), right=ast.Constant(None)))]
+					, kwarg=ast.arg('keywordArguments', annotation=ast.Name('int'))
 					, defaults=[ast.Constant(None)])
 	, body=[ast.Return(ast.Call(ast.Attribute(ast.Name('ast'), 'Import')
 							, keywords=[ast.keyword('names', ast.List([ast.Call(ast.Attribute(ast.Name('Make'), 'alias'), args=[ast.Name('moduleWithLogicalPath'), ast.Name('asName')])]))

@@ -25,8 +25,9 @@ from astToolFactory import (
 	)
 from astToolFactory.datacenter import getElementsGrab
 from astToolFactory.factory_annex import (
-	astAssign_EndPositionT,
+	astIf_EndPositionT,
 	astClassDef_Attributes,
+	FunctionDef_operatorJoinMethod,
 	FunctionDefGrab_andDoAllOf,
 	FunctionDefMake_Attribute,
 	FunctionDefMake_Import,
@@ -507,10 +508,10 @@ def makeToolMake() -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 	# `.join` ===============
-	# create FunctionDef operatorJoinMethod
-	# create FunctionDef join@classmethod
+	# [x] create FunctionDef operatorJoinMethod
+	# [ ] create FunctionDef join@classmethod
 	listOperatorIdentifiers: list[str] = ['Add', 'BitAnd', 'BitOr', 'BitXor', 'Div', 'FloorDiv', 'LShift', 'MatMult', 'Mod', 'Mult', 'Pow', 'RShift', 'Sub',]
-	# create loop to create ClassDef astToolkit.operatorIdentifier.bases[ast.operatorIdentifier]
+	# [ ] create loop to create ClassDef astToolkit.operatorIdentifier.bases[ast.operatorIdentifier]
 	# Module-level operations ===============
 	setKeywordArgumentsAnnotationTypeAlias.discard('int')
 	list_aliasIdentifier = sorted(set([*setKeywordArgumentsAnnotationTypeAlias, *list_aliasIdentifier]), key=str.lower)

@@ -118,9 +118,17 @@ class Sub(ast.Sub):
 		return operatorJoinMethod(cls, expressions, **keywordArguments)
 
 # ww='''
-# 木 = typing_TypeVar('木', bound = ast.AST, covariant = True)
-# 个 = typing_TypeVar('个', covariant = True)
-# 个return = typing_TypeVar('个return', covariant = True)
+# def operatorJoinMethod(ast_operator: type[ast.operator], expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
+# 	listExpressions: list[ast.expr] = list(expressions)
+
+# 	if not listExpressions:
+# 		listExpressions.append(ast.Constant('', **keywordArguments))
+
+# 	expressionsJoined: ast.expr = listExpressions[0]
+# 	for expression in listExpressions[1:]:
+# 		expressionsJoined = ast.BinOp(left=expressionsJoined, op=ast_operator(), right=expression, **keywordArguments)
+
+# 	return expressionsJoined
 
 # '''
 
@@ -133,3 +141,4 @@ class Sub(ast.Sub):
 # '''
 
 # print(ast.unparse(ast.Module([eval(rr)])))
+
