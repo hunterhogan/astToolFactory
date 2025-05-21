@@ -1,8 +1,4 @@
-from collections.abc import Iterable
 from pathlib import Path
-from typing import Generic, TypeVar as typing_TypeVar, TypedDict, Unpack
-import ast
-import sys
 
 pythonVersionMinorMinimum: int = 12
 
@@ -14,126 +10,22 @@ listPylanceErrors.extend(['keywords', 'kw_defaults', 'kwd_patterns', 'ops', 'pat
 packageName: str = 'astToolkit'
 keywordArgumentsIdentifier: str = 'keywordArguments'
 
-pathRoot = Path('/apps') / packageName
-pathPackage = pathRoot / packageName
+pathRoot = Path('/apps') 
+pathPackage = pathRoot / packageName / packageName
 pathToolFactory = pathRoot / 'astToolFactory' / 'astToolFactory'
 
 pathFilenameDataframeAST = pathToolFactory / 'dataframeAST.parquet'
 
 fileExtension: str = '.py'
 
-# classmethod .join() =================================================
-# TODO this is cool, but I need to learn how to properly add it to the classes so the type checker knows what to do with it. Note the use of setattr! grr!
-
-# Used for node end positions in constructor keyword arguments
-if sys.version_info >= (3, 13):
-	_EndPositionT = typing_TypeVar("_EndPositionT", int, int | None, default=int | None)
-else:
-	_EndPositionT = typing_TypeVar("_EndPositionT", int, int | None)
-
-# Corresponds to the names in the `_attributes` class variable which is non-empty in certain AST nodes
-class _Attributes(TypedDict, Generic[_EndPositionT], total=False):
-	lineno: int
-	col_offset: int
-	end_lineno: _EndPositionT
-	end_col_offset: _EndPositionT
-
-def operatorJoinMethod(ast_operator: type[ast.operator], expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-	listExpressions: list[ast.expr] = list(expressions)
-
-	if not listExpressions:
-		listExpressions.append(ast.Constant('', **keywordArguments))
-
-	expressionsJoined: ast.expr = listExpressions[0]
-	for expression in listExpressions[1:]:
-		expressionsJoined = ast.BinOp(left=expressionsJoined, op=ast_operator(), right=expression, **keywordArguments)
-
-	return expressionsJoined
-
-"""
-Usage examples:
-ImaIterable: Iterable[ast.expr] = [ast.Name('a'), ast.Name('b'), ast.Name('c')]
-
-# Manual approach
-joinedBinOp: ast.expr | ast.BinOp = ImaIterable[0]
-for element in ImaIterable[1:]:
-	joinedBinOp = ast.BinOp(left=joinedBinOp, op=ast.BitOr(), right=element)
-# Result is equivalent to: a | b | c
-
-# Using the new join method
-joinedBinOp = ast.BitOr.join(ImaIterable)  # Creates the nested structure for a | b | c
-joinedAdd = ast.Add.join(ImaIterable)      # Creates the nested structure for a + b + c
-"""
-
-class Add(ast.Add):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class BitAnd(ast.BitAnd):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class BitOr(ast.BitOr):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class BitXor(ast.BitXor):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class Div(ast.Div):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class FloorDiv(ast.FloorDiv):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class LShift(ast.LShift):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class MatMult(ast.MatMult):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class Mod(ast.Mod):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class Mult(ast.Mult):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class Pow(ast.Pow):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class RShift(ast.RShift):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-class Sub(ast.Sub):
-	@classmethod
-	def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-		return operatorJoinMethod(cls, expressions, **keywordArguments)
-
 # ww='''
-# def operatorJoinMethod(ast_operator: type[ast.operator], expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-# 	listExpressions: list[ast.expr] = list(expressions)
-
-# 	if not listExpressions:
-# 		listExpressions.append(ast.Constant('', **keywordArguments))
-
-# 	expressionsJoined: ast.expr = listExpressions[0]
-# 	for expression in listExpressions[1:]:
-# 		expressionsJoined = ast.BinOp(left=expressionsJoined, op=ast_operator(), right=expression, **keywordArguments)
-
-# 	return expressionsJoined
-
+# @classmethod
+# def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
+# 	return operatorJoinMethod(cls, expressions, **keywordArguments)
 # '''
 
 # print(ast.dump(ast.parse(ww, type_comments=True), indent=None))
+# import ast
 # from ast import *  # noqa: E402, F403
 # ruff: noqa: F405
 
@@ -142,3 +34,4 @@ class Sub(ast.Sub):
 # '''
 
 # print(ast.unparse(ast.Module([eval(rr)])))
+

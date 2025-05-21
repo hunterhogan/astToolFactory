@@ -4,6 +4,10 @@ docstring: str = """This file is generated automatically, so changes to this fil
 docstringWarning = ast.Expr(ast.Constant(docstring))
 del docstring
 
+docstring: str = """Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BinOp` class."""
+ClassDefDocstring_ast_operator = ast.Expr(ast.Constant(docstring))
+del docstring
+
 docstring: str = (
 	"""
 	Provide type-guard functions for safely verifying AST node types during manipulation.
@@ -94,6 +98,100 @@ ClassDefDocstringMake = ast.Expr(ast.Constant(docstring))
 del docstring
 
 docstring: str = (
+        """
+        Create a single `ast.expr` from a collection of `ast.expr` by forming nested `ast.BinOp`
+        that are logically "joined" using the `ast.operator` subclass.
+
+        Parameters
+        ----------
+        expressions: Iterable[ast.expr]
+            A collection of `ast.expr` objects to be joined.
+        lineno: int
+        col_offset: int
+        end_lineno: int | None
+        end_col_offset: int | None
+
+        Returns
+        -------
+        joinedExpression: ast.expr
+            The resulting `ast.expr` that represents the joined expressions.
+
+        Notes
+        -----
+        - Like `str.join()`, you probably want to use it with two or more expressions.
+        - The method does not validate the elements of the input iterable.
+        - If you pass only one expression, it will be returned as is.
+        - If you pass no expressions, the behavior is analogous to `str.join([])`, which is an empty iterable, and the method returns `ast.Constant('', **keywordArguments)`.
+
+        Examples
+        --------
+
+        This
+        ```
+        astToolkit.Mult().join([ast.Name('groups'), ast.Attribute(ast.Name('state'), 'leavesTotal'), ast.Constant(14)])
+        ```
+        is equivalent to
+        ```
+        ast.BinOp(left=ast.BinOp(
+                left=ast.Name(id='groups', ctx=ast.Load())
+                , op=ast.Mult()
+                , right=ast.Attribute(value=ast.Name(id='state', ctx=ast.Load()), attr='leavesTotal', ctx=ast.Load()))
+            , op=ast.Mult()
+            , right=ast.Constant(value=14))
+        ```
+        which unparses as
+        ```
+        groups * state.leavesTotal * 14
+        ```
+
+        This
+        ```
+        listIdentifiers = ['Assign','Attribute','AugAssign','Await','DictComp','Expr','FormattedValue','keyword','MatchValue','NamedExpr','Starred','Subscript','TypeAlias','YieldFrom']
+        list_astAttribute = [Make.Attribute(Make.Name('ast'), identifier) for identifier in listIdentifiers]
+        astToolkit.BitOr().join(list_astAttribute)
+        ```
+        is equivalent to
+        ```
+        ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(left=ast.BinOp(
+                                                                left=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='Assign', ctx=ast.Load())
+                                                                , op=ast.BitOr()
+                                                                , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='Attribute', ctx=ast.Load()))
+                                                            , op=ast.BitOr()
+                                                            , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='AugAssign', ctx=ast.Load()))
+                                                        , op=ast.BitOr()
+                                                        , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='Await', ctx=ast.Load()))
+                                                    , op=ast.BitOr()
+                                                    , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='DictComp', ctx=ast.Load()))
+                                                , op=ast.BitOr()
+                                                , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='Expr', ctx=ast.Load()))
+                                            , op=ast.BitOr()
+                                            , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='FormattedValue', ctx=ast.Load()))
+                                        , op=ast.BitOr()
+                                        , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='keyword', ctx=ast.Load()))
+                                    , op=ast.BitOr()
+                                    , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='MatchValue', ctx=ast.Load()))
+                                , op=ast.BitOr()
+                                , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='NamedExpr', ctx=ast.Load()))
+                            , op=ast.BitOr()
+                            , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='Starred', ctx=ast.Load()))
+                        , op=ast.BitOr()
+                        , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='Subscript', ctx=ast.Load()))
+                    , op=ast.BitOr()
+                    , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='TypeAlias', ctx=ast.Load()))
+                , op=ast.BitOr()
+                , right=ast.Attribute(value=ast.Name(id='ast', ctx=ast.Load()), attr='YieldFrom', ctx=ast.Load()))
+
+        which unparses as
+        ```
+        ast.Assign | ast.Attribute | ast.AugAssign | ast.Await | ast.DictComp | ast.Expr | ast.FormattedValue | ast.keyword | ast.MatchValue | ast.NamedExpr | ast.Starred | ast.Subscript | ast.TypeAlias | ast.YieldFrom
+        ```
+        """
+)
+
+FunctionDefDocstring_join = ast.Expr(ast.Constant(docstring))
+del docstring
+
+docstring: str = (
 	"""
 	If two identifiers are joined by a dot '`.`', they are _usually_ an `ast.Attribute`, but see, for example, `ast.ImportFrom`.
 
@@ -104,3 +202,4 @@ docstring: str = (
 )
 FunctionDefMake_AttributeDocstring = ast.Expr(ast.Constant(docstring))
 del docstring
+

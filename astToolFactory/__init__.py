@@ -1,5 +1,4 @@
 from astToolFactory._theSSOT import (
-	BitOr as BitOr,
 	fileExtension as fileExtension,
 	keywordArgumentsIdentifier as keywordArgumentsIdentifier,
 	listPylanceErrors as listPylanceErrors,
@@ -13,6 +12,7 @@ from astToolFactory._snippets import (
 	astName_overload as astName_overload,
 	astName_staticmethod as astName_staticmethod,
 	astName_typing_TypeAlias as	astName_typing_TypeAlias,
+	astName_typing_TypeVar as astName_typing_TypeVar,
 	format_hasDOTIdentifier as format_hasDOTIdentifier,
 	formatTypeAliasSubcategory as formatTypeAliasSubcategory,
 	toolMakeFunctionDefReturnCall_keywords as toolMakeFunctionDefReturnCall_keywords,

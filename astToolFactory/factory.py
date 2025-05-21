@@ -1,45 +1,34 @@
+# NOTE you need these because of `eval()`
+# from ast import Name, Store
+from ast import Name, Store  # noqa: F401
+from astToolFactory import (
+    astName_overload, astName_staticmethod, astName_typing_TypeAlias, 
+    DictionaryAstExprType, DictionaryClassDef, DictionaryMatchArgs,
+    fileExtension, format_hasDOTIdentifier, formatTypeAliasSubcategory,
+    getElementsBe, getElementsClassIsAndAttribute, getElementsDOT,
+    getElementsMake, getElementsTypeAlias, keywordArgumentsIdentifier,
+    listPylanceErrors, pathPackage, pythonVersionMinorMinimum,
+    toolMakeFunctionDefReturnCall_keywords,
+)
+from astToolFactory.datacenter import getElementsGrab
+from astToolFactory.docstrings import (
+    ClassDefDocstring_ast_operator, ClassDefDocstringBe,
+    ClassDefDocstringClassIsAndAttribute, ClassDefDocstringDOT,
+    ClassDefDocstringGrab, ClassDefDocstringMake, docstringWarning,
+)
+from astToolFactory.factory_annex import (
+    astClassDefTypedDict_Attributes, astIf_EndPositionT, FunctionDef_join,
+    FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf,
+    FunctionDefMake_Attribute, FunctionDefMake_Import, listHandmade_astTypes,
+)
+from astToolkit import BitOr, Make
 from collections import defaultdict
 from itertools import chain
 from pathlib import PurePosixPath
-from astToolFactory import (
-	astName_overload,
-	astName_staticmethod,
-	astName_typing_TypeAlias,
-	BitOr,
-	DictionaryAstExprType,
-	DictionaryClassDef,
-	DictionaryMatchArgs,
-	fileExtension,
-	format_hasDOTIdentifier,
-	formatTypeAliasSubcategory,
-	getElementsBe,
-	getElementsClassIsAndAttribute,
-	getElementsDOT,
-	getElementsMake,
-	getElementsTypeAlias,
-	keywordArgumentsIdentifier,
-	listPylanceErrors,
-	pathPackage,
-	pythonVersionMinorMinimum,
-	toolMakeFunctionDefReturnCall_keywords,
-	)
-from astToolFactory.datacenter import getElementsGrab
-from astToolFactory.factory_annex import (
-	astIf_EndPositionT,
-	astClassDef_Attributes,
-	FunctionDef_operatorJoinMethod,
-	FunctionDefGrab_andDoAllOf,
-	FunctionDefMake_Attribute,
-	FunctionDefMake_Import,
-	listHandmade_astTypes,
-)
-from astToolFactory.docstrings import ClassDefDocstringBe, ClassDefDocstringClassIsAndAttribute, ClassDefDocstringGrab, ClassDefDocstringMake, ClassDefDocstringDOT, docstringWarning
 from typing import cast
 from Z0Z_tools import writeStringToHere
+
 import ast
-# NOTE you need these because of `eval()`
-# from ast import Name, Store
-from ast import Name, Store
 
 """
 class Name(expr):
@@ -99,7 +88,7 @@ def makeToolBe() -> None:
 
 		ast_stmt = ast.FunctionDef(
 			name=ClassDefIdentifier
-			, args=ast.arguments(posonlyargs=[], args=[ast.arg(arg='node', annotation=ast.Name('ast.AST'))], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[])
+			, args=ast.arguments(posonlyargs=[], args=[ast.arg('node', annotation=ast.Name('ast.AST'))], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[])
 			, body=[ast.Return(value=ast.Call(func=ast.Name('isinstance'), args=[ast.Name('node'), classAs_astAttribute], keywords=[]))]
 			, decorator_list=[astName_staticmethod]
 			, returns=ast.Subscript(ast.Name('TypeGuard'), slice=classAs_astAttribute))
@@ -163,7 +152,7 @@ def makeToolClassIsAndAttribute() -> None:
 				astNameTypeAlias: ast.Name = ast.Name(formatTypeAliasSubcategory.format(hasDOTIdentifier=hasDOTIdentifier, TypeAliasSubcategory=TypeAliasSubcategory))
 				body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
 				decorator_list=[astName_staticmethod, astName_overload]
-				returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Attribute(ast.Name('ast'), attr='AST')]), BitOr.join([ast.Subscript(ast.Name('TypeGuard'), slice=astNameTypeAlias), ast.Name('bool')])]))
+				returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Attribute(ast.Name('ast'), attr='AST')]), BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])]))
 
 				Z0Z_TypeWithoutNone = eval(dictionary_ast_exprType['ast_exprType'])
 				annotation = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([Z0Z_TypeWithoutNone]), ast.Name('bool')]))
@@ -507,19 +496,12 @@ def makeToolMake() -> None:
 		assert ast_stmt is not None, "Coding by brinkmanship!"
 		list4ClassDefBody.append(ast_stmt)
 
-	# `.join` ===============
-	# [x] create FunctionDef operatorJoinMethod
-	# [ ] create FunctionDef join@classmethod
-	listOperatorIdentifiers: list[str] = ['Add', 'BitAnd', 'BitOr', 'BitXor', 'Div', 'FloorDiv', 'LShift', 'MatMult', 'Mod', 'Mult', 'Pow', 'RShift', 'Sub',]
-	# [ ] create loop to create ClassDef astToolkit.operatorIdentifier.bases[ast.operatorIdentifier]
 	# Module-level operations ===============
 	setKeywordArgumentsAnnotationTypeAlias.discard('int')
 	list_aliasIdentifier = sorted(set([*setKeywordArgumentsAnnotationTypeAlias, *list_aliasIdentifier]), key=str.lower)
 	list4ModuleBody: list[ast.stmt] = [
 		ast.ImportFrom('astToolkit', [ast.alias(identifier) for identifier in list_aliasIdentifier], 0)
 		, ast.ImportFrom('collections.abc', [ast.alias('Sequence')], 0)
-		# , ast.ImportFrom('collections.abc', [ast.alias('Callable'), ast.alias('Iterable'), ast.alias('Sequence')], 0)
-		# , ast.ImportFrom('typing', [ast.alias('Any'), ast.alias('Unpack')], 0)
 		, ast.ImportFrom('typing', [ast.alias('Any')], 0)
 		, ast.Import([ast.alias('ast')])
 		, ast.Import([ast.alias('sys')])
@@ -527,13 +509,40 @@ def makeToolMake() -> None:
 
 	writeClass('Make', list4ClassDefBody, list4ModuleBody)
 
+def makeJoinClassmethod() -> None:
+	list_aliasIdentifier: list[str] = ['Make']
+	list4ModuleBody: list[ast.stmt] = [
+		astIf_EndPositionT
+		, astClassDefTypedDict_Attributes
+		, FunctionDef_operatorJoinMethod
+		]
+
+	listOperatorIdentifiers: list[str] = ['Add', 'BitAnd', 'BitOr', 'BitXor', 'Div', 'FloorDiv', 'LShift', 'MatMult', 'Mod', 'Mult', 'Pow', 'RShift', 'Sub',]
+
+	for identifier in listOperatorIdentifiers:
+		list4ModuleBody.append(Make.ClassDef(identifier
+			, bases=[Make.Attribute(Make.Name('ast'), identifier)]
+			, body=[ClassDefDocstring_ast_operator, FunctionDef_join]
+		))
+
+	astModule = Make.Module([docstringWarning
+		, Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
+		, Make.ImportFrom('collections.abc', [Make.alias('Iterable')])
+		, Make.ImportFrom('typing', [Make.alias('Generic'), Make.alias('TypedDict'), Make.alias('TypeVar', 'typing_TypeVar'), Make.alias('Unpack')])
+		, Make.Import('ast')
+		, Make.Import('sys')
+		, *list4ModuleBody
+	])
+
+	writeModule(astModule, '_joinClassmethod')
+
 def make_astTypes() -> None:
 	def append_ast_stmtTypeAlias() -> None:
 		ast_stmt = None
 		if len(dictionaryVersions) == 1:
 			# This branch is the simplest case: one TypeAlias for the attribute for all Python versions
 			for versionMinor, listClassAs_astAttribute in dictionaryVersions.items():
-				ast_stmt = ast.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]), 1)
+				ast_stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]))
 				if versionMinor > pythonVersionMinorMinimum:
 					ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
@@ -555,16 +564,15 @@ def make_astTypes() -> None:
 						, body=[ast_stmtAbovePythonMinimum]
 						, orelse=[ast_stmtAtPythonMinimum])
 		assert ast_stmt is not None, "Coding by brinkmanship!"
-		astTypesModule.body.append(ast_stmt)
+		astModule.body.append(ast_stmt)
 
-	astTypesModule = ast.Module(
+	astModule = Make.Module(
 		body=[docstringWarning
-			, ast.ImportFrom('typing', [ast.alias('Any'), ast.alias('TypeAlias', 'typing_TypeAlias'), ast.alias('TypeVar', 'typing_TypeVar')], 0)
-			, ast.Import([ast.alias('ast')])
-			, ast.Import([ast.alias('sys')])
+			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('TypeAlias', 'typing_TypeAlias'), Make.alias('TypeVar', 'typing_TypeVar')])
+			, Make.Import('ast')
+			, Make.Import('sys')
 			, *listHandmade_astTypes
 			]
-		, type_ignores=[]
 		)
 
 	dictionaryToolElements: dict[str, dict[str, dict[int, list[str]]]] = getElementsTypeAlias()
@@ -593,12 +601,14 @@ def make_astTypes() -> None:
 			dictionaryVersions: dict[int, list[str]] = attributeDictionaryVersions
 			append_ast_stmtTypeAlias()
 
-	writeModule(astTypesModule, '_astTypes')
+	writeModule(astModule, '_astTypes')
 
 if __name__ == "__main__":
+	make_astTypes()
+	makeJoinClassmethod()
 	makeToolBe()
 	makeToolClassIsAndAttribute()
 	makeToolDOT()
 	makeToolGrab()
 	makeToolMake()
-	make_astTypes()
+
