@@ -67,12 +67,11 @@ def writeClass(classIdentifier: str, list4ClassDefBody: list[ast.stmt], list4Mod
 		moduleIdentifier = moduleIdentifierPrefix + classIdentifier
 	else:
 		moduleIdentifier = classIdentifier
-	return writeModule(ast.Module(
+	return writeModule(Make.Module(
 			body=[docstringWarning
 				, *list4ModuleBody
-				, ast.ClassDef(name=classIdentifier, bases=[], keywords=[], body=list4ClassDefBody, decorator_list=[])
+				, Make.ClassDef(classIdentifier, body=list4ClassDefBody)
 				]
-			, type_ignores=[]
 			)
 		, moduleIdentifier)
 
@@ -86,12 +85,11 @@ def makeToolBe() -> None:
 		classAs_astAttribute = eval(dictionaryToolElements['classAs_astAttribute'])
 		classVersionMinorMinimum = dictionaryToolElements['classVersionMinorMinimum']
 
-		ast_stmt = ast.FunctionDef(
-			name=ClassDefIdentifier
-			, args=ast.arguments(posonlyargs=[], args=[ast.arg('node', annotation=ast.Name('ast.AST'))], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[])
-			, body=[ast.Return(value=ast.Call(func=ast.Name('isinstance'), args=[ast.Name('node'), classAs_astAttribute], keywords=[]))]
+		ast_stmt = Make.FunctionDef(ClassDefIdentifier
+			, Make.arguments(args=[Make.arg('node', annotation=Make.Name('ast.AST'))])
+			, body=[Make.Return(Make.Call(Make.Name('isinstance'), args=[Make.Name('node'), classAs_astAttribute]))]
 			, decorator_list=[astName_staticmethod]
-			, returns=ast.Subscript(ast.Name('TypeGuard'), slice=classAs_astAttribute))
+			, returns=Make.Subscript(Make.Name('TypeGuard'), slice=classAs_astAttribute))
 
 		if classVersionMinorMinimum > pythonVersionMinorMinimum:
 			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
@@ -104,20 +102,19 @@ def makeToolBe() -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-		ast.ImportFrom('typing', [ast.alias('TypeGuard')], 0)
-		, ast.Import([ast.alias('ast')])
-		, ast.Import([ast.alias('sys')])
+		Make.ImportFrom('typing', [Make.alias('TypeGuard')])
+		, Make.Import('ast')
+		, Make.Import('sys')
 	]
 
 	writeClass('Be', list4ClassDefBody, list4ModuleBody)
 
 def makeToolClassIsAndAttribute() -> None:
 	def create_ast_stmt() -> ast.If | ast.FunctionDef:
-		ast_stmt = ast.FunctionDef(attribute + 'Is'
-				, args=ast.arguments(posonlyargs=[]
-					, args=[ast.arg('astClass', annotation = ast.Subscript(ast.Name('type'), astNameTypeAlias))
-						, ast.arg('attributeCondition', annotation=annotation)
-					], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[])
+		ast_stmt = Make.FunctionDef(attribute + 'Is'
+				, args=Make.arguments(args=[Make.arg('astClass', annotation=Make.Subscript(Make.Name('type'), astNameTypeAlias))
+						, Make.arg('attributeCondition', annotation=annotation)
+					])
 					, body=body
 					, decorator_list=decorator_list
 					, returns=returns
@@ -184,12 +181,12 @@ def makeToolClassIsAndAttribute() -> None:
 			workhorseReturnValue.values.append(ast.Call(ast.Name('attributeCondition'), args=[ast.Attribute(ast.Name('node'), attribute)]))
 
 			buffaloBuffalo_workhorse_returnsAnnotation = BitOr.join([ast.Subscript(ast.Name('TypeGuard'), slice=astNameTypeAlias), ast.Name('bool')])
-			body: list[ast.stmt] = [ast.FunctionDef('workhorse',
-						args=ast.arguments(args=[ast.arg('node', ast.Attribute(ast.Name('ast'), attr='AST'))])
-						, body=[ast.Return(workhorseReturnValue)]
+			body: list[ast.stmt] = [Make.FunctionDef('workhorse',
+						args=Make.arguments(args=[Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
+						, body=[Make.Return(workhorseReturnValue)]
 						, returns=buffaloBuffalo_workhorse_returnsAnnotation)
-					, ast.Return(ast.Name('workhorse'))]
-			returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Attribute(ast.Name('ast'), attr='AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
+					, Make.Return(Make.Name('workhorse'))]
+			returns=Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
 
 			del dictionaryVersionsTypeAliasSubcategory[attributeVersionMinorMinimum]
 			orelse = [create_ast_stmt()]
@@ -218,30 +215,29 @@ def makeToolClassIsAndAttribute() -> None:
 
 			workhorseReturnValue.values.append(ast.Call(ast.Name('attributeCondition'), args=[ast.Attribute(ast.Name('node'), attribute)]))
 			buffaloBuffalo_workhorse_returnsAnnotation = BitOr.join([ast.Subscript(ast.Name('TypeGuard'), slice=astNameTypeAlias), ast.Name('bool')])
-			body: list[ast.stmt] = [ast.FunctionDef('workhorse',
-						args=ast.arguments(args=[ast.arg('node', ast.Attribute(ast.Name('ast'), attr='AST'))])
-						, body=[ast.Return(workhorseReturnValue)]
+			body: list[ast.stmt] = [Make.FunctionDef('workhorse',
+						args=Make.arguments(args=[Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
+						, body=[Make.Return(workhorseReturnValue)]
 						, returns=buffaloBuffalo_workhorse_returnsAnnotation)
-					, ast.Return(ast.Name('workhorse'))]
-			returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Attribute(ast.Name('ast'), attr='AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
+					, Make.Return(Make.Name('workhorse'))]
+			returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
 
 			list4ClassDefBody.append(create_ast_stmt())
 			break
 
 	list4ModuleBody: list[ast.stmt] = [
-			ast.ImportFrom('astToolkit._astTypes', [ast.alias('*')], 0)
-			, ast.ImportFrom('collections.abc', [ast.alias('Callable'), ast.alias('Sequence')], 0)
-			, ast.ImportFrom('typing', [ast.alias(identifier) for identifier in ['Any', 'Literal', 'overload', 'TypeGuard']], 0)
-			, ast.Import([ast.alias('ast')])
+			Make.ImportFrom('astToolkit._astTypes', [Make.alias('*')])
+			, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
+			, Make.ImportFrom('typing', [Make.alias(identifier) for identifier in ['Any', 'Literal', 'overload', 'TypeGuard']])
+			, Make.Import('ast')
 	]
 
 	writeClass('ClassIsAndAttribute', list4ClassDefBody, list4ModuleBody)
 
 def makeToolDOT() -> None:
 	def create_ast_stmt() -> ast.If | ast.FunctionDef:
-		ast_stmt = ast.FunctionDef(attribute
-				, args=ast.arguments(posonlyargs=[]
-					, args=[ast.arg('node', astNameTypeAlias)], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[])
+		ast_stmt = Make.FunctionDef(attribute
+				, args=Make.arguments(args=[Make.arg('node', annotation=astNameTypeAlias)])
 					, body=body
 					, decorator_list=decorator_list
 					, returns=returns
@@ -301,11 +297,11 @@ def makeToolDOT() -> None:
 			break
 
 	list4ModuleBody: list[ast.stmt] = [
-			ast.ImportFrom(module='astToolkit._astTypes', names=[ast.alias(name='*')], level=0)
-			, ast.ImportFrom(module='collections.abc', names=[ast.alias(name='Sequence')], level=0)
-			, ast.ImportFrom(module='typing', names=[ast.alias(name='Any'), ast.alias(name='Literal'), ast.alias(name='overload')], level=0)
-			, ast.Import(names=[ast.alias(name='ast')])
-			, ast.Import(names=[ast.alias(name='sys')])
+			Make.ImportFrom('astToolkit._astTypes', [Make.alias('*')])
+			, Make.ImportFrom('collections.abc', [Make.alias('Sequence')])
+			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('Literal'), Make.alias('overload')])
+			, Make.Import('ast')
+			, Make.Import('sys')
 			]
 
 	writeClass('DOT', list4ClassDefBody, list4ModuleBody)
@@ -321,14 +317,18 @@ def makeToolGrab() -> None:
 
 			ast_expr4annotation = BitOr.join(list_ast_expr4annotation)
 
-			ast_stmt = ast.FunctionDef(attribute + 'Attribute'
-				, args=ast.arguments(posonlyargs=[], args=[ast.arg('action', annotation=ast_expr4annotation)], vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=None, defaults=[])
-				, body=[ast.FunctionDef('workhorse'
-						, args=ast.arguments(args=[ast.arg('node', hasDOTTypeAliasName_Load)])
-						, body=[ast.Assign([ast.Attribute(ast.Name('node'), attribute, ast.Store())], value=ast.Call(ast.Name('action'), [ast.Attribute(ast.Name('node'), attribute)])), ast.Return(ast.Name('node'))]
-						, returns=hasDOTTypeAliasName_Load), ast.Return(ast.Name('workhorse'))]
+			ast_stmt = Make.FunctionDef(attribute + 'Attribute'
+				, args=Make.arguments(args=[Make.arg('action', annotation=ast_expr4annotation)])
+				, body=[Make.FunctionDef('workhorse'
+							, args=Make.arguments(args=[Make.arg('node', annotation=hasDOTTypeAliasName_Load)])
+							, body=[Make.Assign([Make.Attribute(Make.Name('node'), attribute, context=ast.Store())], value=Make.Call(Make.Name('action'), [Make.Attribute(Make.Name('node'), attribute)]))
+									, Make.Return(Make.Name('node'))
+							]
+							, returns=hasDOTTypeAliasName_Load)
+						, Make.Return(Make.Name('workhorse'))
+					]
 				, decorator_list=[astName_staticmethod]
-				, returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([hasDOTTypeAliasName_Load]), hasDOTTypeAliasName_Load])))
+				, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([hasDOTTypeAliasName_Load]), hasDOTTypeAliasName_Load])))
 
 			if attributeVersionMinorMinimum > pythonVersionMinorMinimum:
 				ast_stmt = ast.If(test=ast.Compare(
@@ -365,12 +365,12 @@ def makeToolGrab() -> None:
 		list4ClassDefBody.append(create_ast_stmt())
 
 	list4ModuleBody: list[ast.stmt] = [
-			ast.ImportFrom('astToolkit', [ast.alias(identifier) for identifier in ['个']], 0)
-			, ast.ImportFrom('astToolkit._astTypes', [ast.alias('*')], 0)
-			, ast.ImportFrom('collections.abc', [ast.alias('Callable'), ast.alias('Sequence')], 0)
-			, ast.ImportFrom('typing', [ast.alias('Any'), ast.alias('Literal')], 0)
-			, ast.Import([ast.alias('ast')])
-			, ast.Import([ast.alias('sys')])
+			Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in ['个']])
+			, Make.ImportFrom('astToolkit._astTypes', [Make.alias('*')])
+			, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
+			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('Literal')])
+			, Make.Import('ast')
+			, Make.Import('sys')
 			]
 
 	writeClass('Grab', list4ClassDefBody, list4ModuleBody)
@@ -385,17 +385,16 @@ def makeToolMake() -> None:
 
 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in dictionaryMethodElements['listDefaults']]
 
-		listCall_keywords: list[ast.keyword] = []
+		listCall_keyword: list[ast.keyword] = []
 		for tupleCall_keywords in dictionaryMethodElements['listTupleCall_keywords']:
 			argIdentifier, keywordValue = tupleCall_keywords
-			listCall_keywords.append(ast.keyword(argIdentifier, value=eval(keywordValue)))
+			listCall_keyword.append(ast.keyword(argIdentifier, value=eval(keywordValue)))
 		if kwarg is not None:
-			listCall_keywords.append(toolMakeFunctionDefReturnCall_keywords)
+			listCall_keyword.append(toolMakeFunctionDefReturnCall_keywords)
 
-		ast_stmt = ast.FunctionDef(
-			name=ClassDefIdentifier
-			, args=ast.arguments(posonlyargs=[], args=listFunctionDef_args, vararg=None, kwonlyargs=[], kw_defaults=[], kwarg=kwarg, defaults=defaults)
-			, body=[ast.Return(ast.Call(classAs_astAttribute, args=[], keywords=listCall_keywords))]
+		ast_stmt = Make.FunctionDef(ClassDefIdentifier
+			, args=Make.arguments(args=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
+			, body=[Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 			, decorator_list=[astName_staticmethod]
 			, returns=classAs_astAttribute)
 
@@ -500,11 +499,11 @@ def makeToolMake() -> None:
 	setKeywordArgumentsAnnotationTypeAlias.discard('int')
 	list_aliasIdentifier = sorted(set([*setKeywordArgumentsAnnotationTypeAlias, *list_aliasIdentifier]), key=str.lower)
 	list4ModuleBody: list[ast.stmt] = [
-		ast.ImportFrom('astToolkit', [ast.alias(identifier) for identifier in list_aliasIdentifier], 0)
-		, ast.ImportFrom('collections.abc', [ast.alias('Sequence')], 0)
-		, ast.ImportFrom('typing', [ast.alias('Any')], 0)
-		, ast.Import([ast.alias('ast')])
-		, ast.Import([ast.alias('sys')])
+		Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
+		, Make.ImportFrom('collections.abc', [Make.alias('Sequence')])
+		, Make.ImportFrom('typing', [Make.alias('Any')])
+		, Make.Import('ast')
+		, Make.Import('sys')
 		]
 
 	writeClass('Make', list4ClassDefBody, list4ModuleBody)
@@ -554,8 +553,8 @@ def make_astTypes() -> None:
 			listVersionsMinor = sorted(dictionaryVersions.keys(), reverse=False)
 			if len(listVersionsMinor) > 2:
 				raise NotImplementedError
-			ast_stmtAtPythonMinimum = ast.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in dictionaryVersions[min(listVersionsMinor)]]), 1)
-			ast_stmtAbovePythonMinimum = ast.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in sorted(chain(*dictionaryVersions.values()), key=str.lower)]), 1)
+			ast_stmtAtPythonMinimum = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in dictionaryVersions[min(listVersionsMinor)]]))
+			ast_stmtAbovePythonMinimum = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in sorted(chain(*dictionaryVersions.values()), key=str.lower)]))
 
 			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]

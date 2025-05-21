@@ -1,19 +1,21 @@
-from astToolFactory.docstrings import FunctionDefMake_AttributeDocstring, FunctionDefDocstring_join
-from astToolFactory import BitOr
-from astToolkit import Be, Grab, Make, NodeChanger, Then
-import ast
+from astToolFactory.docstrings import (
+    FunctionDefDocstring_join, FunctionDefMake_AttributeDocstring,
+)
+from astToolkit import Be, BitOr, Grab, Make, NodeChanger, Then
 from copy import deepcopy
 
+import ast
+
 # `Grab` =====================================================================
-FunctionDefGrab_andDoAllOf = ast.FunctionDef('andDoAllOf'
-	, args=ast.arguments(args=[ast.arg('listOfActions', ast.Subscript(ast.Name('list'), ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Name('个')]), ast.Name('个')]))))])
-	, body=[ast.FunctionDef('workhorse'
-			, args=ast.arguments(args=[ast.arg('node', ast.Name('个'))])
-			, body=[ast.For(ast.Name('action', ctx=ast.Store()), iter=ast.Name('listOfActions')
-					, body=[ast.Assign([ast.Name('node', ctx=ast.Store())], value=ast.Call(ast.Name('action'), args=[ast.Name('node')]))]), ast.Return(ast.Name('node'))]
-			, returns=ast.Name('个')), ast.Return(ast.Name('workhorse'))]
-	, decorator_list=[ast.Name('staticmethod')]
-	, returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Name('个')]), ast.Name('个')])))
+FunctionDefGrab_andDoAllOf = Make.FunctionDef('andDoAllOf'
+	, Make.arguments(args=[Make.arg('listOfActions', Make.Subscript(Make.Name('list'), Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('个')]), Make.Name('个')]))))])
+	, body=[Make.FunctionDef('workhorse'
+			, Make.arguments(args=[Make.arg('node', Make.Name('个'))])
+			, body=[Make.For(Make.Name('action', ast.Store()), iter=Make.Name('listOfActions')
+					, body=[Make.Assign([Make.Name('node', ast.Store())], value=Make.Call(Make.Name('action'), args=[Make.Name('node')]))]), Make.Return(Make.Name('node'))]
+			, returns=Make.Name('个')), Make.Return(Make.Name('workhorse'))]
+	, decorator_list=[Make.Name('staticmethod')]
+	, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('个')]), Make.Name('个')])))
 
 # `.join` classmethod =====================================================================
 list_keyword=[Make.keyword('default', BitOr.join([Make.Name('int'), Make.Constant(None)]))]
@@ -24,7 +26,15 @@ astIf_EndPositionT = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'vers
 							, body=[astAssign_EndPositionT]
 							, orElse=[orElse])
 
-astClassDefTypedDict_Attributes = ast.ClassDef('_Attributes', bases=[ast.Name('TypedDict'), ast.Subscript(ast.Name('Generic'), slice=ast.Name('_EndPositionT'))], keywords=[ast.keyword('total', ast.Constant(False))], body=[ast.AnnAssign(ast.Name('lineno', ast.Store()), annotation=ast.Name('int'), simple=1), ast.AnnAssign(ast.Name('col_offset', ast.Store()), annotation=ast.Name('int'), simple=1), ast.AnnAssign(ast.Name('end_lineno', ast.Store()), annotation=ast.Name('_EndPositionT'), simple=1), ast.AnnAssign(ast.Name('end_col_offset', ast.Store()), annotation=ast.Name('_EndPositionT'), simple=1)])
+astClassDefTypedDict_Attributes = Make.ClassDef('_Attributes'
+	, bases=[Make.Name('TypedDict'), Make.Subscript(Make.Name('Generic'), slice=Make.Name('_EndPositionT'))]
+    , list_keyword=[Make.keyword('total', Make.Constant(False))]
+    , body=[Make.AnnAssign(Make.Name('lineno', ast.Store()), annotation=Make.Name('int'))
+            , Make.AnnAssign(Make.Name('col_offset', ast.Store()), annotation=Make.Name('int'))
+            , Make.AnnAssign(Make.Name('end_lineno', ast.Store()), annotation=Make.Name('_EndPositionT'))
+            , Make.AnnAssign(Make.Name('end_col_offset', ast.Store()), annotation=Make.Name('_EndPositionT'))
+		]
+	)
 
 FunctionDef_join = 	Make.FunctionDef('join'
 		, Make.arguments(args=[Make.arg('cls'), Make.arg('expressions', annotation=Make.Subscript(Make.Name('Iterable'), slice=Make.Attribute(Make.Name('ast'), 'expr')))]
@@ -96,9 +106,9 @@ FunctionDefMake_Import: ast.FunctionDef = ast.FunctionDef('Import'
 
 # `TypeAlias` =====================================================================
 listHandmade_astTypes: list[ast.stmt] = [
-	ast.AnnAssign(ast.Name('intORstr', ast.Store()), annotation=ast.Name('typing_TypeAlias'), value=ast.Name('Any'), simple=1),
-	ast.AnnAssign(ast.Name('intORstrORtype_params', ast.Store()), annotation=ast.Name('typing_TypeAlias'), value=ast.Name('Any'), simple=1),
-	ast.AnnAssign(ast.Name('intORtype_params', ast.Store()), annotation=ast.Name('typing_TypeAlias'), value=ast.Name('Any'), simple=1),
+	Make.AnnAssign(ast.Name('intORstr', ast.Store()), annotation=ast.Name('typing_TypeAlias'), value=ast.Name('Any')),
+	Make.AnnAssign(ast.Name('intORstrORtype_params', ast.Store()), annotation=ast.Name('typing_TypeAlias'), value=ast.Name('Any')),
+	Make.AnnAssign(ast.Name('intORtype_params', ast.Store()), annotation=ast.Name('typing_TypeAlias'), value=ast.Name('Any')),
 	ast.Assign([ast.Name('木', ast.Store())], value=ast.Call(ast.Name('typing_TypeVar'), args=[ast.Constant('木')], keywords=[ast.keyword('bound', value=ast.Attribute(ast.Name('ast'), attr='AST')), ast.keyword('covariant', value=ast.Constant(True))])),
 	ast.Assign([ast.Name('个', ast.Store())], value=ast.Call(ast.Name('typing_TypeVar'), args=[ast.Constant('个')], keywords=[ast.keyword('covariant', value=ast.Constant(True))])),
 	ast.Assign([ast.Name('个return', ast.Store())], value=ast.Call(ast.Name('typing_TypeVar'), args=[ast.Constant('个return')], keywords=[ast.keyword('covariant', value=ast.Constant(True))])),
