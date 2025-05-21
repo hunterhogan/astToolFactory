@@ -376,6 +376,11 @@ def makeToolGrab() -> None:
 	writeClass('Grab', list4ClassDefBody, list4ModuleBody)
 
 def makeToolMake() -> None:
+	# TODO add `ClassDef` for ast subclasses that do not have __init__ parameters. At the very least, it prevents an error if the user uses `Make.GtE()` instead of `ast.GtE()`.
+	# TODO add docstrings for each staticmethod and each ClassDef: idea: `Make.GtE.__doc__ = ast.GtE.__doc__` <-- hahahahaaaaaaaaaa! 
+	# But, maybe include the ast docstring to contrast the lack of documentation in ast.
+	# For real, `dictionaryDocstringMake`, keynames = `ClassDefIdentifier`, values = docstrings created in a dedicated module,
+	# currently `astToolFactory/docstrings.py`. I am sure there are many packages designed to help with this.
 	def create_ast_stmt(dictionaryMethodElements: DictionaryMatchArgs) -> ast.FunctionDef:
 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in dictionaryMethodElements['listStr4FunctionDef_args']]
 		kwarg: ast.arg | None = None
