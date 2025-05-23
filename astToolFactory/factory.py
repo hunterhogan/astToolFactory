@@ -2,7 +2,7 @@
 # from ast import Name, Store
 from ast import Name, Store  # pyright: ignore[reportUnusedImport] # noqa: F401
 from astToolFactory import (
-	astName_overload, astName_staticmethod, astName_typing_TypeAlias, DictionaryAstExprType,
+	astName_overload, astName_staticmethod, astName_typing_TypeAlias, Dictionary_type_ast_expr,
 	DictionaryClassDef, DictionaryGrabElements, DictionaryMatchArgs, DictionaryTypeAliasAttribute,
 	getElementsBe, getElementsClassIsAndAttribute, getElementsDOT, getElementsGrab, getElementsMake,
 	getElementsTypeAlias, keywordArgumentsIdentifier, listPylanceErrors, pythonVersionMinorMinimum,
@@ -145,7 +145,7 @@ def makeToolClassIsAndAttribute() -> None:
 
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringClassIsAndAttribute]
 
-	dictionaryToolElements: dict[str, dict[str, DictionaryAstExprType]] = getElementsClassIsAndAttribute()
+	dictionaryToolElements: dict[str, dict[str, Dictionary_type_ast_expr]] = getElementsClassIsAndAttribute()
 	# Process each attribute group to generate overloaded methods and implementations
 	for attribute, dictionaryTypeAliasSubcategory in dictionaryToolElements.items():
 		# Get the pre-computed hasDOTIdentifier from the first entry
@@ -268,7 +268,7 @@ def makeToolDOT() -> None:
 
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringDOT]
 
-	dictionaryToolElements: dict[str, dict[str, DictionaryAstExprType]] = getElementsDOT()
+	dictionaryToolElements: dict[str, dict[str, Dictionary_type_ast_expr]] = getElementsDOT()
 	# Process each attribute group to generate overloaded methods and implementations
 	for attribute, dictionaryTypeAliasSubcategory in dictionaryToolElements.items():
 		# Get the pre-computed hasDOTIdentifier from the first entry

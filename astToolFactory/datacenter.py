@@ -22,7 +22,7 @@ ListTypesASTformAsStr: TypeAlias = list[str]
 TupleTypesForVersion: TypeAlias = tuple[Version, ListTypesASTformAsStr]
 ListTypesByVersion: TypeAlias = list[TupleTypesForVersion]
 
-class DictionaryAstExprType(TypedDict):
+class Dictionary_type_ast_expr(TypedDict):
 	versionMinorMinimumAttribute: int
 	type_ast_expr: str
 	TypeAlias_hasDOTIdentifier: str
@@ -89,10 +89,10 @@ def getElementsBe(includeDeprecated: bool = False, versionMinorMaximum: int | No
 
 	return dataframe.to_dict(orient='records')  # pyright: ignore[reportReturnType]
 
-def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, dict[str, DictionaryAstExprType]]:
+def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, dict[str, Dictionary_type_ast_expr]]:
 	return getElementsDOT(includeDeprecated, versionMinorMaximum)
 
-def getElementsDOT(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, dict[str, DictionaryAstExprType]]:
+def getElementsDOT(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, dict[str, Dictionary_type_ast_expr]]:
 	listElementsHARDCODED = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'TypeAlias_hasDOTIdentifier']
 	listElements = listElementsHARDCODED
 
@@ -278,7 +278,7 @@ def updateDataframe():
 
 	# Update 'classAs_astAttribute' column with formatted value
 	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].apply(
-		lambda attribute: dump(Make.Attribute(Make.Name('ast'), attribute)) 
+		lambda attribute: dump(Make.Attribute(Make.Name('ast'), attribute))   # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
 	)
 
 	# Update 'type' column with standardized formatting and accurate information
@@ -289,21 +289,21 @@ def updateDataframe():
 		# Replace "Literal[True, False]" with "bool"
 		return value.replace("Literal[True, False]", "bool")
 	dataframe['type'] = dataframe.apply(
-		lambda row: transform_type(row['typeStub'] if row['typeStub_typing_TypeAlias'] == 'No' else row['typeC'], dataframe['ClassDefIdentifier'].dropna().unique()), 
+		lambda row: transform_type(row['typeStub'] if row['typeStub_typing_TypeAlias'] == 'No' else row['typeC'], dataframe['ClassDefIdentifier'].dropna().unique()),  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType, reportArgumentType]
 		axis=1
 	)
 
 	# Update versionMinorMinimumClass based on ClassDefIdentifier
 	dataframe['versionMinorMinimumClass'] = dataframe.groupby('ClassDefIdentifier')['versionMinorData'].transform(
-		lambda x: -1 if x.min() == versionMinor_astMinimumSupported else x.min() 
+		lambda x: -1 if x.min() == versionMinor_astMinimumSupported else x.min()  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType, reportUnknownMemberType]
 	)
 	# Update versionMinorMinimum_match_args based on ClassDefIdentifier and match_args
 	dataframe['versionMinorMinimum_match_args'] = dataframe.groupby(['ClassDefIdentifier', 'match_args'])['versionMinorData'].transform(
-		lambda x: -1 if x.min() == versionMinor_astMinimumSupported else x.min() 
+		lambda x: -1 if x.min() == versionMinor_astMinimumSupported else x.min()  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType, reportUnknownMemberType]
 	)
 	# Update versionMinorMinimumAttribute based on ClassDefIdentifier and attribute
 	dataframe['versionMinorMinimumAttribute'] = dataframe.groupby(['ClassDefIdentifier', 'attribute'])['versionMinorData'].transform(
-		lambda x: -1 if x.min() == versionMinor_astMinimumSupported else x.min() 
+		lambda x: -1 if x.min() == versionMinor_astMinimumSupported else x.min()  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType, reportUnknownMemberType]
 	)
 
 	def str2expr(string: str):
@@ -312,26 +312,26 @@ def updateDataframe():
 		return dump(ast_expr)
 
 	# Update 'type_ast_expr' based on 'type' column
-	dataframe['type_ast_expr'] = dataframe['type'].apply(lambda x: 'No' if x == 'No' else str2expr(x)) 
+	dataframe['type_ast_expr'] = dataframe['type'].apply(lambda x: 'No' if x == 'No' else str2expr(x))  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
 
 	# Update 'type_ast_expr' based on 'list2Sequence' column
-	dataframe.loc[dataframe['list2Sequence'] == True, 'type_ast_expr'] = dataframe['type_ast_expr'].str.replace("'list'", "'Sequence'") 
+	dataframe.loc[dataframe['list2Sequence'] == True, 'type_ast_expr'] = dataframe['type_ast_expr'].str.replace("'list'", "'Sequence'")   # pyright: ignore[reportUnknownMemberType]
 
 	# Update 'ast_arg' column based on conditions
 	dataframe['ast_arg'] = dataframe.apply(
-		lambda row: "No" if row['attribute'] == "No" else dump(Make.arg(row['attributeRename'] if row['attributeRename'] != "No" else row['attribute'], eval(row['type_ast_expr']))), 
+		lambda row: "No" if row['attribute'] == "No" else dump(Make.arg(row['attributeRename'] if row['attributeRename'] != "No" else row['attribute'], eval(row['type_ast_expr']))),  # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
 		axis=1
 	)			# Add TypeAlias_hasDOTIdentifier computation
 	dataframe['TypeAlias_hasDOTIdentifier'] = numpy.where(
 		dataframe['attributeKind'] == '_field',
-		"hasDOT" + dataframe['attribute'],
+		"hasDOT" + dataframe['attribute'], # pyright: ignore[reportUnknownArgumentType]
 		"No"
 	)
 
 	# Add TypeAlias_hasDOTSubcategory computation
 	processedTypeString = (
 		dataframe['type']
-		.str.replace('|', 'Or', regex=False) 
+		.str.replace('|', 'Or', regex=False)  # pyright: ignore[reportUnknownMemberType]
 		.str.replace('[', '_', regex=False)
 		.str.replace('ast.', '', regex=False)
 		.str.replace(']', '', regex=False)
@@ -340,11 +340,11 @@ def updateDataframe():
 	dataframe['TypeAlias_hasDOTSubcategory'] = numpy.where(
 		dataframe['TypeAlias_hasDOTIdentifier'] == "No",
 		"No",
-		dataframe['TypeAlias_hasDOTIdentifier'] + "_" + processedTypeString
+		dataframe['TypeAlias_hasDOTIdentifier'] + "_" + processedTypeString # pyright: ignore[reportUnknownArgumentType]
 	)
 	
 	# Update 'listStr4FunctionDef_args', 'listDefaults', 'listTupleCall_keywords' columns based on match_args
-	def compute_listFunctionDef_args(row: pandas.Series) -> pandas.Series: 
+	def compute_listFunctionDef_args(row: pandas.Series) -> pandas.Series:  # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
 		if row['attribute'] == "No":
 			return pandas.Series([
 				"No",
@@ -358,9 +358,9 @@ def updateDataframe():
 		listAttributes = cast(str, row['match_args']).replace("'","").replace(" ","").split(',')
 		className = cast(str, row['ClassDefIdentifier'])
 		version = cast(int, row['versionMinorMinimum_match_args'])
-		listStr4FunctionDef_args = []
-		listDefaults = []
-		listTupleCall_keywords = []
+		listStr4FunctionDef_args: list[str] = []
+		listDefaults: list[str] = []
+		listTupleCall_keywords: list[tuple[str, str]] = []
 		for attributeTarget in listAttributes:
 			argIdentifier = attributeTarget
 			keywordValue = attributeTarget
@@ -388,7 +388,7 @@ def updateDataframe():
 			'listDefaults',
 			'listTupleCall_keywords'
 		])
-	dataframe[['listStr4FunctionDef_args', 'listDefaults', 'listTupleCall_keywords']] = dataframe.apply(compute_listFunctionDef_args, axis=1) 
+	dataframe[['listStr4FunctionDef_args', 'listDefaults', 'listTupleCall_keywords']] = dataframe.apply(compute_listFunctionDef_args, axis=1)  # pyright: ignore[reportUnknownArgumentType]
 	dataframe.to_pickle(pathFilenameDataframeAST)
 
 # if __name__ == "__main__":
