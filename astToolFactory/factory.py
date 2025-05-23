@@ -8,9 +8,9 @@ from astToolFactory import (
     getElementsBe, getElementsClassIsAndAttribute, getElementsDOT,
     getElementsMake, getElementsTypeAlias, keywordArgumentsIdentifier,
     listPylanceErrors, pathPackage, pythonVersionMinorMinimum,
-    toolMakeFunctionDefReturnCall_keywords, packageName
+    toolMakeFunctionDefReturnCall_keywords, packageName, getElementsGrab,
+	Call_keywords,
 )
-from astToolFactory.datacenter import getElementsGrab
 from astToolFactory.docstrings import (
     ClassDefDocstring_ast_operator, ClassDefDocstringBe,
     ClassDefDocstringClassIsAndAttribute, ClassDefDocstringDOT,
@@ -99,7 +99,7 @@ def makeToolBe() -> None:
 	for dictionaryToolElements in listDictionaryToolElements:
 		ClassDefIdentifier = dictionaryToolElements['ClassDefIdentifier']
 		classAs_astAttribute = eval(dictionaryToolElements['classAs_astAttribute'])
-		classVersionMinorMinimum = dictionaryToolElements['classVersionMinorMinimum']
+		versionMinorMinimumClass = dictionaryToolElements['versionMinorMinimumClass']
 
 		ast_stmt = Make.FunctionDef(ClassDefIdentifier
 			, Make.arguments(args=[Make.arg('node', annotation=Make.Name('ast.AST'))])
@@ -107,11 +107,11 @@ def makeToolBe() -> None:
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name('TypeGuard'), slice=classAs_astAttribute))
 
-		if classVersionMinorMinimum > pythonVersionMinorMinimum:
+		if versionMinorMinimumClass > pythonVersionMinorMinimum:
 			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
 						, comparators=[ast.Tuple([ast.Constant(3)
-												, ast.Constant(classVersionMinorMinimum)])])
+												, ast.Constant(versionMinorMinimumClass)])])
 					, body=[ast_stmt]
 				)
 
@@ -136,10 +136,10 @@ def makeToolClassIsAndAttribute() -> None:
 					, returns=returns
 		)
 
-		if attributeVersionMinorMinimum > pythonVersionMinorMinimum:
+		if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
 			ast_stmt = ast.If(ast.Compare(left=ast.Attribute(ast.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
-								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(attributeVersionMinorMinimum)])])
+								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorMinimumAttribute)])])
 							, body=[ast_stmt]
 							, orelse=orelse
 			)
@@ -156,31 +156,31 @@ def makeToolClassIsAndAttribute() -> None:
 		hasDOTTypeAliasName_Load: ast.Name = ast.Name(hasDOTIdentifier)
 		orelse: list[ast.stmt] = []
 
-		list_ast_exprType: list[ast.expr] = []
+		list_type_ast_expr: list[ast.expr] = []
 		dictionaryVersionsTypeAliasSubcategory: dict[int, list[ast.expr]] = defaultdict(list)
 
 		if len(dictionaryTypeAliasSubcategory) > 1:
-			for TypeAliasSubcategory, dictionary_ast_exprType in dictionaryTypeAliasSubcategory.items():
-				attributeVersionMinorMinimum: int = dictionary_ast_exprType['attributeVersionMinorMinimum']
+			for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
+				versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
 				astNameTypeAlias: ast.Name = ast.Name(formatTypeAliasSubcategory.format(hasDOTIdentifier=hasDOTIdentifier, TypeAliasSubcategory=TypeAliasSubcategory))
 				body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
 				decorator_list=[astName_staticmethod, astName_overload]
 				returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Attribute(ast.Name('ast'), attr='AST')]), BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])]))
 
-				Z0Z_TypeWithoutNone = eval(dictionary_ast_exprType['ast_exprType'])
+				Z0Z_TypeWithoutNone = eval(dictionary_type_ast_expr['type_ast_expr'])
 				annotation = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([Z0Z_TypeWithoutNone]), ast.Name('bool')]))
 
-				list_ast_exprType.append(annotation)
-				dictionaryVersionsTypeAliasSubcategory[dictionary_ast_exprType['attributeVersionMinorMinimum']].append(annotation)
+				list_type_ast_expr.append(annotation)
+				dictionaryVersionsTypeAliasSubcategory[dictionary_type_ast_expr['versionMinorMinimumAttribute']].append(annotation)
 
 				list4ClassDefBody.append(create_ast_stmt())
 
 		astNameTypeAlias = hasDOTTypeAliasName_Load
 		if len(dictionaryVersionsTypeAliasSubcategory) > 1:
-			attributeVersionMinorMinimum: int = min(dictionaryVersionsTypeAliasSubcategory.keys())
+			versionMinorMinimumAttribute: int = min(dictionaryVersionsTypeAliasSubcategory.keys())
 			decorator_list: list[ast.expr] = [astName_staticmethod]
 
-			annotation = BitOr.join(dictionaryVersionsTypeAliasSubcategory[attributeVersionMinorMinimum])
+			annotation = BitOr.join(dictionaryVersionsTypeAliasSubcategory[versionMinorMinimumAttribute])
 			workhorseReturnValue: ast.BoolOp = ast.BoolOp(op=ast.And(), values=[ast.Call(ast.Name('isinstance'), args=[ast.Name('node'), ast.Name('astClass')], keywords=[])])
 			for node in ast.walk(annotation):
 				if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name) and node.value.id == 'Sequence' and isinstance(node.slice, ast.BinOp) and isinstance(node.slice.right, ast.Constant) and node.slice.right.value is None:
@@ -204,16 +204,16 @@ def makeToolClassIsAndAttribute() -> None:
 					, Make.Return(Make.Name('workhorse'))]
 			returns=Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
 
-			del dictionaryVersionsTypeAliasSubcategory[attributeVersionMinorMinimum]
+			del dictionaryVersionsTypeAliasSubcategory[versionMinorMinimumAttribute]
 			orelse = [create_ast_stmt()]
 
-		for TypeAliasSubcategory, dictionary_ast_exprType in dictionaryTypeAliasSubcategory.items():
-			attributeVersionMinorMinimum: int = dictionary_ast_exprType['attributeVersionMinorMinimum']
+		for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
+			versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
 			decorator_list=[astName_staticmethod]
-			if list_ast_exprType:
-				annotation = BitOr.join(list_ast_exprType)
+			if list_type_ast_expr:
+				annotation = BitOr.join(list_type_ast_expr)
 			else:
-				Z0Z_TypeWithoutNone = eval(dictionary_ast_exprType['ast_exprType'])
+				Z0Z_TypeWithoutNone = eval(dictionary_type_ast_expr['type_ast_expr'])
 				annotation = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([Z0Z_TypeWithoutNone]), ast.Name('bool')]))
 
 			workhorseReturnValue: ast.BoolOp = ast.BoolOp(op=ast.And(), values=[ast.Call(ast.Name('isinstance'), args=[ast.Name('node'), ast.Name('astClass')], keywords=[])])
@@ -259,10 +259,10 @@ def makeToolDOT() -> None:
 					, returns=returns
 		)
 
-		if attributeVersionMinorMinimum > pythonVersionMinorMinimum:
+		if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
 			ast_stmt = ast.If(ast.Compare(left=ast.Attribute(ast.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
-								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(attributeVersionMinorMinimum)])])
+								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorMinimumAttribute)])])
 							, body=[ast_stmt]
 							, orelse=orelse
 			)
@@ -279,36 +279,36 @@ def makeToolDOT() -> None:
 		hasDOTTypeAliasName_Load: ast.Name = ast.Name(hasDOTIdentifier)
 		orelse: list[ast.stmt] = []
 
-		list_ast_exprType: list[ast.expr] = []
+		list_type_ast_expr: list[ast.expr] = []
 		dictionaryVersionsTypeAliasSubcategory: dict[int, list[ast.expr]] = defaultdict(list)
 		if len(dictionaryTypeAliasSubcategory) > 1:
-			for TypeAliasSubcategory, dictionary_ast_exprType in dictionaryTypeAliasSubcategory.items():
-				attributeVersionMinorMinimum: int = dictionary_ast_exprType['attributeVersionMinorMinimum']
+			for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
+				versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
 				astNameTypeAlias: ast.Name = ast.Name(formatTypeAliasSubcategory.format(hasDOTIdentifier=hasDOTIdentifier, TypeAliasSubcategory=TypeAliasSubcategory))
 				body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
 				decorator_list=[astName_staticmethod, astName_overload]
-				returns = cast(ast.Attribute, eval(dictionary_ast_exprType['ast_exprType']))
-				list_ast_exprType.append(returns)
-				dictionaryVersionsTypeAliasSubcategory[dictionary_ast_exprType['attributeVersionMinorMinimum']].append(returns)
+				returns = cast(ast.Attribute, eval(dictionary_type_ast_expr['type_ast_expr']))
+				list_type_ast_expr.append(returns)
+				dictionaryVersionsTypeAliasSubcategory[dictionary_type_ast_expr['versionMinorMinimumAttribute']].append(returns)
 				list4ClassDefBody.append(create_ast_stmt())
 
 		astNameTypeAlias = hasDOTTypeAliasName_Load
 		if len(dictionaryVersionsTypeAliasSubcategory) > 1:
 			body: list[ast.stmt] = [ast.Return(ast.Attribute(ast.Name('node'), attribute))]
 			decorator_list: list[ast.expr] = [astName_staticmethod]
-			attributeVersionMinorMinimum: int = min(dictionaryVersionsTypeAliasSubcategory.keys())
-			returns = BitOr.join(dictionaryVersionsTypeAliasSubcategory[attributeVersionMinorMinimum])
-			del dictionaryVersionsTypeAliasSubcategory[attributeVersionMinorMinimum]
+			versionMinorMinimumAttribute: int = min(dictionaryVersionsTypeAliasSubcategory.keys())
+			returns = BitOr.join(dictionaryVersionsTypeAliasSubcategory[versionMinorMinimumAttribute])
+			del dictionaryVersionsTypeAliasSubcategory[versionMinorMinimumAttribute]
 			orelse = [create_ast_stmt()]
 
-		for TypeAliasSubcategory, dictionary_ast_exprType in dictionaryTypeAliasSubcategory.items():
-			attributeVersionMinorMinimum: int = dictionary_ast_exprType['attributeVersionMinorMinimum']
+		for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
+			versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
 			body: list[ast.stmt] = [ast.Return(ast.Attribute(ast.Name('node'), attribute))]
 			decorator_list=[astName_staticmethod]
-			if list_ast_exprType:
-				returns = BitOr.join(list_ast_exprType)
+			if list_type_ast_expr:
+				returns = BitOr.join(list_type_ast_expr)
 			else:
-				returns = cast(ast.Attribute, eval(dictionary_ast_exprType['ast_exprType']))
+				returns = cast(ast.Attribute, eval(dictionary_type_ast_expr['type_ast_expr']))
 			list4ClassDefBody.append(create_ast_stmt())
 			break
 
@@ -325,11 +325,11 @@ def makeToolDOT() -> None:
 def makeToolGrab() -> None:
 	def create_ast_stmt() -> ast.If | ast.FunctionDef:
 		ast_stmt = None
-		for attributeVersionMinorMinimum, list_ast_exprType in listTypesByVersion:
+		for versionMinorMinimumAttribute, list_type_ast_expr in listTypesByVersion:
 			list_ast_expr4annotation: list[ast.expr] = []
-			for ast_exprTypeAsStr in list_ast_exprType:
-				ast_exprType = eval(ast_exprTypeAsStr)
-				list_ast_expr4annotation.append(ast.Subscript(ast.Name('Callable'), slice=ast.Tuple([ast.List([ast_exprType]), ast_exprType])))
+			for type_ast_exprAsStr in list_type_ast_expr:
+				type_ast_expr = eval(type_ast_exprAsStr)
+				list_ast_expr4annotation.append(ast.Subscript(ast.Name('Callable'), slice=ast.Tuple([ast.List([type_ast_expr]), type_ast_expr])))
 
 			ast_expr4annotation = BitOr.join(list_ast_expr4annotation)
 
@@ -346,12 +346,12 @@ def makeToolGrab() -> None:
 				, decorator_list=[astName_staticmethod]
 				, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([hasDOTTypeAliasName_Load]), hasDOTTypeAliasName_Load])))
 
-			if attributeVersionMinorMinimum > pythonVersionMinorMinimum:
+			if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
 				ast_stmt = ast.If(test=ast.Compare(
 					left=ast.Attribute(ast.Name('sys'), 'version_info'),
 					ops=[ast.GtE()],
 					comparators=[ast.Tuple(
-						elts=[ast.Constant(3), ast.Constant(attributeVersionMinorMinimum)],
+						elts=[ast.Constant(3), ast.Constant(versionMinorMinimumAttribute)],
 						ctx=ast.Load()
 					)]
 				),
@@ -476,35 +476,35 @@ causes `Arguments missing for parameters "lineno", "col_offset"`
 	def unpackDictionaryAllMatch_argsVersions() -> ast.stmt:
 		ast_stmt = None
 		if len(dictionaryAllMatch_argsVersions) == 1:
-			for match_argsVersionMinorMinimum, dictionaryMethodElements in dictionaryAllMatch_argsVersions.items():
+			for versionMinorMinimum_match_args, dictionaryMethodElements in dictionaryAllMatch_argsVersions.items():
 				ast_stmt = create_ast_stmt(dictionaryMethodElements)
-				if match_argsVersionMinorMinimum > classVersionMinorMinimum:
-					versionMinor: int = match_argsVersionMinorMinimum
+				if versionMinorMinimum_match_args > versionMinorMinimumClass:
+					versionMinorData: int = versionMinorMinimum_match_args
 					body = [ast_stmt]
 					orelse = []
 					ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
 								, comparators=[ast.Tuple([ast.Constant(3)
-														, ast.Constant(versionMinor)])])
+														, ast.Constant(versionMinorData)])])
 							, body=body
 							, orelse=orelse
 						)
 		else:
 			body: list[ast.stmt] = []
 			orelse: list[ast.stmt] = []
-			versionMinor: int = -999999999999999999
-			for match_argsVersionMinorMinimum, dictionaryMethodElements in dictionaryAllMatch_argsVersions.items():
+			versionMinorData: int = -999999999999999999
+			for versionMinorMinimum_match_args, dictionaryMethodElements in dictionaryAllMatch_argsVersions.items():
 				# Do some variations of the method need to be conditional on the Python version?
-				# if match_argsVersionMinorMinimum == classVersionMinorMinimum, then access to match_argsVersionMinorMinimum is already conditional on the python version because it is checked at the class level.
-				if match_argsVersionMinorMinimum > classVersionMinorMinimum:
+				# if versionMinorMinimum_match_args == versionMinorMinimumClass, then access to versionMinorMinimum_match_args is already conditional on the python version because it is checked at the class level.
+				if versionMinorMinimum_match_args > versionMinorMinimumClass:
 					body = [create_ast_stmt(dictionaryMethodElements)]
-					versionMinor = match_argsVersionMinorMinimum
+					versionMinorData = versionMinorMinimum_match_args
 				else:
 					orelse = [create_ast_stmt(dictionaryMethodElements)]
 			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
 						, comparators=[ast.Tuple([ast.Constant(3)
-												, ast.Constant(versionMinor)])])
+												, ast.Constant(versionMinorData)])])
 					, body=body
 					, orelse=orelse
 				)
@@ -529,19 +529,19 @@ causes `Arguments missing for parameters "lineno", "col_offset"`
 			list_aliasIdentifier.append('str_nameDOTname')
 			continue
 		classAs_astAttribute = cast(ast.expr, eval(dictionaryClassDef['classAs_astAttribute']))
-		dictionaryAllClassVersions: dict[int, dict[int, DictionaryMatchArgs]] = dictionaryClassDef['classVersionMinorMinimum']
+		dictionaryAllClassVersions: dict[int, dict[int, DictionaryMatchArgs]] = dictionaryClassDef['versionMinorMinimumClass']
 
 		if len(dictionaryAllClassVersions) == 1:
-			for classVersionMinorMinimum, dictionaryAllMatch_argsVersions in dictionaryAllClassVersions.items():
+			for versionMinorMinimumClass, dictionaryAllMatch_argsVersions in dictionaryAllClassVersions.items():
 				ast_stmt = unpackDictionaryAllMatch_argsVersions()
-				if classVersionMinorMinimum > pythonVersionMinorMinimum:
-					versionMinor: int = classVersionMinorMinimum
+				if versionMinorMinimumClass > pythonVersionMinorMinimum:
+					versionMinorData: int = versionMinorMinimumClass
 					body = [ast_stmt]
 					orelse = []
 					ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
 								, comparators=[ast.Tuple([ast.Constant(3)
-														, ast.Constant(versionMinor)])])
+														, ast.Constant(versionMinorData)])])
 							, body=body
 							, orelse=orelse
 						)
@@ -550,17 +550,17 @@ causes `Arguments missing for parameters "lineno", "col_offset"`
 			# Does _every_ variation of the method need to be conditional on the Python version?
 			body: list[ast.stmt] = []
 			orelse: list[ast.stmt] = []
-			versionMinor: int = -999999999999999999
-			for classVersionMinorMinimum, dictionaryAllMatch_argsVersions in dictionaryAllClassVersions.items():
-				if classVersionMinorMinimum > pythonVersionMinorMinimum:
+			versionMinorData: int = -999999999999999999
+			for versionMinorMinimumClass, dictionaryAllMatch_argsVersions in dictionaryAllClassVersions.items():
+				if versionMinorMinimumClass > pythonVersionMinorMinimum:
 					body = [unpackDictionaryAllMatch_argsVersions()]
-					versionMinor = classVersionMinorMinimum
+					versionMinorData = versionMinorMinimumClass
 				else:
 					orelse = [unpackDictionaryAllMatch_argsVersions()]
 			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
 						, comparators=[ast.Tuple([ast.Constant(3)
-												, ast.Constant(versionMinor)])])
+												, ast.Constant(versionMinorData)])])
 					, body=body
 					, orelse=orelse
 				)
@@ -611,13 +611,13 @@ def make_astTypes() -> None:
 		ast_stmt = None
 		if len(dictionaryVersions) == 1:
 			# This branch is the simplest case: one TypeAlias for the attribute for all Python versions
-			for versionMinor, listClassAs_astAttribute in dictionaryVersions.items():
+			for versionMinorData, listClassAs_astAttribute in dictionaryVersions.items():
 				ast_stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]))
-				if versionMinor > pythonVersionMinorMinimum:
+				if versionMinorData > pythonVersionMinorMinimum:
 					ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
 								, comparators=[ast.Tuple([ast.Constant(3),
-										ast.Constant(versionMinor)])])
+										ast.Constant(versionMinorData)])])
 								, body=[ast_stmt])
 		else:
 			# There is a smart way to do the following, but I don't see it right now. NOTE datacenter has the responsibility to aggregate all values <= pythonVersionMinorMinimum.

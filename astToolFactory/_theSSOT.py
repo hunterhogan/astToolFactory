@@ -14,7 +14,7 @@ pathRoot = Path('/apps')
 pathPackage = pathRoot / packageName / packageName
 pathToolFactory = pathRoot / 'astToolFactory' / 'astToolFactory'
 
-pathFilenameDataframeAST = pathToolFactory / 'dataframeAST.parquet'
+pathFilenameDataframeAST = pathToolFactory / 'dataframeAST.pkl'
 
 fileExtension: str = '.py'
 
