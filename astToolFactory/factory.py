@@ -1,6 +1,6 @@
 # NOTE you need these because of `eval()`
 # from ast import Name, Store
-from ast import Name, Store  # noqa: F401
+from ast import Name, Store  # pyright: ignore[reportUnusedImport] # noqa: F401
 from astToolFactory import (
     astName_overload, astName_staticmethod, astName_typing_TypeAlias, 
     DictionaryAstExprType, DictionaryClassDef, DictionaryMatchArgs,
@@ -8,7 +8,7 @@ from astToolFactory import (
     getElementsBe, getElementsClassIsAndAttribute, getElementsDOT,
     getElementsMake, getElementsTypeAlias, keywordArgumentsIdentifier,
     listPylanceErrors, pathPackage, pythonVersionMinorMinimum,
-    toolMakeFunctionDefReturnCall_keywords,
+    toolMakeFunctionDefReturnCall_keywords, packageName
 )
 from astToolFactory.datacenter import getElementsGrab
 from astToolFactory.docstrings import (
@@ -17,11 +17,12 @@ from astToolFactory.docstrings import (
     ClassDefDocstringGrab, ClassDefDocstringMake, docstringWarning,
 )
 from astToolFactory.factory_annex import (
-    astClassDefTypedDict_Attributes, astIf_EndPositionT, FunctionDef_join,
+    FunctionDef_join,
     FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf,
     FunctionDefMake_Attribute, FunctionDefMake_Import, listHandmade_astTypes,
 )
-from astToolkit import BitOr, Make
+from astToolkit import astModuleToIngredientsFunction, Add, BitOr, Make, parseLogicalPath2astModule, ClassIsAndAttribute, Then, NodeChanger, IfThis, IngredientsModule
+from astToolkit.transformationTools import write_astModule
 from collections import defaultdict
 from itertools import chain
 from pathlib import PurePosixPath
@@ -29,6 +30,7 @@ from typing import cast
 from Z0Z_tools import writeStringToHere
 
 import ast
+import autoflake
 
 """
 class Name(expr):
@@ -59,6 +61,8 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 		pythonSource = ast.unparse(astModule)
 		pythonSource = "# ruff: noqa: F403, F405\n" + pythonSource
 		pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
+	autoflake_additional_imports: list[str] = ['astToolkit']
+	pythonSource = autoflake.fix_code(pythonSource, autoflake_additional_imports, expand_star_imports=False, remove_all_unused_imports=True, remove_duplicate_keys = False, remove_unused_variables = False)
 	pathFilenameModule = PurePosixPath(pathPackage, moduleIdentifier + fileExtension)
 	writeStringToHere(pythonSource, pathFilenameModule)
 
@@ -74,6 +78,18 @@ def writeClass(classIdentifier: str, list4ClassDefBody: list[ast.stmt], list4Mod
 				]
 			)
 		, moduleIdentifier)
+
+def makeTool_dump() -> None:
+	ingredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule('ast'), 'dump')
+	astConstant = Make.Constant('ast.')
+	findThis = ClassIsAndAttribute.valueIs(ast.Attribute, IfThis.isAttributeNamespaceIdentifier('node', '__class__'))
+	doThat = lambda node: Add.join([astConstant, cast(ast.expr, node)]) # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
+	prepend_ast = NodeChanger(findThis, doThat) # pyright: ignore[reportUnknownArgumentType]
+	findThis = IfThis.isFunctionDefIdentifier('_format')
+	doThat = lambda node: prepend_ast.visit(node) # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownVariableType]
+	NodeChanger(findThis, doThat).visit(ingredientsFunction.astFunctionDef) # pyright: ignore[reportUnknownArgumentType]
+	pathFilenameModule = PurePosixPath(pathPackage, '_dumpFunctionDef' + fileExtension)
+	write_astModule(IngredientsModule(ingredientsFunction), pathFilenameModule, packageName)
 
 def makeToolBe() -> None:
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringBe]
@@ -381,6 +397,58 @@ def makeToolMake() -> None:
 	# But, maybe include the ast docstring to contrast the lack of documentation in ast.
 	# For real, `dictionaryDocstringMake`, keynames = `ClassDefIdentifier`, values = docstrings created in a dedicated module,
 	# currently `astToolFactory/docstrings.py`. I am sure there are many packages designed to help with this.
+	# TODO overload for Make.keyword:
+	"""
+    @staticmethod
+    @overload
+    def keyword(arg: str | None, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
+    @staticmethod
+    @overload
+    def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...	
+	"""
+	""" TODO remaking **keywordArguments
+from typing import TypedDict, Unpack
+
+Put in _astTypes:
+class _attributes(TypedDict, total=False):
+    lineno: int
+    col_offset: int
+
+class ast_attributes(_attributes, total=False):
+    end_lineno: int | None
+    end_col_offset: int | None
+
+class ast_attributes_int(_attributes, total=False):
+    end_lineno: int
+    end_col_offset: int
+
+if column 'keywordArguments' is True, 
+	build a subclassed dictionary and put it in the `Make` module
+	make sure to not add 14 identical subclassed dictionaries
+	allow for the subclassed dictionary to have more than one new key
+	analytically, this is not much different than how I construct a TypeAlias such as `intORstrORtype_params`
+	But, the code complexity is higher in this case and the benefit is better.
+
+class ast_attributes_kind(ast_attributes, total=False):
+    kind: str | None
+
+This:	
+    def Break(lineno: int, col_offset: int, end_lineno: int | None=None, end_col_offset: int | None=None) -> ast.Break:
+causes `Arguments missing for parameters "lineno", "col_offset"`
+	
+    def Break(**keywordArguments: Unpack[ast_attributes]) -> ast.Break:
+        return ast.Break(**keywordArguments)
+
+    def Constant(value: Any, **keywordArguments: ast_attributes_kind) -> ast.Constant:
+        return ast.Constant(value=value, kind=None, **keywordArguments)
+
+    def Dict(keys: Sequence[ast.expr | None]=[None], values: Sequence[ast.expr]=[], **keywordArguments: ast_attributes) -> ast.Dict:
+        return ast.Dict(keys=list(keys), values=list(values), **keywordArguments)
+
+    def pattern(**keywordArguments: Unpack[ast_attributes_int]) -> ast.pattern:
+        return ast.pattern(**keywordArguments)
+	
+	"""
 	def create_ast_stmt(dictionaryMethodElements: DictionaryMatchArgs) -> ast.FunctionDef:
 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in dictionaryMethodElements['listStr4FunctionDef_args']]
 		kwarg: ast.arg | None = None
@@ -514,11 +582,9 @@ def makeToolMake() -> None:
 	writeClass('Make', list4ClassDefBody, list4ModuleBody)
 
 def makeJoinClassmethod() -> None:
-	list_aliasIdentifier: list[str] = ['Make']
+	list_aliasIdentifier: list[str] = ['ast_attributes', 'Make']
 	list4ModuleBody: list[ast.stmt] = [
-		astIf_EndPositionT
-		, astClassDefTypedDict_Attributes
-		, FunctionDef_operatorJoinMethod
+		FunctionDef_operatorJoinMethod
 		]
 
 	listOperatorIdentifiers: list[str] = ['Add', 'BitAnd', 'BitOr', 'BitXor', 'Div', 'FloorDiv', 'LShift', 'MatMult', 'Mod', 'Mult', 'Pow', 'RShift', 'Sub',]
@@ -532,7 +598,7 @@ def makeJoinClassmethod() -> None:
 	astModule = Make.Module([docstringWarning
 		, Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
 		, Make.ImportFrom('collections.abc', [Make.alias('Iterable')])
-		, Make.ImportFrom('typing', [Make.alias('Generic'), Make.alias('TypedDict'), Make.alias('TypeVar', 'typing_TypeVar'), Make.alias('Unpack')])
+		, Make.ImportFrom('typing', [Make.alias('TypedDict'), Make.alias('Unpack')])
 		, Make.Import('ast')
 		, Make.Import('sys')
 		, *list4ModuleBody
@@ -572,7 +638,7 @@ def make_astTypes() -> None:
 
 	astModule = Make.Module(
 		body=[docstringWarning
-			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('TypeAlias', 'typing_TypeAlias'), Make.alias('TypeVar', 'typing_TypeVar')])
+			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('TypeAlias', 'typing_TypeAlias'), Make.alias('TypedDict'), Make.alias('TypeVar', 'typing_TypeVar')])
 			, Make.Import('ast')
 			, Make.Import('sys')
 			, *listHandmade_astTypes
@@ -615,4 +681,5 @@ if __name__ == "__main__":
 	makeToolDOT()
 	makeToolGrab()
 	makeToolMake()
+	makeTool_dump()
 

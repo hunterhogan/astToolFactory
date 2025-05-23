@@ -1,3 +1,7 @@
+import re
+import ast
+from astToolkit import dump, Be, Then, NodeTourist, Make, DOT # pyright: ignore[reportUnknownVariableType]
+from Z0Z_tools import raiseIfNone
 from collections.abc import Sequence
 from astToolFactory import pathFilenameDataframeAST, pythonVersionMinorMinimum
 from typing import cast, NamedTuple, TypeAlias, TypedDict
@@ -6,6 +10,7 @@ import pandas
 # TODO datacenter needs to do all data manipulation, not the toolFactory
 # TODO more and better pandas usage
 # TODO or better, get rid of Pandas and use the original sources
+# TODO comprehensive restructuring of "version" identifiers. e.g., classVersionMinorMinimum, should start with versionMinor, and `versionMinor` needs a suffix.
 
 Attribute: TypeAlias = str
 Version: TypeAlias = int
@@ -44,44 +49,6 @@ def _sortCaseInsensitive(dataframe: pandas.DataFrame, columns: Sequence[str]) ->
 	sorted_index = dataframeCopy.sort_values(by=columns).index # pyright: ignore[reportUnknownMemberType]
 	return dataframe.loc[sorted_index]
 
-cc=[
-# Facts: class
-'ClassDefIdentifier',
-'deprecated',
-'base',
-'base_typing_TypeAlias',
-'match_args',
-# Facts: class + attribute
-'attribute',
-'attributeKind',
-'typeC',
-'type_field_type',
-'typeStub',
-'typeStub_typing_TypeAlias',
-'versionMajor',
-'versionMinor',
-'versionMicro',
-
-# Computed from only facts
-'type',
-'classVersionMinorMinimum',
-'attributeVersionMinorMinimum',
-'match_argsVersionMinorMinimum',
-'classAs_astAttribute',
-'kwargAnnotation',
-'TypeAliasSubcategory',
-'ast_exprType',
-
-# Choices
-'attributeRename',
-'list2Sequence',
-'defaultValue',
-'keywordArguments',
-
-# Computed
-'ast_arg',
-]
-
 def getDataframe(deprecated: bool, versionMinorMaximum: int | None, *indices: str) -> pandas.DataFrame:
 	dataframe = pandas.read_parquet(pathFilenameDataframeAST)
 
@@ -117,27 +84,21 @@ def getElementsDOT(deprecated: bool = False, versionMinorMaximum: int | None = N
 
 	dataframe = getDataframe(deprecated, versionMinorMaximum)
 	dataframe = dataframe[dataframe['attributeKind'] == '_field']
-	dataframe['ast_exprType'] = dataframe['ast_exprType'].str.replace(" | None", "")
+	dataframe['ast_exprType'] = dataframe['ast_exprType'].str.replace(" | None", "") # pyright: ignore[reportUnknownMemberType]
 	dataframe = _sortCaseInsensitive(dataframe, listElements[0:2])
 	dataframe = dataframe[listElements].drop_duplicates()
 
 	# Keep the entry with the lowest attributeVersionMinorMinimum for each (attribute, TypeAliasSubcategory)
-	dataframe = dataframe.sort_values('attributeVersionMinorMinimum')
+	dataframe = dataframe.sort_values('attributeVersionMinorMinimum') # pyright: ignore[reportUnknownMemberType]
 	dataframe = dataframe.drop_duplicates(subset=['attribute', 'TypeAliasSubcategory'], keep='first')
 
 	# Structure as nested dictionary
-	dataframe['nested'] = dataframe.apply(
-		lambda row: {'attributeVersionMinorMinimum': row['attributeVersionMinorMinimum'], 'ast_exprType': row['ast_exprType']},
+	dataframe['nested'] = dataframe.apply( # pyright: ignore[reportUnknownMemberType]
+		lambda row: {'attributeVersionMinorMinimum': row['attributeVersionMinorMinimum'], 'ast_exprType': row['ast_exprType']}, # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
 		axis=1
 	)
 
-	return (
-		dataframe
-		.set_index(['attribute', 'TypeAliasSubcategory'])['nested']
-		.unstack()
-		.apply(lambda column: column.dropna().to_dict(), axis=1)
-		.to_dict()
-	)
+	return ( dataframe .set_index(['attribute', 'TypeAliasSubcategory'])['nested'].unstack().apply(lambda column: column.dropna().to_dict(), axis=1).to_dict() )  # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType, reportUnknownArgumentType, reportUnknownMemberType]
 
 def getElementsGrab(deprecated: bool = False, versionMinorMaximum: Version | None = None) -> dict[Attribute, ListTypesByVersion]:
 	listElementsHARDCODED = ['attribute', 'attributeVersionMinorMinimum', 'ast_exprType']
@@ -279,85 +240,110 @@ def getElementsTypeAlias(deprecated: bool = False, versionMinorMaximum: int | No
 		dictionaryAttribute[attribute][typeAliasSubcategory][int(attributeVersionMinorMinimum)] = listClassDefIdentifier
 	return dictionaryAttribute
 
-"""
-cc=['ClassDefIdentifier',
-'classAs_astAttribute',
-'deprecated',
-'base',
-'base_typing_TypeAlias',
-'match_args',
+def updateDataframe():
+	dataframe = pandas.read_parquet(pathFilenameDataframeAST)
 
-'attribute',
-'attributeKind',
-'type',
-'kwargAnnotation',
-'TypeAliasSubcategory',
-'ast_exprType',
+	columns = ['ClassDefIdentifier',
+	'classAs_astAttribute',
+	'deprecated',
+	'base',
+	'base_typing_TypeAlias',
+	'match_args',
 
-'typeC',
-'type_field_type',
-'typeStub',
-'typeStub_typing_TypeAlias',
+	'attribute',
+	'attributeKind',
+	'type',
+	'kwargAnnotation',
+	'TypeAliasSubcategory',
+	'ast_exprType',
 
-'classVersionMinorMinimum',
-'match_argsVersionMinorMinimum',
-'attributeVersionMinorMinimum',
-'versionMajor',
-'versionMinor',
-'versionMicro',
+	'typeC',
+	'type_field_type',
+	'typeStub',
+	'typeStub_typing_TypeAlias',
 
-'attributeRename',
-'list2Sequence',
-'defaultValue',
-'keywordArguments',
+	'classVersionMinorMinimum',
+	'match_argsVersionMinorMinimum',
+	'attributeVersionMinorMinimum',
+	'versionMajor',
+	'versionMinor',
+	'versionMicro',
 
-'ast_arg',]
-df=df[cc]
+	'attributeRename',
+	'list2Sequence',
+	'defaultValue',
+	'keywordArguments',
 
-# Update 'classAs_astAttribute' column with formatted value
-df['classAs_astAttribute'] = df['ClassDefIdentifier'].apply(
-    lambda attribute: f"ast.Attribute(ast.Name('ast'), '{attribute}')"
-)
+	'ast_arg',]
 
-# Update 'type' column based on conditions and transformations
-import re
-def transform_type(value, identifiers):
-    # Prepend "ast." to substrings matching 'ClassDefIdentifier', case-sensitive
-    pattern = r'\b(' + '|'.join(re.escape(identifier) for identifier in identifiers) + r')\b'
-    value = re.sub(pattern, r'ast.\1', value)
-    # Replace "Literal[True, False]" with "bool"
-    return value.replace("Literal[True, False]", "bool")
-df['type'] = df.apply(
-    lambda row: transform_type(
-        row['typeStub'] if row['typeStub_typing_TypeAlias'] == 'No' else row['typeC'],
-        df['ClassDefIdentifier'].dropna().unique()
-    ),
-    axis=1
-)
+	# Change the order of columns
+	dataframe = dataframe[columns]
 
-# Update TypeAliasSubcategory based on attributeKind
-df.loc[df['attributeKind'] == 'No', 'TypeAliasSubcategory'] = 'No'
-df.loc[df['attributeKind'] == '_attribute', 'TypeAliasSubcategory'] = 'No'
-df.loc[df['attributeKind'] == '_field', 'TypeAliasSubcategory'] = (
-    df['type']
-    .str.replace('|', 'Or', regex=False)
-    .str.replace('[', '_', regex=False)
-    .str.replace('ast.', '', regex=False)
-    .str.replace(']', '', regex=False)
-    .str.replace(' ', '', regex=False)
-)
+	# Update 'classAs_astAttribute' column with formatted value
+	# NOTE, evaluating eliminating Pandas: easily replaced with astToolkit
+	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].apply(
+		# lambda attribute: f"ast.Attribute(ast.Name('ast'), '{attribute}')"
+		lambda attribute: dump(Make.Attribute(Make.Name('ast'), attribute)) # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+	)
 
-# Update classVersionMinorMinimum based on ClassDefIdentifier
-df['classVersionMinorMinimum'] = df.groupby('ClassDefIdentifier')['versionMinor'].transform(
-    lambda x: -1 if x.min() == 9 else x.min()
-)
-# Update match_argsVersionMinorMinimum based on ClassDefIdentifier and match_args
-df['match_argsVersionMinorMinimum'] = df.groupby(['ClassDefIdentifier', 'match_args'])['versionMinor'].transform(
-    lambda x: -1 if x.min() == 9 else x.min()
-)
-# Update attributeVersionMinorMinimum based on ClassDefIdentifier and attribute
-df['attributeVersionMinorMinimum'] = df.groupby(['ClassDefIdentifier', 'attribute'])['versionMinor'].transform(
-    lambda x: -1 if x.min() == 9 else x.min()
-)
+	# Update 'type' column with standardized formatting and accurate information
+	# NOTE, evaluating eliminating Pandas: Most is easily replaced with astToolkit, some will require a little thinking
+	def transform_type(value: str, identifiers: list[str]) -> str:
+		# Prepend "ast." to substrings matching 'ClassDefIdentifier', case-sensitive
+		pattern = r'\b(' + '|'.join(re.escape(identifier) for identifier in identifiers) + r')\b'
+		value = re.sub(pattern, r'ast.\1', value)
+		# Replace "Literal[True, False]" with "bool"
+		# NOTE, evaluating eliminating Pandas: easily replaced with astToolkit
+		return value.replace("Literal[True, False]", "bool")
+	dataframe['type'] = dataframe.apply(
+		lambda row: transform_type(row['typeStub'] if row['typeStub_typing_TypeAlias'] == 'No' else row['typeC'], dataframe['ClassDefIdentifier'].dropna().unique()), # pyright: ignore[reportUnknownArgumentType, reportArgumentType, reportUnknownLambdaType]
+		axis=1
+	)
 
-"""
+	# Update TypeAliasSubcategory based on attributeKind
+	# NOTE, evaluating eliminating Pandas: the column, 'attributeKind' is one of the few advantages of 
+	# using Pandas because after I set the column, it is very easy to segregate data into three groups
+	# Nevertheless, I can more-or-less recreate the code I used to create the column.
+	dataframe.loc[dataframe['attributeKind'] == 'No', 'TypeAliasSubcategory'] = 'No'
+	dataframe.loc[dataframe['attributeKind'] == '_attribute', 'TypeAliasSubcategory'] = 'No'
+	dataframe.loc[dataframe['attributeKind'] == '_field', 'TypeAliasSubcategory'] = (
+		dataframe['type']
+		.str.replace('|', 'Or', regex=False) # pyright: ignore[reportUnknownMemberType]
+		.str.replace('[', '_', regex=False)
+		.str.replace('ast.', '', regex=False)
+		.str.replace(']', '', regex=False)
+		.str.replace(' ', '', regex=False)
+	)
+
+	# Update classVersionMinorMinimum based on ClassDefIdentifier
+	# NOTE, evaluating eliminating Pandas: 
+	versionMinor_astMinimumSupported = 9
+	dataframe['classVersionMinorMinimum'] = dataframe.groupby('ClassDefIdentifier')['versionMinor'].transform(
+		lambda x: -1 if x.min() == versionMinor_astMinimumSupported else x.min() # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownMemberType]
+	)
+	# Update match_argsVersionMinorMinimum based on ClassDefIdentifier and match_args
+	dataframe['match_argsVersionMinorMinimum'] = dataframe.groupby(['ClassDefIdentifier', 'match_args'])['versionMinor'].transform(
+		lambda x: -1 if x.min() == versionMinor_astMinimumSupported else x.min() # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownMemberType]
+	)
+	# Update attributeVersionMinorMinimum based on ClassDefIdentifier and attribute
+	dataframe['attributeVersionMinorMinimum'] = dataframe.groupby(['ClassDefIdentifier', 'attribute'])['versionMinor'].transform(
+		lambda x: -1 if x.min() == versionMinor_astMinimumSupported else x.min() # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownMemberType]
+	)
+
+	def str2expr(string: str):
+		astModule = ast.parse(string)
+		ast_expr = raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
+		return dump(ast_expr)
+
+	# Update 'ast_exprType' based on 'type' column
+	dataframe['ast_exprType'] = dataframe['type'].apply(lambda x: 'No' if x == 'No' else str2expr(x)) # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+
+	# Update 'ast_arg' column based on conditions
+	dataframe['ast_arg'] = dataframe.apply(
+		lambda row: "No" if row['attribute'] == "No" else dump(Make.arg(row['attributeRename'] if row['attributeRename'] != "No" else row['attribute'], eval(row['ast_exprType']))), # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+		axis=1
+	)	
+
+	dataframe.to_parquet(pathFilenameDataframeAST)
+
+# updateDataframe()
