@@ -2,33 +2,31 @@
 # from ast import Name, Store
 from ast import Name, Store  # pyright: ignore[reportUnusedImport] # noqa: F401
 from astToolFactory import (
-    astName_overload, astName_staticmethod, astName_typing_TypeAlias, 
-    DictionaryAstExprType, DictionaryClassDef, DictionaryMatchArgs,
-    fileExtension, format_hasDOTIdentifier, formatTypeAliasSubcategory,
-    getElementsBe, getElementsClassIsAndAttribute, getElementsDOT,
-    getElementsMake, getElementsTypeAlias, keywordArgumentsIdentifier,
-    listPylanceErrors, pathPackage, pythonVersionMinorMinimum,
-    toolMakeFunctionDefReturnCall_keywords, packageName, getElementsGrab,
-	Call_keywords,
+	astName_overload, astName_staticmethod, astName_typing_TypeAlias,
+	DictionaryAstExprType, DictionaryClassDef, DictionaryMatchArgs, 
+	format_hasDOTIdentifier, formatTypeAliasSubcategory, getElementsBe, getElementsClassIsAndAttribute,
+	getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias, keywordArgumentsIdentifier,
+	listPylanceErrors, pythonVersionMinorMinimum,
+	toolMakeFunctionDefReturnCall_keywords, settingsPackageToManufacture
 )
 from astToolFactory.docstrings import (
-    ClassDefDocstring_ast_operator, ClassDefDocstringBe,
-    ClassDefDocstringClassIsAndAttribute, ClassDefDocstringDOT,
-    ClassDefDocstringGrab, ClassDefDocstringMake, docstringWarning,
+	ClassDefDocstring_ast_operator, ClassDefDocstringBe, ClassDefDocstringClassIsAndAttribute,
+	ClassDefDocstringDOT, ClassDefDocstringGrab, ClassDefDocstringMake, docstringWarning,
 )
 from astToolFactory.factory_annex import (
-    FunctionDef_join,
-    FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf,
-    FunctionDefMake_Attribute, FunctionDefMake_Import, listHandmade_astTypes,
+	FunctionDef_join, FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf,
+	FunctionDefMake_Attribute, FunctionDefMake_Import, listHandmade_astTypes,
 )
-from astToolkit import astModuleToIngredientsFunction, Add, BitOr, Make, parseLogicalPath2astModule, ClassIsAndAttribute, Then, NodeChanger, IfThis, IngredientsModule
+from astToolkit import (
+	Add, astModuleToIngredientsFunction, BitOr, ClassIsAndAttribute, IfThis, IngredientsModule, Make,
+	NodeChanger, parseLogicalPath2astModule, Then,
+)
 from astToolkit.transformationTools import write_astModule
 from collections import defaultdict
 from itertools import chain
 from pathlib import PurePosixPath
 from typing import cast
 from Z0Z_tools import writeStringToHere
-
 import ast
 import autoflake
 
@@ -63,7 +61,7 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 		pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
 	autoflake_additional_imports: list[str] = ['astToolkit']
 	pythonSource = autoflake.fix_code(pythonSource, autoflake_additional_imports, expand_star_imports=False, remove_all_unused_imports=True, remove_duplicate_keys = False, remove_unused_variables = False)
-	pathFilenameModule = PurePosixPath(pathPackage, moduleIdentifier + fileExtension)
+	pathFilenameModule = PurePosixPath(settingsPackageToManufacture.pathPackage, moduleIdentifier + settingsPackageToManufacture.fileExtension)
 	writeStringToHere(pythonSource, pathFilenameModule)
 
 def writeClass(classIdentifier: str, list4ClassDefBody: list[ast.stmt], list4ModuleBody: list[ast.stmt], moduleIdentifierPrefix: str | None = '_tool') -> None:
@@ -88,8 +86,8 @@ def makeTool_dump() -> None:
 	findThis = IfThis.isFunctionDefIdentifier('_format')
 	doThat = lambda node: prepend_ast.visit(node) # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownVariableType]
 	NodeChanger(findThis, doThat).visit(ingredientsFunction.astFunctionDef) # pyright: ignore[reportUnknownArgumentType]
-	pathFilenameModule = PurePosixPath(pathPackage, '_dumpFunctionDef' + fileExtension)
-	write_astModule(IngredientsModule(ingredientsFunction), pathFilenameModule, packageName)
+	pathFilename = PurePosixPath(settingsPackageToManufacture.pathPackage, '_dumpFunctionDef' + settingsPackageToManufacture.fileExtension)
+	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsPackageToManufacture.identifierPackage)
 
 def makeToolBe() -> None:
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringBe]
@@ -399,28 +397,28 @@ def makeToolMake() -> None:
 	# currently `astToolFactory/docstrings.py`. I am sure there are many packages designed to help with this.
 	# TODO overload for Make.keyword:
 	"""
-    @staticmethod
-    @overload
-    def keyword(arg: str | None, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
-    @staticmethod
-    @overload
-    def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...	
+	@staticmethod
+	@overload
+	def keyword(arg: str | None, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
+	@staticmethod
+	@overload
+	def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...	
 	"""
 	""" TODO remaking **keywordArguments
 from typing import TypedDict, Unpack
 
 Put in _astTypes:
 class _attributes(TypedDict, total=False):
-    lineno: int
-    col_offset: int
+	lineno: int
+	col_offset: int
 
 class ast_attributes(_attributes, total=False):
-    end_lineno: int | None
-    end_col_offset: int | None
+	end_lineno: int | None
+	end_col_offset: int | None
 
 class ast_attributes_int(_attributes, total=False):
-    end_lineno: int
-    end_col_offset: int
+	end_lineno: int
+	end_col_offset: int
 
 if column 'keywordArguments' is True, 
 	build a subclassed dictionary and put it in the `Make` module
@@ -430,23 +428,23 @@ if column 'keywordArguments' is True,
 	But, the code complexity is higher in this case and the benefit is better.
 
 class ast_attributes_kind(ast_attributes, total=False):
-    kind: str | None
+	kind: str | None
 
 This:	
-    def Break(lineno: int, col_offset: int, end_lineno: int | None=None, end_col_offset: int | None=None) -> ast.Break:
+	def Break(lineno: int, col_offset: int, end_lineno: int | None=None, end_col_offset: int | None=None) -> ast.Break:
 causes `Arguments missing for parameters "lineno", "col_offset"`
 	
-    def Break(**keywordArguments: Unpack[ast_attributes]) -> ast.Break:
-        return ast.Break(**keywordArguments)
+	def Break(**keywordArguments: Unpack[ast_attributes]) -> ast.Break:
+		return ast.Break(**keywordArguments)
 
-    def Constant(value: Any, **keywordArguments: ast_attributes_kind) -> ast.Constant:
-        return ast.Constant(value=value, kind=None, **keywordArguments)
+	def Constant(value: Any, **keywordArguments: ast_attributes_kind) -> ast.Constant:
+		return ast.Constant(value=value, kind=None, **keywordArguments)
 
-    def Dict(keys: Sequence[ast.expr | None]=[None], values: Sequence[ast.expr]=[], **keywordArguments: ast_attributes) -> ast.Dict:
-        return ast.Dict(keys=list(keys), values=list(values), **keywordArguments)
+	def Dict(keys: Sequence[ast.expr | None]=[None], values: Sequence[ast.expr]=[], **keywordArguments: ast_attributes) -> ast.Dict:
+		return ast.Dict(keys=list(keys), values=list(values), **keywordArguments)
 
-    def pattern(**keywordArguments: Unpack[ast_attributes_int]) -> ast.pattern:
-        return ast.pattern(**keywordArguments)
+	def pattern(**keywordArguments: Unpack[ast_attributes_int]) -> ast.pattern:
+		return ast.pattern(**keywordArguments)
 	
 	"""
 	def create_ast_stmt(dictionaryMethodElements: DictionaryMatchArgs) -> ast.FunctionDef:

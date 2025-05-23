@@ -1,11 +1,9 @@
 from astToolFactory._theSSOT import (
-	fileExtension as fileExtension,
 	keywordArgumentsIdentifier as keywordArgumentsIdentifier,
 	listPylanceErrors as listPylanceErrors,
-	packageName as packageName,
-	pathFilenameDataframeAST as pathFilenameDataframeAST,
-	pathPackage as pathPackage,
 	pythonVersionMinorMinimum as pythonVersionMinorMinimum,
+    settingsPackage as settingsPackage,
+    settingsPackageToManufacture as settingsPackageToManufacture,
 )
 
 from astToolFactory._snippets import (
@@ -19,7 +17,6 @@ from astToolFactory._snippets import (
 )
 
 from astToolFactory.datacenter import (
-    Call_keywords as Call_keywords,
 	DictionaryAstExprType as DictionaryAstExprType,
 	DictionaryClassDef as DictionaryClassDef,
 	DictionaryMatchArgs as DictionaryMatchArgs,
@@ -29,4 +26,5 @@ from astToolFactory.datacenter import (
 	getElementsGrab as getElementsGrab,
 	getElementsMake as getElementsMake,
 	getElementsTypeAlias as getElementsTypeAlias,
+	pathFilenameDataframeAST as pathFilenameDataframeAST,
 	)

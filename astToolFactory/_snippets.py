@@ -1,8 +1,7 @@
+from astToolFactory import keywordArgumentsIdentifier
 from astToolkit import Make
 from typing import cast
 import ast
-
-from astToolFactory import keywordArgumentsIdentifier
 
 astName_overload = Make.Name('overload')
 astName_staticmethod = Make.Name('staticmethod')

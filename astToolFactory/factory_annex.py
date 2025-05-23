@@ -1,6 +1,5 @@
-from astToolFactory.docstrings import (
-	FunctionDefDocstring_join, FunctionDefMake_AttributeDocstring,
-)
+"""Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
+from astToolFactory.docstrings import FunctionDefDocstring_join, FunctionDefMake_AttributeDocstring
 from astToolkit import BitOr, Make
 import ast
 
