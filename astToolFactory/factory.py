@@ -2,12 +2,11 @@
 # from ast import Name, Store
 from ast import Name, Store  # pyright: ignore[reportUnusedImport] # noqa: F401
 from astToolFactory import (
-	astName_overload, astName_staticmethod, astName_typing_TypeAlias,
-	DictionaryAstExprType, DictionaryClassDef, DictionaryMatchArgs, 
-	format_hasDOTIdentifier, formatTypeAliasSubcategory, getElementsBe, getElementsClassIsAndAttribute,
-	getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias, keywordArgumentsIdentifier,
-	listPylanceErrors, pythonVersionMinorMinimum,
-	toolMakeFunctionDefReturnCall_keywords, settingsPackageToManufacture
+	astName_overload, astName_staticmethod, astName_typing_TypeAlias, DictionaryAstExprType,
+	DictionaryClassDef, DictionaryGrabElements, DictionaryMatchArgs, DictionaryTypeAliasAttribute,
+	getElementsBe, getElementsClassIsAndAttribute, getElementsDOT, getElementsGrab, getElementsMake,
+	getElementsTypeAlias, keywordArgumentsIdentifier, listPylanceErrors, pythonVersionMinorMinimum,
+	settingsPackageToManufacture, toolMakeFunctionDefReturnCall_keywords,
 )
 from astToolFactory.docstrings import (
 	ClassDefDocstring_ast_operator, ClassDefDocstringBe, ClassDefDocstringClassIsAndAttribute,
@@ -147,10 +146,10 @@ def makeToolClassIsAndAttribute() -> None:
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringClassIsAndAttribute]
 
 	dictionaryToolElements: dict[str, dict[str, DictionaryAstExprType]] = getElementsClassIsAndAttribute()
-
 	# Process each attribute group to generate overloaded methods and implementations
 	for attribute, dictionaryTypeAliasSubcategory in dictionaryToolElements.items():
-		hasDOTIdentifier: str = format_hasDOTIdentifier.format(attribute=attribute)
+		# Get the pre-computed hasDOTIdentifier from the first entry
+		hasDOTIdentifier: str = next(iter(dictionaryTypeAliasSubcategory.values()))['TypeAlias_hasDOTIdentifier']
 		hasDOTTypeAliasName_Load: ast.Name = ast.Name(hasDOTIdentifier)
 		orelse: list[ast.stmt] = []
 
@@ -160,7 +159,7 @@ def makeToolClassIsAndAttribute() -> None:
 		if len(dictionaryTypeAliasSubcategory) > 1:
 			for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
 				versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
-				astNameTypeAlias: ast.Name = ast.Name(formatTypeAliasSubcategory.format(hasDOTIdentifier=hasDOTIdentifier, TypeAliasSubcategory=TypeAliasSubcategory))
+				astNameTypeAlias: ast.Name = ast.Name(TypeAliasSubcategory)
 				body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
 				decorator_list=[astName_staticmethod, astName_overload]
 				returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Attribute(ast.Name('ast'), attr='AST')]), BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])]))
@@ -270,10 +269,10 @@ def makeToolDOT() -> None:
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringDOT]
 
 	dictionaryToolElements: dict[str, dict[str, DictionaryAstExprType]] = getElementsDOT()
-
 	# Process each attribute group to generate overloaded methods and implementations
 	for attribute, dictionaryTypeAliasSubcategory in dictionaryToolElements.items():
-		hasDOTIdentifier: str = format_hasDOTIdentifier.format(attribute=attribute)
+		# Get the pre-computed hasDOTIdentifier from the first entry
+		hasDOTIdentifier: str = next(iter(dictionaryTypeAliasSubcategory.values()))['TypeAlias_hasDOTIdentifier']
 		hasDOTTypeAliasName_Load: ast.Name = ast.Name(hasDOTIdentifier)
 		orelse: list[ast.stmt] = []
 
@@ -282,7 +281,7 @@ def makeToolDOT() -> None:
 		if len(dictionaryTypeAliasSubcategory) > 1:
 			for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
 				versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
-				astNameTypeAlias: ast.Name = ast.Name(formatTypeAliasSubcategory.format(hasDOTIdentifier=hasDOTIdentifier, TypeAliasSubcategory=TypeAliasSubcategory))
+				astNameTypeAlias: ast.Name = ast.Name(TypeAliasSubcategory)
 				body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
 				decorator_list=[astName_staticmethod, astName_overload]
 				returns = cast(ast.Attribute, eval(dictionary_type_ast_expr['type_ast_expr']))
@@ -358,12 +357,12 @@ def makeToolGrab() -> None:
 				)
 		assert ast_stmt is not None, "Coding by brinkmanship!"
 		return ast_stmt
-
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringGrab, FunctionDefGrab_andDoAllOf]
 	dictionaryToolElements = getElementsGrab()
 
-	for attribute, listTypesByVersion in dictionaryToolElements.items():
-		hasDOTIdentifier: str = format_hasDOTIdentifier.format(attribute=attribute)
+	for attribute, grabElements in dictionaryToolElements.items():
+		hasDOTIdentifier: str = grabElements['TypeAlias_hasDOTIdentifier']
+		listTypesByVersion = grabElements['listTypesByVersion']
 		hasDOTTypeAliasName_Load: ast.Name = ast.Name(hasDOTIdentifier)
 		ast_stmtAtPythonMinimum: list[ast.stmt] = []
 
@@ -642,11 +641,11 @@ def make_astTypes() -> None:
 			, *listHandmade_astTypes
 			]
 		)
+	dictionaryToolElements: dict[str, DictionaryTypeAliasAttribute] = getElementsTypeAlias()
 
-	dictionaryToolElements: dict[str, dict[str, dict[int, list[str]]]] = getElementsTypeAlias()
-
-	for attribute, dictionaryTypeAliasSubcategory in dictionaryToolElements.items():
-		hasDOTIdentifier: str = format_hasDOTIdentifier.format(attribute=attribute)
+	for attribute, attributeData in dictionaryToolElements.items(): # pyright: ignore[reportUnusedVariable]
+		hasDOTIdentifier: str = attributeData['TypeAlias_hasDOTIdentifier']
+		dictionaryTypeAliasSubcategory = attributeData['subcategories']
 		hasDOTTypeAliasName_Store: ast.Name = ast.Name(hasDOTIdentifier, ast.Store())
 
 		if len(dictionaryTypeAliasSubcategory) == 1:
@@ -658,7 +657,7 @@ def make_astTypes() -> None:
 			# process I'm already using to build the TypeAlias.
 			attributeDictionaryVersions: dict[int, list[str]] = defaultdict(list)
 			for TypeAliasSubcategory, dictionaryVersions in dictionaryTypeAliasSubcategory.items():
-				astNameTypeAlias: ast.Name = ast.Name(formatTypeAliasSubcategory.format(hasDOTIdentifier=hasDOTIdentifier, TypeAliasSubcategory=TypeAliasSubcategory), ast.Store())
+				astNameTypeAlias: ast.Name = ast.Name(TypeAliasSubcategory, ast.Store())
 				if any(dictionaryVersions.keys()) <= pythonVersionMinorMinimum:
 					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(ast.dump(astNameTypeAlias))
 				else:

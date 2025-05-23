@@ -19,7 +19,9 @@ from astToolFactory._snippets import (
 from astToolFactory.datacenter import (
 	DictionaryAstExprType as DictionaryAstExprType,
 	DictionaryClassDef as DictionaryClassDef,
+	DictionaryGrabElements as DictionaryGrabElements,
 	DictionaryMatchArgs as DictionaryMatchArgs,
+	DictionaryTypeAliasAttribute as DictionaryTypeAliasAttribute,
 	getElementsBe as getElementsBe,
 	getElementsClassIsAndAttribute as getElementsClassIsAndAttribute,
 	getElementsDOT as getElementsDOT,
