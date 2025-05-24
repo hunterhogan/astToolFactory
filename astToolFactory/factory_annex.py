@@ -32,7 +32,7 @@ FunctionDef_operatorJoinMethod = Make.FunctionDef('operatorJoinMethod'
 		, Make.If(Make.UnaryOp(ast.Not(), Make.Name('listExpressions'))
 			, body=[Make.Expr(Make.Call(Make.Attribute(Make.Name('listExpressions'), 'append')
 								, args=[Make.Call(Make.Attribute(Make.Name('Make'), 'Constant')
-										, args=[Make.Constant(value='')], list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))])]))])
+										, args=[Make.Constant('')], list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))])]))])
 		, Make.AnnAssign(Make.Name('expressionsJoined', ast.Store()), annotation=Make.Attribute(Make.Name('ast'), 'expr'), value=Make.Subscript(Make.Name('listExpressions'), slice=Make.Constant(0)))
 		, Make.For(Make.Name('expression', ast.Store()), iter=Make.Subscript(Make.Name('listExpressions'), slice=Make.Slice(lower=Make.Constant(1)))
 			, body=[Make.Assign([Make.Name('expressionsJoined', ast.Store())]
@@ -64,7 +64,7 @@ FunctionDefMake_Attribute: ast.FunctionDef = Make.FunctionDef('Attribute'
 		, Make.Assign([Make.Name('buffaloBuffalo', ast.Store())], value=Make.Call(Make.Name('addDOTattribute')
 																				, args=[Make.Name('value'), Make.Subscript(Make.Name('attribute'), slice=Make.Constant(0)), Make.Name('context')]
 																				, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))
-		, Make.For(target=Make.Name('identifier', ast.Store()), iter=Make.Subscript(Make.Name('attribute'), slice=Make.Slice(lower=Make.Constant(1), upper=Make.Constant(None)))
+		, Make.For(Make.Name('identifier', ast.Store()), iter=Make.Subscript(Make.Name('attribute'), slice=Make.Slice(lower=Make.Constant(1), upper=Make.Constant(None)))
 			, body=[Make.Assign([Make.Name('buffaloBuffalo', ast.Store())], value=Make.Call(Make.Name('addDOTattribute')
 																				, args=[Make.Name('buffaloBuffalo'), Make.Name('identifier'), Make.Name('context')]
 																				, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))])
@@ -91,14 +91,23 @@ listHandmade_astTypes: list[ast.stmt] = [
 	Make.Assign([Make.Name('木', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), args=[Make.Constant('木')], list_keyword=[Make.keyword('bound', value=Make.Attribute(Make.Name('ast'), 'AST')), Make.keyword('covariant', value=Make.Constant(True))])),
 	Make.Assign([Make.Name('个', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), args=[Make.Constant('个')], list_keyword=[Make.keyword('covariant', value=Make.Constant(True))])),
 	Make.Assign([Make.Name('个return', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), args=[Make.Constant('个return')], list_keyword=[Make.keyword('covariant', value=Make.Constant(True))])),
-	Make.ClassDef('ast_attributes'
-	, bases=[Make.Name('TypedDict')]
-	, list_keyword=[Make.keyword('total', Make.Constant(False))]
-	, body=[Make.AnnAssign(Make.Name('lineno', ast.Store()), annotation=Make.Name('int'))
+	Make.ClassDef('_attributes', bases=[Make.Name('TypedDict')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
+		, body=[Make.AnnAssign(Make.Name('lineno', ast.Store()), annotation=Make.Name('int'))
 			, Make.AnnAssign(Make.Name('col_offset', ast.Store()), annotation=Make.Name('int'))
-			, Make.AnnAssign(Make.Name('end_lineno', ast.Store()), annotation=BitOr().join([Make.Name('int'), Make.Constant(None)]))
+		]
+	),
+	Make.ClassDef('ast_attributes', bases=[Make.Name('_attributes')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
+		, body=[Make.AnnAssign(Make.Name('end_lineno', ast.Store()), annotation=BitOr().join([Make.Name('int'), Make.Constant(None)]))
 			, Make.AnnAssign(Make.Name('end_col_offset', ast.Store()), annotation=BitOr().join([Make.Name('int'), Make.Constant(None)]))
 		]
+	),
+	Make.ClassDef('ast_attributes_int', bases=[Make.Name('_attributes')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
+		, body=[Make.AnnAssign(Make.Name('end_lineno', ast.Store()), annotation=Make.Name('int'))
+			, Make.AnnAssign(Make.Name('end_col_offset', ast.Store()), annotation=Make.Name('int'))
+		]
+	),
+	Make.ClassDef('ast_attributes_type_comment', bases=[Make.Name('ast_attributes')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
+		, body=[Make.AnnAssign(Make.Name('type_comment', ast.Store()), annotation=BitOr().join([Make.Name('str'), Make.Constant(None)]))]
 	),
 ]
 

@@ -51,20 +51,3 @@ Z0Z_PackageToManufactureIdentifier: str = 'astToolkit'
 Z0Z_PackageToManufacturePath = Z0Z_pathRoot / Z0Z_PackageToManufactureIdentifier / Z0Z_PackageToManufactureIdentifier
 settingsPackageToManufacture = PackageSettings(identifierPackage=Z0Z_PackageToManufactureIdentifier, pathPackage=Z0Z_PackageToManufacturePath)
 
-# ww='''
-# @classmethod
-# def join(cls, expressions: Iterable[ast.expr], **keywordArguments: Unpack[_Attributes]) -> ast.expr:
-# 	return operatorJoinMethod(cls, expressions, **keywordArguments)
-# '''
-
-# print(ast.dump(ast.parse(ww, type_comments=True), indent=None))
-# import ast
-# from ast import *  # noqa: E402, F403
-# ruff: noqa: F405
-
-# rr='''
-# Assign(lineno=0,col_offset=0, [ast.Name('key', ast.Store())], value=Lambda(args=arguments(args=[arg('x', annotation=ast.Attribute(ast.Name('pandas'), 'Series'))]), body=Call(ast.Attribute(Attribute(ast.Name('x'), attr='str'), attr='lower'))))
-# '''
-
-# print(ast.unparse(ast.Module([eval(rr)])))
-
