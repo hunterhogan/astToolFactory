@@ -164,8 +164,8 @@ def makeToolClassIsAndAttribute() -> None:
 				decorator_list=[astName_staticmethod, astName_overload]
 				returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Attribute(ast.Name('ast'), attr='AST')]), BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])]))
 
-				Z0Z_TypeWithoutNone = eval(dictionary_type_ast_expr['type_ast_expr'])
-				annotation = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([Z0Z_TypeWithoutNone]), ast.Name('bool')]))
+				typeSansNone_ast_expr = eval(dictionary_type_ast_expr['typeSansNone_ast_expr'])
+				annotation = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([typeSansNone_ast_expr]), ast.Name('bool')]))
 
 				list_type_ast_expr.append(annotation)
 				dictionaryVersionsTypeAliasSubcategory[dictionary_type_ast_expr['versionMinorMinimumAttribute']].append(annotation)
@@ -210,8 +210,8 @@ def makeToolClassIsAndAttribute() -> None:
 			if list_type_ast_expr:
 				annotation = BitOr.join(list_type_ast_expr)
 			else:
-				Z0Z_TypeWithoutNone = eval(dictionary_type_ast_expr['type_ast_expr'])
-				annotation = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([Z0Z_TypeWithoutNone]), ast.Name('bool')]))
+				typeSansNone_ast_expr = eval(dictionary_type_ast_expr['typeSansNone_ast_expr'])
+				annotation = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([typeSansNone_ast_expr]), ast.Name('bool')]))
 
 			workhorseReturnValue: ast.BoolOp = ast.BoolOp(op=ast.And(), values=[ast.Call(ast.Name('isinstance'), args=[ast.Name('node'), ast.Name('astClass')], keywords=[])])
 			for node in ast.walk(annotation):
@@ -284,7 +284,7 @@ def makeToolDOT() -> None:
 				astNameTypeAlias: ast.Name = ast.Name(TypeAliasSubcategory)
 				body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
 				decorator_list=[astName_staticmethod, astName_overload]
-				returns = cast(ast.Attribute, eval(dictionary_type_ast_expr['type_ast_expr']))
+				returns = cast(ast.Attribute, eval(dictionary_type_ast_expr['typeSansNone_ast_expr']))
 				list_type_ast_expr.append(returns)
 				dictionaryVersionsTypeAliasSubcategory[dictionary_type_ast_expr['versionMinorMinimumAttribute']].append(returns)
 				list4ClassDefBody.append(create_ast_stmt())
@@ -305,7 +305,7 @@ def makeToolDOT() -> None:
 			if list_type_ast_expr:
 				returns = BitOr.join(list_type_ast_expr)
 			else:
-				returns = cast(ast.Attribute, eval(dictionary_type_ast_expr['type_ast_expr']))
+				returns = cast(ast.Attribute, eval(dictionary_type_ast_expr['typeSansNone_ast_expr']))
 			list4ClassDefBody.append(create_ast_stmt())
 			break
 
@@ -404,20 +404,6 @@ def makeToolMake() -> None:
 	def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...	
 	"""
 	""" TODO remaking **keywordArguments
-from typing import TypedDict, Unpack
-
-Put in _astTypes:
-class _attributes(TypedDict, total=False):
-	lineno: int
-	col_offset: int
-
-class ast_attributes(_attributes, total=False):
-	end_lineno: int | None
-	end_col_offset: int | None
-
-class ast_attributes_int(_attributes, total=False):
-	end_lineno: int
-	end_col_offset: int
 
 if column 'keywordArguments' is True, 
 	build a subclassed dictionary and put it in the `Make` module
@@ -429,10 +415,6 @@ if column 'keywordArguments' is True,
 class ast_attributes_kind(ast_attributes, total=False):
 	kind: str | None
 
-This:	
-	def Break(lineno: int, col_offset: int, end_lineno: int | None=None, end_col_offset: int | None=None) -> ast.Break:
-causes `Arguments missing for parameters "lineno", "col_offset"`
-	
 	def Break(**keywordArguments: Unpack[ast_attributes]) -> ast.Break:
 		return ast.Break(**keywordArguments)
 
