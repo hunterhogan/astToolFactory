@@ -88,6 +88,21 @@ listHandmade_astTypes: list[ast.stmt] = [
 	Make.AnnAssign(Make.Name('intORstr', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('Any')),
 	Make.AnnAssign(Make.Name('intORstrORtype_params', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('Any')),
 	Make.AnnAssign(Make.Name('intORtype_params', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('Any')),
+	Make.AnnAssign(Make.Name('_Scalar', ast.Store())
+				, annotation=Make.Name('typing_TypeAlias')
+				, value=BitOr().join(Make.Name(identifier) 
+									for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float'
+													, 'int', 'None', 'NotImplementedType', 'range', 'str'
+													]
+								)
+	),
+	Make.AnnAssign(Make.Name('ScalarOrContainerOfScalar', ast.Store()), annotation=Make.Name('typing_TypeAlias')
+					, value=BitOr().join([Make.Name('_Scalar')
+										, Make.Subscript(Make.Name('frozenset'), Make.Constant('ScalarOrContainerOfScalar'))
+										, Make.Subscript(Make.Name('tuple'), Make.Tuple([Make.Constant('ScalarOrContainerOfScalar'), Make.Constant(...)]))
+									]
+								)
+	),
 	Make.Assign([Make.Name('木', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), args=[Make.Constant('木')], list_keyword=[Make.keyword('bound', value=Make.Attribute(Make.Name('ast'), 'AST')), Make.keyword('covariant', value=Make.Constant(True))])),
 	Make.Assign([Make.Name('个', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), args=[Make.Constant('个')], list_keyword=[Make.keyword('covariant', value=Make.Constant(True))])),
 	Make.Assign([Make.Name('个return', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), args=[Make.Constant('个return')], list_keyword=[Make.keyword('covariant', value=Make.Constant(True))])),
@@ -110,4 +125,3 @@ listHandmade_astTypes: list[ast.stmt] = [
 		, body=[Make.AnnAssign(Make.Name('type_comment', ast.Store()), annotation=BitOr().join([Make.Name('str'), Make.Constant(None)]))]
 	),
 ]
-

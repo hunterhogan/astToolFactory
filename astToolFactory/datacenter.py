@@ -294,6 +294,12 @@ def updateDataframe():
 		axis=1
 	)
 
+	# Update column 'type' for class `ast.Constant`, attribute `value`
+	dataframe.loc[
+		(dataframe['ClassDefIdentifier'] == 'Constant') & (dataframe['attribute'] == 'value'),
+		'type'
+	] = "ScalarOrContainerOfScalar"
+
 	dataframe['versionMinorMinimum_match_args'] = numpy.where(
 		dataframe.groupby(['ClassDefIdentifier', 'match_args'])['versionMinorData'].transform('min') == versionMinor_astMinimumSupported, 
 		-1, 

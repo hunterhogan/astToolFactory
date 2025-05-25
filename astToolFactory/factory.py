@@ -394,6 +394,7 @@ def makeToolMake() -> None:
 	# But, maybe include the ast docstring to contrast the lack of documentation in ast.
 	# For real, `dictionaryDocstringMake`, keynames = `ClassDefIdentifier`, values = docstrings created in a dedicated module,
 	# currently `astToolFactory/docstrings.py`. I am sure there are many packages designed to help with this.
+
 	# TODO overload for Make.keyword:
 	"""
 	@staticmethod
@@ -403,8 +404,19 @@ def makeToolMake() -> None:
 	@overload
 	def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...	
 	"""
-	""" TODO remaking **keywordArguments
 
+	# TODO overload for Make.TypeAlias:
+	"""
+    @staticmethod
+    @overload
+    def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param] = [], *, value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
+    @staticmethod
+    @overload
+    def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param], value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...	
+	"""
+
+	# TODO remaking **keywordArguments
+	""" 
 if column 'keywordArguments' is True, 
 	build a subclassed dictionary and put it in the `Make` module
 	make sure to not add 14 identical subclassed dictionaries
@@ -490,7 +502,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 		assert ast_stmt is not None, "Coding by brinkmanship!"
 		return ast_stmt
 
-	list_aliasIdentifier: list[str] = []
+	list_aliasIdentifier: list[str] = ['ScalarOrContainerOfScalar']
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringMake]
 	setKeywordArgumentsAnnotationTypeAlias: set[str] = set()
 
@@ -617,6 +629,7 @@ def make_astTypes() -> None:
 
 	astModule = Make.Module(
 		body=[docstringWarning
+			, Make.ImportFrom('types', [Make.alias('EllipsisType'), Make.alias('NotImplementedType')])
 			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('TypeAlias', 'typing_TypeAlias'), Make.alias('TypedDict'), Make.alias('TypeVar', 'typing_TypeVar')])
 			, Make.Import('ast')
 			, Make.Import('sys')
