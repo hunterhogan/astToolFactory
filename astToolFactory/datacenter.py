@@ -150,18 +150,22 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 	'ClassDefIdentifier',
 	'classAs_astAttribute',
 	'list2Sequence',
-	'kwargAnnotation',
 	'versionMinorMinimumClass',
 	'versionMinorMinimum_match_args',
-	'listStr4FunctionDef_args', 
-	'listDefaults', 
+	'hashableListStr4FunctionDef_args',
+	'hashableListDefaults',
+	'hashableListTupleCall_keywords',
+	'kwargAnnotation',
+	'listStr4FunctionDef_args',
+	'listDefaults',
 	'listTupleCall_keywords',
 	]
 	listElements = listElementsHARDCODED
+	columnsHashable: slice = slice(0, 9)
 
 	dataframe = getDataframe(includeDeprecated, versionMinorMaximum)
 	dataframe = dataframe[dataframe['attribute'] != "No"]
-	dataframe = dataframe[listElements].drop_duplicates(subset=listElements[0:6])
+	# dataframe = dataframe[listElements].drop_duplicates(subset=listElements[columnsHashable])
 
 	def compute_kwarg(group: pandas.Series) -> str:  # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
 		list_kwargAnnotation = sorted(value for value in group.unique() if value != "No")
@@ -169,14 +173,12 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 	dataframe['kwarg'] = (dataframe.groupby(['ClassDefIdentifier', 'versionMinorMinimum_match_args'])['kwargAnnotation'].transform(compute_kwarg))  # pyright: ignore[reportUnknownArgumentType]
 
 	dataframe = dataframe.drop(columns=['kwargAnnotation'])
+	listElements.insert(listElements.index('kwargAnnotation'), 'kwarg')
+	listElements.remove('kwargAnnotation')
 
-	dataframeHashable = dataframe.copy()
-	columnsLists = ['listStr4FunctionDef_args', 'listDefaults', 'listTupleCall_keywords']
-	dataframeHashable[columnsLists] = dataframeHashable[columnsLists].astype(str)
-	dataframeHashable = dataframeHashable.drop_duplicates()
-	indicesToKeep = dataframeHashable.index
-
-	dataframe = dataframe.loc[indicesToKeep]
+	# TODO keep='last' is necessary for ast.FunctionDef.type_params when `pythonVersionMinorMinimum` == 12
+	# But I don't think that should be necessary, so investigate why it is.
+	dataframe = dataframe.drop_duplicates(subset=listElements[columnsHashable], keep='last')
 
 	def idkHowToNameThingsOrFollowInstructions(groupbyClassVersion: pandas.DataFrame) -> dict[int, DictionaryMatchArgs]:
 		return {
@@ -394,7 +396,7 @@ def updateDataframe():
 				if matching_row.iloc[0]['keywordArguments']:
 					keywordValue = cast(str, matching_row.iloc[0]['defaultValue'])
 				else:
-					ast_arg = cast(str, matching_row.iloc[0]['ast_arg'])
+					ast_arg = cast(str, matching_row.iloc[0]['ast_arg'])					
 					if matching_row.iloc[0]['attributeRename'] != "No":
 						keywordValue = cast(str, matching_row.iloc[0]['attributeRename'])
 					keywordValue = f"ast.Name('{keywordValue}')"
@@ -402,7 +404,7 @@ def updateDataframe():
 						keywordValue = f"ast.Call(ast.Name('list'), args=[{keywordValue}])"
 					if matching_row.iloc[0]['defaultValue'] != "No":
 						listDefaults.append(cast(str, matching_row.iloc[0]['defaultValue'])) 
-					listStr4FunctionDef_args.append(ast_arg) 
+					listStr4FunctionDef_args.append(ast_arg)
 			listTupleCall_keywords.append((argIdentifier, keywordValue)) 
 		return pandas.Series([listStr4FunctionDef_args, listDefaults, listTupleCall_keywords], index=[ 
 			'listStr4FunctionDef_args',
@@ -410,6 +412,12 @@ def updateDataframe():
 			'listTupleCall_keywords'
 		])
 	dataframe[['listStr4FunctionDef_args', 'listDefaults', 'listTupleCall_keywords']] = dataframe.apply(compute_listFunctionDef_args, axis=1)  # pyright: ignore[reportUnknownArgumentType]
+
+	# Create hashable versions of list columns for duplicate detection
+	dataframe['hashableListStr4FunctionDef_args'] = dataframe['listStr4FunctionDef_args'].astype(str)
+	dataframe['hashableListDefaults'] = dataframe['listDefaults'].astype(str)
+	dataframe['hashableListTupleCall_keywords'] = dataframe['listTupleCall_keywords'].astype(str)
+
 	dataframe.to_pickle(pathFilenameDataframeAST)
 
 # if __name__ == "__main__":

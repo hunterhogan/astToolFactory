@@ -16,7 +16,7 @@ classifiers = [
 	"Programming Language :: Python :: 3.13",
 	"Typing :: Typed",]
 dependencies = [
-	"astToolkit==0.3.4",
+	"astToolkit==0.3.5",
 	"mypy",
 	"pandas",
 	"pandas-stubs",
