@@ -1,6 +1,3 @@
-# NOTE you need these because of `eval()`
-# from ast import Name, Store
-from ast import Name, Store  # pyright: ignore[reportUnusedImport] # noqa: F401
 from astToolFactory import (
 	astName_overload, astName_staticmethod, astName_typing_TypeAlias, Dictionary_type_ast_expr,
 	DictionaryClassDef, DictionaryGrabElements, DictionaryMatchArgs, DictionaryTypeAliasAttribute,
@@ -18,7 +15,7 @@ from astToolFactory.factory_annex import (
 )
 from astToolkit import (
 	Add, astModuleToIngredientsFunction, BitOr, ClassIsAndAttribute, IfThis, IngredientsModule, Make,
-	NodeChanger, parseLogicalPath2astModule, Then,
+	NodeChanger, parseLogicalPath2astModule, Then, LedgerOfImports, dump
 )
 from astToolkit.transformationTools import write_astModule
 from collections import defaultdict
@@ -75,6 +72,103 @@ def writeClass(classIdentifier: str, list4ClassDefBody: list[ast.stmt], list4Mod
 				]
 			)
 		, moduleIdentifier)
+
+def make_astTypes() -> None:
+	def append_ast_stmtTypeAlias() -> None:
+		ast_stmt = None
+		if len(dictionaryVersions) == 1:
+			# This branch is the simplest case: one TypeAlias for the attribute for all Python versions
+			for versionMinorData, listClassAs_astAttribute in dictionaryVersions.items():
+				ast_stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]))
+				if versionMinorData > pythonVersionMinorMinimum:
+					ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
+								, ops=[ast.GtE()]
+								, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
+								, body=[ast_stmt])
+		else:
+			listVersionsMinor = sorted(dictionaryVersions.keys(), reverse=False)
+			if len(listVersionsMinor) > 2:
+				raise NotImplementedError
+			ast_stmtAtPythonMinimum = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in dictionaryVersions[min(listVersionsMinor)]]))
+			ast_stmtAbovePythonMinimum = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in dictionaryVersions[max(listVersionsMinor)]]))
+
+			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
+						, ops=[ast.GtE()]
+						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(max(listVersionsMinor))])])
+						, body=[ast_stmtAbovePythonMinimum]
+						, orelse=[ast_stmtAtPythonMinimum])
+		assert ast_stmt is not None, "Coding by brinkmanship!"
+		list4ModuleBody.append(ast_stmt)
+
+	list4ModuleBody: list[ast.stmt] = []
+	ledgerOfImports = LedgerOfImports(
+		Make.Module([
+			Make.ImportFrom('types', [Make.alias('EllipsisType'), Make.alias('NotImplementedType')])
+			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('TypeAlias', 'typing_TypeAlias'), Make.alias('TypedDict'), Make.alias('TypeVar', 'typing_TypeVar')])
+			, Make.Import('ast')
+			, Make.Import('sys')
+		])
+	)
+	dictionaryToolElements: dict[str, DictionaryTypeAliasAttribute] = getElementsTypeAlias()
+
+	for attribute, attributeData in dictionaryToolElements.items(): # pyright: ignore[reportUnusedVariable]
+		hasDOTIdentifier: str = attributeData['TypeAlias_hasDOTIdentifier']
+		dictionaryTypeAliasSubcategory = attributeData['subcategories']
+		hasDOTTypeAliasName_Store: ast.Name = Make.Name(hasDOTIdentifier, ast.Store())
+
+		if len(dictionaryTypeAliasSubcategory) == 1:
+			astNameTypeAlias = hasDOTTypeAliasName_Store
+			for TypeAliasSubcategory, dictionaryVersions in dictionaryTypeAliasSubcategory.items():
+				append_ast_stmtTypeAlias()
+		else:
+			# This defaultdict builds a dictionary to mimic the process I'm already using to build the TypeAlias.
+			attributeDictionaryVersions: dict[int, list[str]] = defaultdict(list)
+			for TypeAliasSubcategory, dictionaryVersions in dictionaryTypeAliasSubcategory.items():
+				astNameTypeAlias: ast.Name = Make.Name(TypeAliasSubcategory)
+				if any(dictionaryVersions.keys()) <= pythonVersionMinorMinimum:
+					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(dump(astNameTypeAlias))
+				else:
+					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(dump(astNameTypeAlias))
+					attributeDictionaryVersions[max(dictionaryVersions.keys())].append(dump(astNameTypeAlias))
+				append_ast_stmtTypeAlias()
+			astNameTypeAlias = hasDOTTypeAliasName_Store
+			dictionaryVersions: dict[int, list[str]] = attributeDictionaryVersions
+			append_ast_stmtTypeAlias()
+
+	astModule = Make.Module(
+		body=[docstringWarning
+			, ledgerOfImports.makeList_ast()
+			, *listHandmade_astTypes
+			, *list4ModuleBody
+			]
+		)
+
+	writeModule(astModule, '_astTypes')
+
+def makeJoinClassmethod() -> None:
+	list_aliasIdentifier: list[str] = ['ast_attributes', 'Make']
+	list4ModuleBody: list[ast.stmt] = [
+		FunctionDef_operatorJoinMethod
+		]
+
+	listOperatorIdentifiers: list[str] = ['Add', 'BitAnd', 'BitOr', 'BitXor', 'Div', 'FloorDiv', 'LShift', 'MatMult', 'Mod', 'Mult', 'Pow', 'RShift', 'Sub',]
+
+	for identifier in listOperatorIdentifiers:
+		list4ModuleBody.append(Make.ClassDef(identifier
+			, bases=[Make.Attribute(Make.Name('ast'), identifier)]
+			, body=[ClassDefDocstring_ast_operator, FunctionDef_join]
+		))
+
+	astModule = Make.Module([docstringWarning
+		, Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
+		, Make.ImportFrom('collections.abc', [Make.alias('Iterable')])
+		, Make.ImportFrom('typing', [Make.alias('TypedDict'), Make.alias('Unpack')])
+		, Make.Import('ast')
+		, Make.Import('sys')
+		, *list4ModuleBody
+	])
+
+	writeModule(astModule, '_joinClassmethod')
 
 def makeTool_dump() -> None:
 	ingredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule('ast'), 'dump')
@@ -571,99 +665,6 @@ class ast_attributes_kind(ast_attributes, total=False):
 		]
 
 	writeClass('Make', list4ClassDefBody, list4ModuleBody)
-
-def makeJoinClassmethod() -> None:
-	list_aliasIdentifier: list[str] = ['ast_attributes', 'Make']
-	list4ModuleBody: list[ast.stmt] = [
-		FunctionDef_operatorJoinMethod
-		]
-
-	listOperatorIdentifiers: list[str] = ['Add', 'BitAnd', 'BitOr', 'BitXor', 'Div', 'FloorDiv', 'LShift', 'MatMult', 'Mod', 'Mult', 'Pow', 'RShift', 'Sub',]
-
-	for identifier in listOperatorIdentifiers:
-		list4ModuleBody.append(Make.ClassDef(identifier
-			, bases=[Make.Attribute(Make.Name('ast'), identifier)]
-			, body=[ClassDefDocstring_ast_operator, FunctionDef_join]
-		))
-
-	astModule = Make.Module([docstringWarning
-		, Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
-		, Make.ImportFrom('collections.abc', [Make.alias('Iterable')])
-		, Make.ImportFrom('typing', [Make.alias('TypedDict'), Make.alias('Unpack')])
-		, Make.Import('ast')
-		, Make.Import('sys')
-		, *list4ModuleBody
-	])
-
-	writeModule(astModule, '_joinClassmethod')
-
-def make_astTypes() -> None:
-	def append_ast_stmtTypeAlias() -> None:
-		ast_stmt = None
-		if len(dictionaryVersions) == 1:
-			# This branch is the simplest case: one TypeAlias for the attribute for all Python versions
-			for versionMinorData, listClassAs_astAttribute in dictionaryVersions.items():
-				ast_stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]))
-				if versionMinorData > pythonVersionMinorMinimum:
-					ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
-								, ops=[ast.GtE()]
-								, comparators=[ast.Tuple([ast.Constant(3),
-										ast.Constant(versionMinorData)])])
-								, body=[ast_stmt])
-		else:
-			# There is a smart way to do the following, but I don't see it right now. NOTE datacenter has the responsibility to aggregate all values <= pythonVersionMinorMinimum.
-			listVersionsMinor = sorted(dictionaryVersions.keys(), reverse=False)
-			if len(listVersionsMinor) > 2:
-				raise NotImplementedError
-			ast_stmtAtPythonMinimum = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in dictionaryVersions[min(listVersionsMinor)]]))
-			ast_stmtAbovePythonMinimum = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in sorted(chain(*dictionaryVersions.values()), key=str.lower)]))
-
-			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
-						, ops=[ast.GtE()]
-						, comparators=[ast.Tuple([ast.Constant(3),
-								ast.Constant(max(listVersionsMinor))])])
-						, body=[ast_stmtAbovePythonMinimum]
-						, orelse=[ast_stmtAtPythonMinimum])
-		assert ast_stmt is not None, "Coding by brinkmanship!"
-		astModule.body.append(ast_stmt)
-
-	astModule = Make.Module(
-		body=[docstringWarning
-			, Make.ImportFrom('types', [Make.alias('EllipsisType'), Make.alias('NotImplementedType')])
-			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('TypeAlias', 'typing_TypeAlias'), Make.alias('TypedDict'), Make.alias('TypeVar', 'typing_TypeVar')])
-			, Make.Import('ast')
-			, Make.Import('sys')
-			, *listHandmade_astTypes
-			]
-		)
-	dictionaryToolElements: dict[str, DictionaryTypeAliasAttribute] = getElementsTypeAlias()
-
-	for attribute, attributeData in dictionaryToolElements.items(): # pyright: ignore[reportUnusedVariable]
-		hasDOTIdentifier: str = attributeData['TypeAlias_hasDOTIdentifier']
-		dictionaryTypeAliasSubcategory = attributeData['subcategories']
-		hasDOTTypeAliasName_Store: ast.Name = ast.Name(hasDOTIdentifier, ast.Store())
-
-		if len(dictionaryTypeAliasSubcategory) == 1:
-			astNameTypeAlias = hasDOTTypeAliasName_Store
-			for TypeAliasSubcategory, dictionaryVersions in dictionaryTypeAliasSubcategory.items():
-				append_ast_stmtTypeAlias()
-		else:
-			# See?! Sometimes, I can see a smart way to do things. This defaultdict builds a dictionary to mimic the
-			# process I'm already using to build the TypeAlias.
-			attributeDictionaryVersions: dict[int, list[str]] = defaultdict(list)
-			for TypeAliasSubcategory, dictionaryVersions in dictionaryTypeAliasSubcategory.items():
-				astNameTypeAlias: ast.Name = ast.Name(TypeAliasSubcategory, ast.Store())
-				if any(dictionaryVersions.keys()) <= pythonVersionMinorMinimum:
-					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(ast.dump(astNameTypeAlias))
-				else:
-					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(ast.dump(astNameTypeAlias))
-					attributeDictionaryVersions[max(dictionaryVersions.keys())].append(ast.dump(astNameTypeAlias))
-				append_ast_stmtTypeAlias()
-			astNameTypeAlias = hasDOTTypeAliasName_Store
-			dictionaryVersions: dict[int, list[str]] = attributeDictionaryVersions
-			append_ast_stmtTypeAlias()
-
-	writeModule(astModule, '_astTypes')
 
 if __name__ == "__main__":
 	make_astTypes()

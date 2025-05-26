@@ -213,6 +213,47 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 
 	dataframe = dataframe[listElements].drop_duplicates()
 
+	def compute_combined_versions(group: pandas.DataFrame) -> dict[int, list[str]]:
+		"""Combine and aggregate version data using pandas vectorized operations."""
+		# Sort case-insensitive using pandas operations
+		group = group.copy()
+		group['classAs_astAttribute_lower'] = group['classAs_astAttribute'].str.lower()
+		group = group.sort_values('classAs_astAttribute_lower')
+		
+		# Group by version and aggregate
+		versionData: dict[int, list[str]] = {}
+		for versionMinorMinimumAttribute, version_group in group.groupby('versionMinorMinimumAttribute'):
+			versionData[int(versionMinorMinimumAttribute)] = sorted(
+				version_group['classAs_astAttribute'].unique(), 
+				key=str.lower
+			)
+		
+		# Handle version aggregation logic similar to getElementsMake pattern
+		if len(versionData) > 1:
+			# Combine all versions for the aggregated case (equivalent to chain(*dictionaryVersions.values()))
+			all_versions = sorted(versionData.keys())
+			max_version = max(all_versions)
+			
+			# Create combined version data for versions above minimum
+			combined_classes = []
+			for version_classes in versionData.values():
+				combined_classes.extend(version_classes)
+			
+			# Sort combined classes case-insensitive (equivalent to sorted(chain(*dictionaryVersions.values()), key=str.lower))
+			combined_sorted = sorted(set(combined_classes), key=str.lower)
+			
+			# Keep original minimum version data separate
+			min_version = min(all_versions)
+			if min_version <= pythonVersionMinorMinimum:
+				# Create aggregate structure: minimum version gets its own data, 
+				# higher versions get combined data
+				aggregated_data = {min_version: versionData[min_version]}
+				if max_version > pythonVersionMinorMinimum:
+					aggregated_data[max_version] = combined_sorted
+				return aggregated_data
+		
+		return versionData
+
 	dictionaryAttribute: dict[str, DictionaryTypeAliasAttribute] = {}
 	
 	# First group by attribute to get the TypeAlias_hasDOTIdentifier
@@ -220,13 +261,9 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 		TypeAlias_hasDOTIdentifier = str(attribute_group['TypeAlias_hasDOTIdentifier'].iloc[0]) # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
 		subcategories: dict[str, dict[int, list[str]]] = {}
 		
-		# Then group by TypeAlias_hasDOTSubcategory and versionMinorMinimumAttribute
-		grouped = attribute_group.groupby(['TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute'])
-		for (typeAlias_hasDOTSubcategory, versionMinorMinimumAttribute), group in grouped:
-			listClassDefIdentifier = sorted(group['classAs_astAttribute'].unique(), key=lambda x: str(x).lower())
-			if typeAlias_hasDOTSubcategory not in subcategories:
-				subcategories[typeAlias_hasDOTSubcategory] = {}
-			subcategories[typeAlias_hasDOTSubcategory][int(versionMinorMinimumAttribute)] = listClassDefIdentifier
+		# Then group by TypeAlias_hasDOTSubcategory 
+		for typeAlias_hasDOTSubcategory, subcategory_group in attribute_group.groupby('TypeAlias_hasDOTSubcategory'):
+			subcategories[str(typeAlias_hasDOTSubcategory)] = compute_combined_versions(subcategory_group)
 		
 		dictionaryAttribute[str(attribute)] = DictionaryTypeAliasAttribute(
 			TypeAlias_hasDOTIdentifier=TypeAlias_hasDOTIdentifier,
@@ -238,7 +275,7 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 def updateDataframe():
 	dataframe = getDataframe(includeDeprecated=True, versionMinorMaximum=None, modifyVersionMinorMinimum=False)
 
-	_columns = ['ClassDefIdentifier',
+	_columns: list[str] = ['ClassDefIdentifier',
 	'classAs_astAttribute',
 	'deprecated',
 	'base',
