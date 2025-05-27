@@ -1,9 +1,9 @@
 from astToolFactory import (
 	astName_overload, astName_staticmethod, astName_typing_TypeAlias, Dictionary_type_ast_expr,
-	DictionaryClassDef, DictionaryGrabElements, DictionaryMatchArgs, DictionaryTypeAliasAttribute,
-	getElementsBe, getElementsClassIsAndAttribute, getElementsDOT, getElementsGrab, getElementsMake,
-	getElementsTypeAlias, keywordArgumentsIdentifier, listPylanceErrors, pythonVersionMinorMinimum,
-	settingsPackageToManufacture, toolMakeFunctionDefReturnCall_keywords,
+	DictionaryClassDef, DictionaryMatchArgs, getElementsBe, getElementsClassIsAndAttribute,
+	getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias, keywordArgumentsIdentifier,
+	listPylanceErrors, pythonVersionMinorMinimum, settingsPackageToManufacture,
+	toolMakeFunctionDefReturnCall_keywords,
 )
 from astToolFactory.docstrings import (
 	ClassDefDocstring_ast_operator, ClassDefDocstringBe, ClassDefDocstringClassIsAndAttribute,
@@ -14,8 +14,8 @@ from astToolFactory.factory_annex import (
 	FunctionDefMake_Attribute, FunctionDefMake_Import, listHandmade_astTypes,
 )
 from astToolkit import (
-	Add, astModuleToIngredientsFunction, BitOr, ClassIsAndAttribute, IfThis, IngredientsModule, Make,
-	NodeChanger, parseLogicalPath2astModule, Then, LedgerOfImports, dump
+	Add, astModuleToIngredientsFunction, BitOr, ClassIsAndAttribute, IfThis, IngredientsFunction,
+	IngredientsModule, LedgerOfImports, Make, NodeChanger, parseLogicalPath2astModule,
 )
 from astToolkit.transformationTools import write_astModule
 from collections import defaultdict
@@ -74,32 +74,6 @@ def writeClass(classIdentifier: str, list4ClassDefBody: list[ast.stmt], list4Mod
 		, moduleIdentifier)
 
 def make_astTypes() -> None:
-	def append_ast_stmtTypeAlias() -> None:
-		ast_stmt = None
-		if len(dictionaryVersions) == 1:
-			# This branch is the simplest case: one TypeAlias for the attribute for all Python versions
-			for versionMinorData, listClassAs_astAttribute in dictionaryVersions.items():
-				ast_stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]))
-				if versionMinorData > pythonVersionMinorMinimum:
-					ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
-								, ops=[ast.GtE()]
-								, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
-								, body=[ast_stmt])
-		else:
-			listVersionsMinor = sorted(dictionaryVersions.keys(), reverse=False)
-			if len(listVersionsMinor) > 2:
-				raise NotImplementedError
-			ast_stmtAtPythonMinimum = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in dictionaryVersions[min(listVersionsMinor)]]))
-			ast_stmtAbovePythonMinimum = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in dictionaryVersions[max(listVersionsMinor)]]))
-
-			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
-						, ops=[ast.GtE()]
-						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(max(listVersionsMinor))])])
-						, body=[ast_stmtAbovePythonMinimum]
-						, orelse=[ast_stmtAtPythonMinimum])
-		assert ast_stmt is not None, "Coding by brinkmanship!"
-		list4ModuleBody.append(ast_stmt)
-
 	list4ModuleBody: list[ast.stmt] = []
 	ledgerOfImports = LedgerOfImports(
 		Make.Module([
@@ -109,35 +83,28 @@ def make_astTypes() -> None:
 			, Make.Import('sys')
 		])
 	)
-	dictionaryToolElements: dict[str, DictionaryTypeAliasAttribute] = getElementsTypeAlias()
 
-	for attribute, attributeData in dictionaryToolElements.items(): # pyright: ignore[reportUnusedVariable]
-		hasDOTIdentifier: str = attributeData['TypeAlias_hasDOTIdentifier']
-		dictionaryTypeAliasSubcategory = attributeData['subcategories']
-		hasDOTTypeAliasName_Store: ast.Name = Make.Name(hasDOTIdentifier, ast.Store())
+	containerElementsTypeAlias = getElementsTypeAlias()
 
-		if len(dictionaryTypeAliasSubcategory) == 1:
-			astNameTypeAlias = hasDOTTypeAliasName_Store
-			for TypeAliasSubcategory, dictionaryVersions in dictionaryTypeAliasSubcategory.items():
-				append_ast_stmtTypeAlias()
-		else:
-			# This defaultdict builds a dictionary to mimic the process I'm already using to build the TypeAlias.
-			attributeDictionaryVersions: dict[int, list[str]] = defaultdict(list)
-			for TypeAliasSubcategory, dictionaryVersions in dictionaryTypeAliasSubcategory.items():
-				astNameTypeAlias: ast.Name = Make.Name(TypeAliasSubcategory)
-				if any(dictionaryVersions.keys()) <= pythonVersionMinorMinimum:
-					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(dump(astNameTypeAlias))
-				else:
-					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(dump(astNameTypeAlias))
-					attributeDictionaryVersions[max(dictionaryVersions.keys())].append(dump(astNameTypeAlias))
-				append_ast_stmtTypeAlias()
-			astNameTypeAlias = hasDOTTypeAliasName_Store
-			dictionaryVersions: dict[int, list[str]] = attributeDictionaryVersions
-			append_ast_stmtTypeAlias()
+	for versionMinorData, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute, orElseListClassAs_astAttribute in containerElementsTypeAlias:
+		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier, ast.Store())
+		ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]))
+		if versionMinorData > pythonVersionMinorMinimum:
+			orElse: list[ast.stmt]= []
+			if orElseListClassAs_astAttribute:
+				orElse = [Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in orElseListClassAs_astAttribute]))]
+			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
+							, ops=[ast.GtE()]
+							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
+						, body=[ast_stmt]
+						, orElse=orElse
+						)
+		list4ModuleBody.append(ast_stmt)
 
-	astModule = Make.Module(
-		body=[docstringWarning
-			, ledgerOfImports.makeList_ast()
+	astModule: ast.Module = Make.Module(
+		body=[
+			docstringWarning
+			, *ledgerOfImports.makeList_ast()
 			, *listHandmade_astTypes
 			, *list4ModuleBody
 			]
@@ -171,8 +138,8 @@ def makeJoinClassmethod() -> None:
 	writeModule(astModule, '_joinClassmethod')
 
 def makeTool_dump() -> None:
-	ingredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule('ast'), 'dump')
-	astConstant = Make.Constant('ast.')
+	ingredientsFunction: IngredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule('ast'), 'dump')
+	astConstant: ast.Constant = Make.Constant('ast.')
 	findThis = ClassIsAndAttribute.valueIs(ast.Attribute, IfThis.isAttributeNamespaceIdentifier('node', '__class__'))
 	doThat = lambda node: Add.join([astConstant, cast(ast.expr, node)]) # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
 	prepend_ast = NodeChanger(findThis, doThat) # pyright: ignore[reportUnknownArgumentType]
@@ -188,12 +155,12 @@ def makeToolBe() -> None:
 	listDictionaryToolElements = getElementsBe()
 
 	for dictionaryToolElements in listDictionaryToolElements:
-		ClassDefIdentifier = dictionaryToolElements['ClassDefIdentifier']
-		classAs_astAttribute = eval(dictionaryToolElements['classAs_astAttribute'])
-		versionMinorMinimumClass = dictionaryToolElements['versionMinorMinimumClass']
+		ClassDefIdentifier: str = dictionaryToolElements['ClassDefIdentifier']
+		classAs_astAttribute: ast.expr = eval(dictionaryToolElements['classAs_astAttribute'])
+		versionMinorMinimumClass: int = dictionaryToolElements['versionMinorMinimumClass']
 
-		ast_stmt = Make.FunctionDef(ClassDefIdentifier
-			, Make.arguments(args=[Make.arg('node', annotation=Make.Name('ast.AST'))])
+		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
+			, args=Make.arguments(args=[Make.arg('node', annotation=Make.Name('ast.AST'))])
 			, body=[Make.Return(Make.Call(Make.Name('isinstance'), args=[Make.Name('node'), classAs_astAttribute]))]
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name('TypeGuard'), slice=classAs_astAttribute))
@@ -201,8 +168,7 @@ def makeToolBe() -> None:
 		if versionMinorMinimumClass > pythonVersionMinorMinimum:
 			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
-						, comparators=[ast.Tuple([ast.Constant(3)
-												, ast.Constant(versionMinorMinimumClass)])])
+						, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorMinimumClass)])])
 					, body=[ast_stmt]
 				)
 
@@ -596,7 +562,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 		assert ast_stmt is not None, "Coding by brinkmanship!"
 		return ast_stmt
 
-	list_aliasIdentifier: list[str] = ['ScalarOrContainerOfScalar']
+	list_aliasIdentifier: list[str] = ['ConstantValueType']
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringMake]
 	setKeywordArgumentsAnnotationTypeAlias: set[str] = set()
 
@@ -613,7 +579,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 			list4ClassDefBody.append(ast_stmt)
 			list_aliasIdentifier.append('str_nameDOTname')
 			continue
-		classAs_astAttribute = cast(ast.expr, eval(dictionaryClassDef['classAs_astAttribute']))
+		classAs_astAttribute: ast.expr = eval(dictionaryClassDef['classAs_astAttribute'])
 		dictionaryAllClassVersions: dict[int, dict[int, DictionaryMatchArgs]] = dictionaryClassDef['versionMinorMinimumClass']
 
 		if len(dictionaryAllClassVersions) == 1:

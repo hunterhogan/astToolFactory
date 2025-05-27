@@ -88,24 +88,21 @@ listHandmade_astTypes: list[ast.stmt] = [
 	Make.AnnAssign(Make.Name('intORstr', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('Any')),
 	Make.AnnAssign(Make.Name('intORstrORtype_params', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('Any')),
 	Make.AnnAssign(Make.Name('intORtype_params', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('Any')),
-	Make.AnnAssign(Make.Name('_Scalar', ast.Store())
+    # _ConstantValue: typing_extensions.TypeAlias = str | bytes | bool | int | float | complex | None | EllipsisType
+    # If I automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include `bytes` or `range`.
+    # And, I would change the identifier to `ast_ConstantValue`.
+	Make.AnnAssign(Make.Name('ConstantValueType', ast.Store())
 				, annotation=Make.Name('typing_TypeAlias')
 				, value=BitOr().join(Make.Name(identifier) 
 									for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float'
-													, 'int', 'None', 'NotImplementedType', 'range', 'str'
+													, 'int', 'None', 'range', 'str'
 													]
-								)
-	),
-	Make.AnnAssign(Make.Name('ScalarOrContainerOfScalar', ast.Store()), annotation=Make.Name('typing_TypeAlias')
-					, value=BitOr().join([Make.Name('_Scalar')
-										, Make.Subscript(Make.Name('frozenset'), Make.Constant('ScalarOrContainerOfScalar'))
-										, Make.Subscript(Make.Name('tuple'), Make.Tuple([Make.Constant('ScalarOrContainerOfScalar'), Make.Constant(...)]))
-									]
 								)
 	),
 	Make.Assign([Make.Name('木', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), args=[Make.Constant('木')], list_keyword=[Make.keyword('bound', value=Make.Attribute(Make.Name('ast'), 'AST')), Make.keyword('covariant', value=Make.Constant(True))])),
 	Make.Assign([Make.Name('个', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), args=[Make.Constant('个')], list_keyword=[Make.keyword('covariant', value=Make.Constant(True))])),
 	Make.Assign([Make.Name('个return', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), args=[Make.Constant('个return')], list_keyword=[Make.keyword('covariant', value=Make.Constant(True))])),
+	# TODO, a non-trivial automatic transformation from ast.pyi `TypedDict._Attributes` and `TypeVar._EndPositionT` to the following:
 	Make.ClassDef('_attributes', bases=[Make.Name('TypedDict')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
 		, body=[Make.AnnAssign(Make.Name('lineno', ast.Store()), annotation=Make.Name('int'))
 			, Make.AnnAssign(Make.Name('col_offset', ast.Store()), annotation=Make.Name('int'))
