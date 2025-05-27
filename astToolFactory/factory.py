@@ -141,11 +141,13 @@ def makeTool_dump() -> None:
 	ingredientsFunction: IngredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule('ast'), 'dump')
 	astConstant: ast.Constant = Make.Constant('ast.')
 	findThis = ClassIsAndAttribute.valueIs(ast.Attribute, IfThis.isAttributeNamespaceIdentifier('node', '__class__'))
-	doThat = lambda node: Add.join([astConstant, cast(ast.expr, node)]) # pyright: ignore[reportUnknownLambdaType, reportUnknownVariableType]
-	prepend_ast = NodeChanger(findThis, doThat) # pyright: ignore[reportUnknownArgumentType]
+	def doThatPrepend(node: ast.Attribute) -> ast.AST:
+		return Add.join([astConstant, cast(ast.expr, node)])
+	prepend_ast = NodeChanger(findThis, doThatPrepend)
 	findThis = IfThis.isFunctionDefIdentifier('_format')
-	doThat = lambda node: prepend_ast.visit(node) # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType, reportUnknownVariableType]
-	NodeChanger(findThis, doThat).visit(ingredientsFunction.astFunctionDef) # pyright: ignore[reportUnknownArgumentType]
+	def doThat(node: ast.FunctionDef) -> ast.AST:
+		return prepend_ast.visit(node) 
+	NodeChanger(findThis, doThat).visit(ingredientsFunction.astFunctionDef)
 	pathFilename = PurePosixPath(settingsPackageToManufacture.pathPackage, '_dumpFunctionDef' + settingsPackageToManufacture.fileExtension)
 	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsPackageToManufacture.identifierPackage)
 

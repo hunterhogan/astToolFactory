@@ -21,7 +21,7 @@ from astToolFactory.datacenter import (
 	DictionaryClassDef as DictionaryClassDef,
 	DictionaryGrabElements as DictionaryGrabElements,
 	DictionaryMatchArgs as DictionaryMatchArgs,
-	DictionaryTypeAliasAttribute as DictionaryTypeAliasAttribute,
+	DictionaryTypeAliasElements as DictionaryTypeAliasElements,
 	getElementsBe as getElementsBe,
 	getElementsClassIsAndAttribute as getElementsClassIsAndAttribute,
 	getElementsDOT as getElementsDOT,

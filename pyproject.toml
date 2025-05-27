@@ -1,66 +1,67 @@
+[project]
+name = "astToolFactory"
+version = "0.0.1"
+description = ""
+readme = { file = "README.md", content-type = "text/markdown" }
+requires-python = ">=3.12"
+license = { 'text' = "CC-BY-NC-4.0" }
+authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
+keywords = []
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Environment :: Console",
+  "Intended Audience :: Other Audience",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Typing :: Typed",
+]
+urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
+dependencies = [
+  "Z0Z_tools",
+  "astToolkit==0.3.6",
+  "pandas",
+  "pyarrow",
+  "tomli",
+]
+optional-dependencies = { testing = [
+  "mypy",
+  "pytest",
+  "pytest-cov",
+  "pytest-xdist",
+  "pyupgrade",
+] }
+
 [build-system]
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
-[project]
-authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
-classifiers = [
-	"Development Status :: 3 - Alpha",
-	"Environment :: Console",
-	"Intended Audience :: Other Audience",
-	"Natural Language :: English",
-	"Operating System :: OS Independent",
-	"Programming Language :: Python",
-	"Programming Language :: Python :: 3",
-	"Programming Language :: Python :: 3.12",
-	"Programming Language :: Python :: 3.13",
-	"Typing :: Typed",]
-dependencies = [
-	"astToolkit==0.3.5",
-	"mypy",
-	"pandas",
-	"pandas-stubs",
-	"pyarrow",
-	"pyupgrade",
-	"tomli",
-	"Z0Z_tools",]
-description = ""
-keywords = []
-license = { 'text' = "CC-BY-NC-4.0" }
-name = "astToolFactory"
-optional-dependencies = { testing = [
-	"mypy",
-	"pytest",
-	"pytest-cov",
-	"pytest-xdist",
-	"pyupgrade",] }
-readme = { file = "README.md", content-type = "text/markdown" }
-requires-python = ">=3.12"
-urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
-version = "0.0.1"
-
 [tool.coverage]
 report = { exclude_lines = [
-	"if TYPE_CHECKING:",
-	"if __name__ == \"__main__\":",
+  "if TYPE_CHECKING:",
+  "if __name__ == \"__main__\":",
 ], ignore_errors = false }
 run = { branch = true, concurrency = [
-	"multiprocessing",
+  "multiprocessing",
 ], data_file = "tests/coverage/.coverage", omit = [
-	"tests/*",
+  "tests/*",
 ], parallel = true, source = [
-	".",] }
+  ".",
+] }
 xml = { output = "tests/coverage/coverage.xml" }
 
 [tool.pytest.ini_options]
-log_auto_indent = true
 addopts = ["--color=auto"]
+log_auto_indent = true
 testpaths = ["tests"]
 
 [tool.setuptools]
 package-data = { "*" = ["py.typed"] }
-packages = { find = {} }
+packages = { find = {  } }
 
 [tool.updateCitation]
-filenameCitationDOTcff = 'CITATION.cff'
+filenameCitationDOTcff = "CITATION.cff"
 pathFilenameCitationSSOT = "citations/CITATION.cff"
