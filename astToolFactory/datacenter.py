@@ -78,7 +78,7 @@ def getDataframe(includeDeprecated: bool, versionMinorMaximum: int | None, modif
 
 	return dataframe
 
-def getElementsBe(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> Sequence[DictionaryToolBe]:
+def getElementsBe(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[DictionaryToolBe]:
 	listElementsHARDCODED: list[str] = ['ClassDefIdentifier', 'classAs_astAttribute', 'versionMinorMinimumClass']
 	listElements: list[str] = listElementsHARDCODED
 
@@ -89,7 +89,31 @@ def getElementsBe(includeDeprecated: bool = False, versionMinorMaximum: int | No
 	return dataframe.to_dict(orient='records')   # pyright: ignore[reportReturnType]
 
 def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, dict[str, Dictionary_type_ast_expr]]:
-	return getElementsDOT(includeDeprecated, versionMinorMaximum)
+	listElementsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'typeSansNone_ast_expr', 'TypeAlias_hasDOTIdentifier']
+	listElements: list[str] = listElementsHARDCODED
+
+	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
+		.query("attributeKind == '_field'")
+		.pipe(_sortCaseInsensitive, listElements[0:2])
+		[listElements]
+		.drop_duplicates()
+		.sort_values('versionMinorMinimumAttribute')
+		.drop_duplicates(subset=['attribute', 'TypeAlias_hasDOTSubcategory'], keep='first')
+	)
+
+	dictionaryElements: dict[str, dict[str, Dictionary_type_ast_expr]] = {}
+	for attributeTarget, groupAttribute in dataframe.groupby('attribute'):
+		dictionaryElements[str(attributeTarget)] = {}
+		for subcategoryTarget, groupSubcategory in groupAttribute.groupby('TypeAlias_hasDOTSubcategory'):
+			rowData = groupSubcategory.iloc[0]
+			dictionaryElements[str(attributeTarget)][str(subcategoryTarget)] = Dictionary_type_ast_expr(
+				versionMinorMinimumAttribute=int(cast(int, rowData['versionMinorMinimumAttribute'])),
+				type_ast_expr=str(cast(str, rowData['type_ast_expr'])),
+				typeSansNone_ast_expr=str(cast(str, rowData['typeSansNone_ast_expr'])),
+				TypeAlias_hasDOTIdentifier=str(cast(str, rowData['TypeAlias_hasDOTIdentifier']))
+			)
+	
+	return dictionaryElements
 
 def getElementsDOT(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, dict[str, Dictionary_type_ast_expr]]:
 	listElementsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'typeSansNone_ast_expr', 'TypeAlias_hasDOTIdentifier']
@@ -104,20 +128,19 @@ def getElementsDOT(includeDeprecated: bool = False, versionMinorMaximum: int | N
 		.drop_duplicates(subset=['attribute', 'TypeAlias_hasDOTSubcategory'], keep='first')
 	)
 
-	# Convert to nested dictionary structure directly
-	dictionaryResult: dict[str, dict[str, Dictionary_type_ast_expr]] = {}
+	dictionaryElements: dict[str, dict[str, Dictionary_type_ast_expr]] = {}
 	for attributeTarget, groupAttribute in dataframe.groupby('attribute'):
-		dictionaryResult[str(attributeTarget)] = {}
+		dictionaryElements[str(attributeTarget)] = {}
 		for subcategoryTarget, groupSubcategory in groupAttribute.groupby('TypeAlias_hasDOTSubcategory'):
 			rowData = groupSubcategory.iloc[0] # pyright: ignore[reportUnknownVariableType]
-			dictionaryResult[str(attributeTarget)][str(subcategoryTarget)] = Dictionary_type_ast_expr(
+			dictionaryElements[str(attributeTarget)][str(subcategoryTarget)] = Dictionary_type_ast_expr(
 				versionMinorMinimumAttribute=int(cast(int, rowData['versionMinorMinimumAttribute'])),
 				type_ast_expr=str(cast(str, rowData['type_ast_expr'])),
 				typeSansNone_ast_expr=str(cast(str, rowData['typeSansNone_ast_expr'])),
 				TypeAlias_hasDOTIdentifier=str(cast(str, rowData['TypeAlias_hasDOTIdentifier']))
 			)
 	
-	return dictionaryResult
+	return dictionaryElements
 
 def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Version | None = None) -> dict[Attribute, DictionaryGrabElements]:
 	listElementsHARDCODED: list[str] = ['attribute', 'versionMinorMinimumAttribute', 'type_ast_expr', 'typeSansNone_ast_expr', 'TypeAlias_hasDOTIdentifier']
