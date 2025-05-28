@@ -81,7 +81,7 @@ FunctionDefMake_Import: ast.FunctionDef = Make.FunctionDef('Import'
 					, kwarg=Make.arg('keywordArguments', annotation=Make.Name('int'))
 					, defaults=[Make.Constant(None)])
 	, body=[Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), 'Import')
-							, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias'), args=[Make.Name('moduleWithLogicalPath'), Make.Name('asName')])]))
+							, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias'), args=[Make.Name('dotModule'), Make.Name('asName')])]))
 										, Make.keyword(None, value=Make.Name('keywordArguments'))]))]
 	, decorator_list=[Make.Name('staticmethod')]
 	, returns=Make.Attribute(Make.Name('ast'), 'Import'))

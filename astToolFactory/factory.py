@@ -184,134 +184,72 @@ def makeToolBe() -> None:
 	writeClass('Be', list4ClassDefBody, list4ModuleBody)
 
 def makeToolClassIsAndAttribute() -> None:
-	"""
-	versionMinorMinimumAttribute: int
-	attribute: str
-	TypeAlias_hasDOTIdentifier: str, from column 'TypeAlias_hasDOTIdentifier' or 'TypeAlias_hasDOTSubcategory'
-	astName_overload: bool, 'TypeAlias_hasDOTIdentifier' is not overload and 'TypeAlias_hasDOTSubcategory' is overload
-	list_ast_expr: list[str], from column 'typeSansNone_ast_expr' or unique values from aggregated column 'typeSansNone_ast_expr'
-	attributeIsNotNone: bool, if any of the aggregated column 'type_ast_expr' includes None. if yes, factory adds `node.attribute is not None`.
-	for versionMinorMinimumAttribute, attribute, TypeAlias_hasDOTIdentifier, astName_overload, list_ast_expr, attributeIsNotNone in getElementsClassIsAndAttribute():
-	"""
-	def create_ast_stmt() -> ast.If | ast.FunctionDef:
+	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringClassIsAndAttribute]
+	# TODO refactor for versions; i.e., `orElse`
+	for versionMinorMinimumAttribute, attribute, TypeAlias_hasDOTIdentifier, isOverload, list_ast_expr, attributeIsNotNone in getElementsClassIsAndAttribute():
+		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier)
+		# annotation: ast.expr = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([BitOr.join([eval(expr) for expr in list_ast_expr])]), ast.Name('bool')]))
+		annotation: ast.expr = (
+			BitOr.join([
+				ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([eval(ast_expr)]), ast.Name('bool')]))
+				  for ast_expr in list_ast_expr
+				  ])
+		)
+		workhorseReturnValue: ast.BoolOp = ast.BoolOp(op=ast.And(), values=[
+			ast.Call(ast.Name('isinstance'), args=[ast.Name('node'), ast.Name('astClass')], keywords=[])])
+		
+		if attributeIsNotNone:
+			workhorseReturnValue.values.append(ast.Compare(ast.Attribute(ast.Name('node'), attribute)
+											, ops=[ast.IsNot()]
+											, comparators=[ast.Constant(None)]))
+		
+		workhorseReturnValue.values.append(ast.Call(ast.Name('attributeCondition'), args=[ast.Attribute(ast.Name('node'), attribute)]))
+		
+		buffaloBuffalo_workhorse_returnsAnnotation: ast.expr = BitOr.join([ast.Subscript(ast.Name('TypeGuard'), slice=astNameTypeAlias), ast.Name('bool')])
+		
+		if isOverload:
+			body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
+		else:
+			body = [
+				Make.FunctionDef('workhorse',
+					args=Make.arguments(args=[Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
+					, body=[Make.Return(workhorseReturnValue)]
+					, returns=buffaloBuffalo_workhorse_returnsAnnotation)
+				, Make.Return(Make.Name('workhorse'))
+			]
+		
+		decorator_list: list[ast.expr] = [astName_staticmethod]
+		if isOverload:
+			decorator_list.append(astName_overload)
+		
+		returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
+		
 		ast_stmt: ast.stmt = Make.FunctionDef(attribute + 'Is'
-				, args=Make.arguments(args=[Make.arg('astClass', annotation=Make.Subscript(Make.Name('type'), astNameTypeAlias))
-						, Make.arg('attributeCondition', annotation=annotation)
-					])
-					, body=body
-					, decorator_list=decorator_list
-					, returns=returns
+			, args=Make.arguments(args=[
+				Make.arg('astClass', annotation=Make.Subscript(Make.Name('type'), astNameTypeAlias)),
+				Make.arg('attributeCondition', annotation=annotation)
+			])
+			, body=body
+			, decorator_list=decorator_list
+			, returns=returns
 		)
 
 		if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
-			ast_stmt = ast.If(ast.Compare(left=ast.Attribute(ast.Name('sys'), 'version_info')
-								, ops=[ast.GtE()]
-								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorMinimumAttribute)])])
-							, body=[ast_stmt]
-							, orelse=orElse
-			)
-
-		return ast_stmt
-
-	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringClassIsAndAttribute]
-	dictionaryToolElements: dict[str, dict[str, Dictionary_type_ast_expr]] = getElementsClassIsAndAttribute()
-	# Process each attribute group to generate overloaded methods and implementations
-	for attribute, dictionaryTypeAliasSubcategory in dictionaryToolElements.items():
-		# Get the pre-computed hasDOTIdentifier from the first entry
-		hasDOTIdentifier: str = next(iter(dictionaryTypeAliasSubcategory.values()))['TypeAlias_hasDOTIdentifier']
-		hasDOTTypeAliasName_Load: ast.Name = ast.Name(hasDOTIdentifier)
-		orElse: list[ast.stmt] = []
-
-		list_type_ast_expr: list[ast.expr] = []
-		dictionaryVersionsTypeAliasSubcategory: dict[int, list[ast.expr]] = defaultdict(list)
-
-		if len(dictionaryTypeAliasSubcategory) > 1:
-			for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
-				versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
-				astNameTypeAlias: ast.Name = ast.Name(TypeAliasSubcategory)
-				body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
-				decorator_list=[astName_staticmethod, astName_overload]
-				returns=ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([ast.Attribute(ast.Name('ast'), attr='AST')]), BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])]))
-
-				typeSansNone_ast_expr: ast.expr = eval(dictionary_type_ast_expr['typeSansNone_ast_expr'])
-				annotation = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([typeSansNone_ast_expr]), ast.Name('bool')]))
-
-				list_type_ast_expr.append(annotation)
-				dictionaryVersionsTypeAliasSubcategory[dictionary_type_ast_expr['versionMinorMinimumAttribute']].append(annotation)
-
-				list4ClassDefBody.append(create_ast_stmt())
-
-		astNameTypeAlias = hasDOTTypeAliasName_Load
-		if len(dictionaryVersionsTypeAliasSubcategory) > 1:
-			versionMinorMinimumAttribute: int = min(dictionaryVersionsTypeAliasSubcategory.keys())
-			decorator_list: list[ast.expr] = [astName_staticmethod]
-
-			annotation: ast.expr = BitOr.join(dictionaryVersionsTypeAliasSubcategory[versionMinorMinimumAttribute])
-			workhorseReturnValue: ast.BoolOp = ast.BoolOp(op=ast.And(), values=[ast.Call(ast.Name('isinstance'), args=[ast.Name('node'), ast.Name('astClass')], keywords=[])])
-			for node in ast.walk(annotation):
-				if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name) and node.value.id == 'Sequence' and isinstance(node.slice, ast.BinOp) and isinstance(node.slice.right, ast.Constant) and node.slice.right.value is None:
-					workhorseReturnValue.values.append(ast.Compare(ast.Attribute(ast.Name('node'), attribute)
-													, ops=[ast.NotEq()]
-													, comparators=[ast.List([ast.Constant(None)])]))
-					break
-				if isinstance(node, ast.Constant) and node.value is None:
-					workhorseReturnValue.values.append(ast.Compare(ast.Attribute(ast.Name('node'), attribute)
-													, ops=[ast.IsNot()]
-													, comparators=[ast.Constant(None)]))
-					break
-
-			workhorseReturnValue.values.append(ast.Call(ast.Name('attributeCondition'), args=[ast.Attribute(ast.Name('node'), attribute)]))
-
-			buffaloBuffalo_workhorse_returnsAnnotation: ast.expr = BitOr.join([ast.Subscript(ast.Name('TypeGuard'), slice=astNameTypeAlias), ast.Name('bool')])
-			body: list[ast.stmt] = [Make.FunctionDef('workhorse',
-						args=Make.arguments(args=[Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
-						, body=[Make.Return(workhorseReturnValue)]
-						, returns=buffaloBuffalo_workhorse_returnsAnnotation)
-					, Make.Return(Make.Name('workhorse'))]
-			returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
-
-			del dictionaryVersionsTypeAliasSubcategory[versionMinorMinimumAttribute]
-			orElse = [create_ast_stmt()]
-
-		for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
-			versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
-			decorator_list=[astName_staticmethod]
-			if list_type_ast_expr:
-				annotation = BitOr.join(list_type_ast_expr)
-			else:
-				typeSansNone_ast_expr = eval(dictionary_type_ast_expr['typeSansNone_ast_expr'])
-				annotation = ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([typeSansNone_ast_expr]), ast.Name('bool')]))
-
-			workhorseReturnValue: ast.BoolOp = ast.BoolOp(op=ast.And(), values=[ast.Call(ast.Name('isinstance'), args=[ast.Name('node'), ast.Name('astClass')], keywords=[])])
-			for node in ast.walk(annotation):
-				if isinstance(node, ast.Subscript) and isinstance(node.value, ast.Name) and node.value.id == 'list' and isinstance(node.slice, ast.BinOp) and isinstance(node.slice.right, ast.Constant) and node.slice.right.value is None:
-					workhorseReturnValue.values.append(ast.Compare(ast.Attribute(ast.Name('node'), attribute)
-													, ops=[ast.NotEq()]
-													, comparators=[ast.List([ast.Constant(None)])]))
-					break
-				if isinstance(node, ast.Constant) and node.value is None:
-					workhorseReturnValue.values.append(ast.Compare(ast.Attribute(ast.Name('node'), attribute)
-													, ops=[ast.IsNot()]
-													, comparators=[ast.Constant(None)]))
-					break
-
-			workhorseReturnValue.values.append(ast.Call(ast.Name('attributeCondition'), args=[ast.Attribute(ast.Name('node'), attribute)]))
-			buffaloBuffalo_workhorse_returnsAnnotation = BitOr.join([ast.Subscript(ast.Name('TypeGuard'), slice=astNameTypeAlias), ast.Name('bool')])
-			body: list[ast.stmt] = [Make.FunctionDef('workhorse',
-						args=Make.arguments(args=[Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
-						, body=[Make.Return(workhorseReturnValue)]
-						, returns=buffaloBuffalo_workhorse_returnsAnnotation)
-					, Make.Return(Make.Name('workhorse'))]
-			returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
-
-			list4ClassDefBody.append(create_ast_stmt())
-			break
+			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
+							, ops=[ast.GtE()]
+							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimumAttribute)])])
+						, body=[ast_stmt]
+						, orElse=[]
+						)
+		
+		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-			Make.ImportFrom('astToolkit._astTypes', [Make.alias('*')])
-			, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
-			, Make.ImportFrom('typing', [Make.alias(identifier) for identifier in ['Any', 'Literal', 'overload', 'TypeGuard']])
-			, Make.Import('ast')
+		Make.ImportFrom('astToolkit._astTypes', [Make.alias('*')])
+		, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
+		, Make.ImportFrom('typing', [Make.alias(identifier) for identifier in ['Any', 'Literal', 'overload', 'TypeGuard']])
+		, Make.Import('ast')
+		, Make.Import('sys')
 	]
 
 	writeClass('ClassIsAndAttribute', list4ClassDefBody, list4ModuleBody)
