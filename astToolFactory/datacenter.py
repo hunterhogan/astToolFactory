@@ -345,6 +345,9 @@ def updateDataframe() -> None:
 		axis=1
 	)
 
+	# TODO add logic for column 'attributeRename' similar to 'type' column override
+	# `ImportFrom.module`: "dotModule"
+
 	# Override column 'type' for class `ast.Constant`, attribute `value`
 	dataframe.loc[
 		(dataframe['ClassDefIdentifier'] == 'Constant') & (dataframe['attribute'] == 'value'),

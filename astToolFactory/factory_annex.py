@@ -72,8 +72,11 @@ FunctionDefMake_Attribute: ast.FunctionDef = Make.FunctionDef('Attribute'
 	, decorator_list=[Make.Name('staticmethod')]
 	, returns=Make.Attribute(Make.Name('ast'), 'Attribute'))
 
+# This relatively simple can probably be removed from the annex after I tweak a few things in the dataframe.
+# Minimum changes in the dataframe data for this 'ClassDefIdentifier': 'attributeRename', override 'type'.
+# Oh, wait. I don't plan to add anything that would _add_ `Make.arg('asName')` to 'match_args'.
 FunctionDefMake_Import: ast.FunctionDef = Make.FunctionDef('Import'
-	, args=Make.arguments(args=[Make.arg('moduleWithLogicalPath', annotation=Make.Name('str_nameDOTname'))
+	, args=Make.arguments(args=[Make.arg('dotModule', annotation=Make.Name('identifierDotAttribute'))
 							, Make.arg('asName', annotation=BitOr().join([Make.Name('str'), Make.Constant(None)]))]
 					, kwarg=Make.arg('keywordArguments', annotation=Make.Name('int'))
 					, defaults=[Make.Constant(None)])

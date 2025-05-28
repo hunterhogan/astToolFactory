@@ -84,9 +84,7 @@ def make_astTypes() -> None:
 		])
 	)
 
-	containerElementsTypeAlias = getElementsTypeAlias()
-
-	for versionMinorData, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute, orElseListClassAs_astAttribute in containerElementsTypeAlias:
+	for versionMinorData, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute, orElseListClassAs_astAttribute in getElementsTypeAlias():
 		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier, ast.Store())
 		ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]))
 		if versionMinorData > pythonVersionMinorMinimum:
@@ -311,7 +309,7 @@ def makeToolClassIsAndAttribute() -> None:
 
 def makeToolDOT() -> None:
 	def create_ast_stmt() -> ast.If | ast.FunctionDef:
-		ast_stmt = Make.FunctionDef(attribute
+		ast_stmt: ast.stmt = Make.FunctionDef(attribute
 				, args=Make.arguments(args=[Make.arg('node', annotation=astNameTypeAlias)])
 					, body=body
 					, decorator_list=decorator_list
@@ -319,11 +317,11 @@ def makeToolDOT() -> None:
 		)
 
 		if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
-			ast_stmt = ast.If(ast.Compare(left=ast.Attribute(ast.Name('sys'), 'version_info')
+			ast_stmt = Make.If(Make.Compare(left=Make.Attribute(Make.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
-								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorMinimumAttribute)])])
+								, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimumAttribute)])])
 							, body=[ast_stmt]
-							, orelse=orelse
+							, orElse=orElse
 			)
 
 		return ast_stmt
@@ -335,35 +333,35 @@ def makeToolDOT() -> None:
 	for attribute, dictionaryTypeAliasSubcategory in dictionaryToolElements.items():
 		# Get the pre-computed hasDOTIdentifier from the first entry
 		hasDOTIdentifier: str = next(iter(dictionaryTypeAliasSubcategory.values()))['TypeAlias_hasDOTIdentifier']
-		hasDOTTypeAliasName_Load: ast.Name = ast.Name(hasDOTIdentifier)
-		orelse: list[ast.stmt] = []
+		hasDOTTypeAliasName_Load: ast.Name = Make.Name(hasDOTIdentifier)
+		orElse: list[ast.stmt] = []
 
 		list_type_ast_expr: list[ast.expr] = []
 		dictionaryVersionsTypeAliasSubcategory: dict[int, list[ast.expr]] = defaultdict(list)
 		if len(dictionaryTypeAliasSubcategory) > 1:
 			for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
 				versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
-				astNameTypeAlias: ast.Name = ast.Name(TypeAliasSubcategory)
-				body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
-				decorator_list=[astName_staticmethod, astName_overload]
-				returns = cast(ast.Attribute, eval(dictionary_type_ast_expr['typeSansNone_ast_expr']))
+				astNameTypeAlias: ast.Name = Make.Name(TypeAliasSubcategory)
+				body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
+				decorator_list = [astName_staticmethod, astName_overload]
+				returns: ast.expr = cast(ast.Attribute, eval(dictionary_type_ast_expr['typeSansNone_ast_expr']))
 				list_type_ast_expr.append(returns)
 				dictionaryVersionsTypeAliasSubcategory[dictionary_type_ast_expr['versionMinorMinimumAttribute']].append(returns)
 				list4ClassDefBody.append(create_ast_stmt())
 
 		astNameTypeAlias = hasDOTTypeAliasName_Load
 		if len(dictionaryVersionsTypeAliasSubcategory) > 1:
-			body: list[ast.stmt] = [ast.Return(ast.Attribute(ast.Name('node'), attribute))]
+			body: list[ast.stmt] = [Make.Return(Make.Attribute(Make.Name('node'), attribute))]
 			decorator_list: list[ast.expr] = [astName_staticmethod]
 			versionMinorMinimumAttribute: int = min(dictionaryVersionsTypeAliasSubcategory.keys())
 			returns = BitOr.join(dictionaryVersionsTypeAliasSubcategory[versionMinorMinimumAttribute])
 			del dictionaryVersionsTypeAliasSubcategory[versionMinorMinimumAttribute]
-			orelse = [create_ast_stmt()]
+			orElse = [create_ast_stmt()]
 
 		for TypeAliasSubcategory, dictionary_type_ast_expr in dictionaryTypeAliasSubcategory.items():
 			versionMinorMinimumAttribute: int = dictionary_type_ast_expr['versionMinorMinimumAttribute']
-			body: list[ast.stmt] = [ast.Return(ast.Attribute(ast.Name('node'), attribute))]
-			decorator_list=[astName_staticmethod]
+			body: list[ast.stmt] = [Make.Return(Make.Attribute(Make.Name('node'), attribute))]
+			decorator_list = [astName_staticmethod]
 			if list_type_ast_expr:
 				returns = BitOr.join(list_type_ast_expr)
 			else:
@@ -537,8 +535,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 					orelse = []
 					ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
-								, comparators=[ast.Tuple([ast.Constant(3)
-														, ast.Constant(versionMinorData)])])
+								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorData)])])
 							, body=body
 							, orelse=orelse
 						)
@@ -556,8 +553,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 					orelse = [create_ast_stmt(dictionaryMethodElements)]
 			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
-						, comparators=[ast.Tuple([ast.Constant(3)
-												, ast.Constant(versionMinorData)])])
+						, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorData)])])
 					, body=body
 					, orelse=orelse
 				)
@@ -579,7 +575,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 		if ClassDefIdentifier == 'Import':
 			ast_stmt = FunctionDefMake_Import
 			list4ClassDefBody.append(ast_stmt)
-			list_aliasIdentifier.append('str_nameDOTname')
+			list_aliasIdentifier.append('identifierDotAttribute')
 			continue
 		classAs_astAttribute: ast.expr = eval(dictionaryClassDef['classAs_astAttribute'])
 		dictionaryAllClassVersions: dict[int, dict[int, DictionaryMatchArgs]] = dictionaryClassDef['versionMinorMinimumClass']
@@ -593,8 +589,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 					orelse = []
 					ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
-								, comparators=[ast.Tuple([ast.Constant(3)
-														, ast.Constant(versionMinorData)])])
+								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorData)])])
 							, body=body
 							, orelse=orelse
 						)
@@ -612,8 +607,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 					orelse = [unpackDictionaryAllMatch_argsVersions()]
 			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
-						, comparators=[ast.Tuple([ast.Constant(3)
-												, ast.Constant(versionMinorData)])])
+						, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorData)])])
 					, body=body
 					, orelse=orelse
 				)
