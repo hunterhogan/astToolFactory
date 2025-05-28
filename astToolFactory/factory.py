@@ -7,12 +7,14 @@ from astToolFactory import (
 )
 from astToolFactory.datacenter import DictionaryToolBe
 from astToolFactory.docstrings import (
-	ClassDefDocstring_ast_operator, ClassDefDocstringBe, ClassDefDocstringClassIsAndAttribute,
-	ClassDefDocstringDOT, ClassDefDocstringGrab, ClassDefDocstringMake, docstringWarning,
+	ClassDefDocstring_ast_boolop, ClassDefDocstring_ast_operator, ClassDefDocstringBe,
+	ClassDefDocstringClassIsAndAttribute, ClassDefDocstringDOT, ClassDefDocstringGrab,
+	ClassDefDocstringMake, docstringWarning,
 )
 from astToolFactory.factory_annex import (
-	FunctionDef_join, FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf,
-	FunctionDefMake_Attribute, FunctionDefMake_Import, listHandmade_astTypes,
+	FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
+	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute,
+	FunctionDefMake_Import, listHandmade_astTypes,
 )
 from astToolkit import (
 	Add, astModuleToIngredientsFunction, BitOr, ClassIsAndAttribute, IfThis, IngredientsFunction,
@@ -115,20 +117,28 @@ def make_astTypes() -> None:
 def makeJoinClassmethod() -> None:
 	list_aliasIdentifier: list[str] = ['ast_attributes', 'Make']
 	list4ModuleBody: list[ast.stmt] = [
-		FunctionDef_operatorJoinMethod
+		FunctionDef_boolopJoinMethod
+		, FunctionDef_operatorJoinMethod
 		]
 
+	listBoolOpIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.boolop.__subclasses__()])
 	listOperatorIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.operator.__subclasses__()])
+
+	for identifier in listBoolOpIdentifiers:
+		list4ModuleBody.append(Make.ClassDef(identifier
+			, bases=[Make.Attribute(Make.Name('ast'), identifier)]
+			, body=[ClassDefDocstring_ast_boolop, FunctionDef_join_boolop]
+		))
 
 	for identifier in listOperatorIdentifiers:
 		list4ModuleBody.append(Make.ClassDef(identifier
 			, bases=[Make.Attribute(Make.Name('ast'), identifier)]
-			, body=[ClassDefDocstring_ast_operator, FunctionDef_join]
+			, body=[ClassDefDocstring_ast_operator, FunctionDef_join_operator]
 		))
 
 	astModule: ast.Module = Make.Module([docstringWarning
 		, Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
-		, Make.ImportFrom('collections.abc', [Make.alias('Iterable')])
+		, Make.ImportFrom('collections.abc', [Make.alias('Iterable'), Make.alias('Sequence')])
 		, Make.ImportFrom('typing', [Make.alias('TypedDict'), Make.alias('Unpack')])
 		, Make.Import('ast')
 		, Make.Import('sys')
@@ -186,16 +196,18 @@ def makeToolBe() -> None:
 
 def makeToolClassIsAndAttribute() -> None:
 	def create_ast_stmt(list_ast_expr: list[str], attributeIsNotNone: bool) -> ast.stmt:
-		workhorseReturnValue: ast.BoolOp = ast.BoolOp(op=ast.And(), values=[ast.Call(ast.Name('isinstance'), args=[ast.Name('node'), ast.Name('astClass')], keywords=[])])
+		workhorseReturnValue: ast.BoolOp = Make.BoolOp(ast.And(), values=[Make.Call(Make.Name('isinstance'), args=[Make.Name('node'), Make.Name('astClass')])])
 		if attributeIsNotNone:
-			workhorseReturnValue.values.append(ast.Compare(ast.Attribute(ast.Name('node'), attribute), ops=[ast.IsNot()], comparators=[ast.Constant(None)]))
-		workhorseReturnValue.values.append(ast.Call(ast.Name('attributeCondition'), args=[ast.Attribute(ast.Name('node'), attribute)]))
+			ops: list[ast.cmpop]= [ast.IsNot()] 
+			comparators: list[ast.expr]=[Make.Constant(None)]
+			workhorseReturnValue.values.append(Make.Compare(Make.Attribute(Make.Name('node'), attribute), ops=ops, comparators=comparators))
+		workhorseReturnValue.values.append(Make.Call(Make.Name('attributeCondition'), args=[Make.Attribute(Make.Name('node'), attribute)]))
 		
-		buffaloBuffalo_workhorse_returnsAnnotation: ast.expr = BitOr.join([ast.Subscript(ast.Name('TypeGuard'), slice=astNameTypeAlias), ast.Name('bool')])
+		buffaloBuffalo_workhorse_returnsAnnotation: ast.expr = BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])
 		
 		if isOverload:
 			decorator_list.append(astName_overload)
-			body: list[ast.stmt] = [ast.Expr(ast.Constant(value=...))]
+			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
 			body = [
 				Make.FunctionDef('workhorse',
@@ -207,7 +219,7 @@ def makeToolClassIsAndAttribute() -> None:
 		
 		returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
 		
-		annotation: ast.expr = (BitOr.join([ast.Subscript(ast.Name('Callable'), ast.Tuple([ast.List([eval(ast_expr)]), ast.Name('bool')]))
+		annotation: ast.expr = (BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')]))
 									for ast_expr in list_ast_expr]))
 
 		return Make.FunctionDef(attribute + 'Is'

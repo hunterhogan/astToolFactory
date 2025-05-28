@@ -8,6 +8,10 @@ docstring: str = """This file is generated automatically, so changes to this fil
 docstringWarning = ast.Expr(ast.Constant(docstring))
 del docstring
 
+docstring: str = """Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BoolOp` class."""
+ClassDefDocstring_ast_boolop = ast.Expr(ast.Constant(docstring))
+del docstring
+
 docstring: str = """Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BinOp` class."""
 ClassDefDocstring_ast_operator = ast.Expr(ast.Constant(docstring))
 del docstring
@@ -141,7 +145,46 @@ docstring: str = (
         """
 )
 
-FunctionDefDocstring_join = ast.Expr(ast.Constant(docstring))
+FunctionDefDocstring_join_operator = ast.Expr(ast.Constant(docstring))
+del docstring
+
+docstring: str = (
+        """
+        Create a single `ast.expr` from a sequence of `ast.expr` by forming an `ast.BoolOp`
+        that logically "joins" expressions using the `ast.BoolOp` subclass. Like str.join() but for AST expressions.
+
+        Parameters
+        ----------
+        expressions : Sequence[ast.expr]
+            Collection of expressions to join.
+        **keywordArguments : ast._attributes
+
+        Returns
+        -------
+        joinedExpression : ast.expr
+            Single expression representing the joined expressions.
+
+        Examples
+        --------
+        Instead of manually constructing ast.BoolOp structures:
+        ```
+        ast.BoolOp(
+            op=ast.And(),
+            values=[ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')]
+        )
+        ```
+
+        Simply use:
+        ```
+        astToolkit.And.join([ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')])
+        ```
+
+        Both produce the same AST structure but the join() method eliminates the manual construction.
+        Handles single expressions and empty sequences gracefully.
+        """
+)
+
+FunctionDefDocstring_join_boolop = ast.Expr(ast.Constant(docstring))
 del docstring
 
 docstring: str = (
