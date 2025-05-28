@@ -20,7 +20,6 @@ from astToolkit import (
 )
 from astToolkit.transformationTools import write_astModule
 from collections.abc import Sequence
-from itertools import chain
 from pathlib import PurePosixPath
 from typing import cast
 from Z0Z_tools import writeStringToHere
@@ -299,61 +298,44 @@ def makeToolDOT() -> None:
 	writeClass('DOT', list4ClassDefBody, list4ModuleBody)
 
 def makeToolGrab() -> None:
-	def create_ast_stmt() -> ast.If | ast.FunctionDef:
-		ast_stmt = None
-		for versionMinorMinimumAttribute, list_type_ast_expr in listTypesByVersion:
-			list_ast_expr4annotation: list[ast.expr] = []
-			for type_ast_exprAsStr in list_type_ast_expr:
-				type_ast_expr = eval(type_ast_exprAsStr)
-				list_ast_expr4annotation.append(Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([type_ast_expr]), type_ast_expr])))
+	def create_ast_stmt(list_ast_expr: list[str], attributeIsNotNone: bool) -> ast.stmt:
+		list_ast_expr4annotation: list[ast.expr] = []
+		for type_ast_exprAsStr in list_ast_expr:
+			type_ast_expr = eval(type_ast_exprAsStr)
+			list_ast_expr4annotation.append(Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([type_ast_expr]), type_ast_expr])))
 
-			ast_expr4annotation = BitOr.join(list_ast_expr4annotation)
+		ast_expr4annotation = BitOr.join(list_ast_expr4annotation)
 
-			ast_stmt = Make.FunctionDef(attribute + 'Attribute'
-				, args=Make.arguments(args=[Make.arg('action', annotation=ast_expr4annotation)])
-				, body=[Make.FunctionDef('workhorse'
-							, args=Make.arguments(args=[Make.arg('node', annotation=hasDOTTypeAliasName_Load)])
-							, body=[Make.Assign([Make.Attribute(Make.Name('node'), attribute, context=ast.Store())], value=Make.Call(Make.Name('action'), [Make.Attribute(Make.Name('node'), attribute)]))
-									, Make.Return(Make.Name('node'))
-							]
-							, returns=hasDOTTypeAliasName_Load)
-						, Make.Return(Make.Name('workhorse'))
-					]
-				, decorator_list=[astName_staticmethod]
-				, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([hasDOTTypeAliasName_Load]), hasDOTTypeAliasName_Load])))
+		return Make.FunctionDef(attribute + 'Attribute'
+			, args=Make.arguments(args=[Make.arg('action', annotation=ast_expr4annotation)])
+			, body=[Make.FunctionDef('workhorse'
+						, args=Make.arguments(args=[Make.arg('node', annotation=hasDOTTypeAliasName_Load)])
+						, body=[Make.Assign([Make.Attribute(Make.Name('node'), attribute, context=ast.Store())], value=Make.Call(Make.Name('action'), [Make.Attribute(Make.Name('node'), attribute)]))
+								, Make.Return(Make.Name('node'))
+						]
+						, returns=hasDOTTypeAliasName_Load)
+					, Make.Return(Make.Name('workhorse'))
+				]
+			, decorator_list=[astName_staticmethod]
+			, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([hasDOTTypeAliasName_Load]), hasDOTTypeAliasName_Load])))
 
-			if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
-				ast_stmt = Make.If(test=Make.Compare(
-					left=Make.Attribute(Make.Name('sys'), 'version_info'),
-					ops=[ast.GtE()],
-					comparators=[Make.Tuple(
-						elts=[Make.Constant(3), Make.Constant(versionMinorMinimumAttribute)]
-					)]
-				),
-				body=[ast_stmt],
-				orElse=ast_stmtAtPythonMinimum
-				)
-		assert ast_stmt is not None, "Coding by brinkmanship!"
-		return ast_stmt
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringGrab, FunctionDefGrab_andDoAllOf]
-	dictionaryToolElements = getElementsGrab()
+	for versionMinorMinimumAttribute, attribute, TypeAlias_hasDOTIdentifier, list_ast_expr, attributeIsNotNone, orElseList_ast_expr, orElseAttributeIsNotNone in getElementsGrab():
+		hasDOTTypeAliasName_Load: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier)
 
-	for attribute, grabElements in dictionaryToolElements.items():
-		hasDOTIdentifier: str = grabElements['TypeAlias_hasDOTIdentifier']
-		listTypesByVersion = grabElements['listTypesByVersion']
-		hasDOTTypeAliasName_Load: ast.Name = Make.Name(hasDOTIdentifier)
-		ast_stmtAtPythonMinimum: list[ast.stmt] = []
+		ast_stmt: ast.stmt = create_ast_stmt(list_ast_expr, attributeIsNotNone)
 
-		if len(listTypesByVersion) > 1:
-			abovePythonMinimum = [((versionMax := max([typesForVersion[0] for typesForVersion in listTypesByVersion])),  sorted(chain(*[typesForVersion[1] for typesForVersion in listTypesByVersion]), key=str.lower))]
-			for typesForVersion in listTypesByVersion:
-				if typesForVersion[0] == versionMax:
-					listTypesByVersion.remove(typesForVersion)
-					break
-			ast_stmtAtPythonMinimum = [create_ast_stmt()]
-			listTypesByVersion = abovePythonMinimum
-
-		list4ClassDefBody.append(create_ast_stmt())
+		if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
+			orElse: list[ast.stmt] = []
+			if orElseList_ast_expr:
+				orElse = [create_ast_stmt(orElseList_ast_expr, orElseAttributeIsNotNone)]
+			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()]
+							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimumAttribute)])])
+						, body=[ast_stmt]
+						, orElse=orElse
+						)
+		
+		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
 			Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in ['个']])

@@ -4,6 +4,7 @@ from astToolFactory import pythonVersionMinorMinimum, settingsPackage
 from astToolkit import Be, DOT, dump, Make, NodeTourist, Then
 from collections import defaultdict
 from collections.abc import Sequence
+from itertools import chain
 from pathlib import Path
 from typing import cast, TypeAlias, TypedDict
 from Z0Z_tools import raiseIfNone
@@ -34,14 +35,6 @@ class DictionaryToolBe(TypedDict):
 	ClassDefIdentifier: str
 	classAs_astAttribute: str
 	versionMinorMinimumClass: int
-
-class DictionaryGrabElements(TypedDict):
-	listTypesByVersion: ListTypesByVersion
-	TypeAlias_hasDOTIdentifier: str
-
-class DictionaryTypeAliasElements(TypedDict):
-	TypeAlias_hasDOTIdentifier: str
-	versionData: dict[int, list[str]]
 
 class DictionaryMatchArgs(TypedDict):
 	kwarg: str
@@ -143,35 +136,10 @@ def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinor
 
 	return listTuples
 
-def getElementsDOT(includeDeprecated: bool = False, versionMinorMaximum: int | None = None):
+def getElementsDOT(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[int, str, str, bool, list[str], bool, list[str], bool]]:
 	return getElementsClassIsAndAttribute(includeDeprecated, versionMinorMaximum)
-	# listElementsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'typeSansNone_ast_expr', 'TypeAlias_hasDOTIdentifier']
-	# listElements: list[str] = listElementsHARDCODED
 
-	# dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
-	# 	.query("attributeKind == '_field'") 
-	# 	.pipe(_sortCaseInsensitive, listElements[0:2])
-	# 	[listElements]
-	# 	.drop_duplicates()
-	# 	.sort_values('versionMinorMinimumAttribute')
-	# 	.drop_duplicates(subset=['attribute', 'TypeAlias_hasDOTSubcategory'], keep='first')
-	# )
-
-	# dictionaryElements: dict[str, dict[str, Dictionary_type_ast_expr]] = {}
-	# for attributeTarget, groupAttribute in dataframe.groupby('attribute'):
-	# 	dictionaryElements[str(attributeTarget)] = {}
-	# 	for subcategoryTarget, groupSubcategory in groupAttribute.groupby('TypeAlias_hasDOTSubcategory'):
-	# 		rowData = groupSubcategory.iloc[0] # pyright: ignore[reportUnknownVariableType]
-	# 		dictionaryElements[str(attributeTarget)][str(subcategoryTarget)] = Dictionary_type_ast_expr(
-	# 			versionMinorMinimumAttribute=int(cast(int, rowData['versionMinorMinimumAttribute'])),
-	# 			type_ast_expr=str(cast(str, rowData['type_ast_expr'])),
-	# 			typeSansNone_ast_expr=str(cast(str, rowData['typeSansNone_ast_expr'])),
-	# 			TypeAlias_hasDOTIdentifier=str(cast(str, rowData['TypeAlias_hasDOTIdentifier']))
-	# 		)
-	
-	# return dictionaryElements
-
-def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Version | None = None) -> dict[Attribute, DictionaryGrabElements]:
+def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Version | None = None) -> list[tuple[int, str, str, list[str], bool, list[str], bool]]:
 	listElementsHARDCODED: list[str] = ['attribute', 'versionMinorMinimumAttribute', 'type_ast_expr', 'typeSansNone_ast_expr', 'TypeAlias_hasDOTIdentifier']
 	listElements: list[str] = listElementsHARDCODED
 
@@ -191,17 +159,37 @@ def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Versio
 	dataframeWithIdentifier = dataframeWithIdentifier[dataframeWithIdentifier['attributeKind'] == '_field']
 	dataframeWithIdentifier = dataframeWithIdentifier[['attribute', 'TypeAlias_hasDOTIdentifier']].drop_duplicates()
 	dataframe = dataframe.merge(dataframeWithIdentifier, on='attribute', how='left')
-	
-	# Group by attribute and create the final structure
-	dictionaryGrabElements: dict[Attribute, DictionaryGrabElements] = {}
+		# Create the tuple list structure
+	listTuples: list[tuple[int, str, str, list[str], bool, list[str], bool]] = []
 	for attribute, group in dataframe.groupby('attribute'):
 		listTypesByVersion: list[tuple[int, list[str]]] = cast(ListTypesByVersion, group['listTypesByVersion'].tolist())
 		TypeAlias_hasDOTIdentifier: str = cast(str, group['TypeAlias_hasDOTIdentifier'].iloc[0])   # pyright: ignore[reportUnknownMemberType]
-		dictionaryGrabElements[str(attribute)] = DictionaryGrabElements(
-			listTypesByVersion=listTypesByVersion,
-			TypeAlias_hasDOTIdentifier=TypeAlias_hasDOTIdentifier
-		)
-	return dictionaryGrabElements
+		
+		if len(listTypesByVersion) > 1:
+			# Handle multiple versions: create combined version for max version
+			versionMax: int = max([typesForVersion[0] for typesForVersion in listTypesByVersion])
+			combinedTypes: list[str] = sorted(chain(*[typesForVersion[1] for typesForVersion in listTypesByVersion]), key=str.lower)
+			
+			# Add entry for minimum version
+			versionMin: int = min([typesForVersion[0] for typesForVersion in listTypesByVersion])
+			minVersionTypes: list[str] = []
+			for versionMinorMinimumAttribute, list_type_ast_expr in listTypesByVersion:
+				if versionMinorMinimumAttribute == versionMin:
+					minVersionTypes = list_type_ast_expr
+					break
+			
+			if versionMin > pythonVersionMinorMinimum:
+				# Entry for minimum version with orElse pointing to combined types
+				listTuples.append((versionMin, str(attribute), TypeAlias_hasDOTIdentifier, minVersionTypes, False, combinedTypes, False))
+			else:
+				# Entry for maximum version
+				listTuples.append((versionMax, str(attribute), TypeAlias_hasDOTIdentifier, combinedTypes, False, [], False))
+		else:
+			# Single version case
+			versionMinorMinimumAttribute, list_type_ast_expr = listTypesByVersion[0]
+			listTuples.append((versionMinorMinimumAttribute, str(attribute), TypeAlias_hasDOTIdentifier, list_type_ast_expr, False, [], False))
+	
+	return listTuples
 
 def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, DictionaryClassDef]:
 	listElementsHARDCODED: list[str] = [
@@ -526,5 +514,5 @@ def updateDataframe() -> None:
 
 	dataframe.to_pickle(pathFilenameDataframeAST)
 
-if __name__ == "__main__":
-	updateDataframe()
+# if __name__ == "__main__":
+# 	updateDataframe()
