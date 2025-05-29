@@ -132,7 +132,7 @@ listHandmade_astTypes: list[ast.stmt] = [
     # And, I would change the identifier to `ast_ConstantValue`.
 	Make.AnnAssign(Make.Name('ConstantValueType', ast.Store())
 				, annotation=Make.Name('typing_TypeAlias')
-				, value=BitOr().join(Make.Name(identifier) 
+				, value=BitOr().join(Make.Name(identifier)
 									for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float'
 													, 'int', 'None', 'range', 'str'
 													]

@@ -2,7 +2,7 @@ from astToolFactory import (
 	astName_overload, astName_staticmethod, astName_typing_TypeAlias, DictionaryClassDef,
 	DictionaryMatchArgs, getElementsBe, getElementsClassIsAndAttribute, getElementsDOT,
 	getElementsGrab, getElementsMake, getElementsTypeAlias, keywordArgumentsIdentifier,
-	listPylanceErrors, pythonVersionMinorMinimum, settingsPackageToManufacture,
+	listPylanceErrors, pythonMinimumVersionMinor, settingsPackageToManufacture,
 	toolMakeFunctionDefReturnCall_keywords,
 )
 from astToolFactory.datacenter import DictionaryToolBe
@@ -87,13 +87,37 @@ def make_astTypes() -> None:
 		])
 	)
 
+	# list_match_case: list[ast.match_case] = []
+
+	# for useMatchCase, versionMinorMinimum, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute in getElementsTypeAlias():
+	# 	astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier, ast.Store())
+	# 	TypeAliasClasses: ast.expr = BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute])
+	# 	ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, TypeAliasClasses)
+
+	# 	if useMatchCase:
+	# 		if versionMinorMinimum > pythonMinimumVersionMinor:
+	# 			pattern: ast.MatchAs = Make.MatchAs(name = 'version')
+	# 			guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimum)])])
+	# 		else:
+	# 			pattern = Make.MatchAs()
+	# 			guard = None
+	# 		list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
+
+	# 		if useMatchCase > 1:
+	# 			continue
+	# 		else:
+	# 			ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
+	# 			list_match_case.clear()
+
+	# 	list4ModuleBody.append(ast_stmt)
+
 	def create_ast_stmt(listClassAs_astAttribute: Sequence[str]) -> ast.stmt:
 		return Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]))
 
 	for versionMinorMinimumAttribute, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute, orElseListClassAs_astAttribute in getElementsTypeAlias():
 		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier, ast.Store())
 		ast_stmt: ast.stmt = create_ast_stmt(listClassAs_astAttribute)
-		if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
+		if versionMinorMinimumAttribute > pythonMinimumVersionMinor:
 			orElse: list[ast.stmt]= []
 			if orElseListClassAs_astAttribute:
 				orElse = [create_ast_stmt(orElseListClassAs_astAttribute)]
@@ -157,7 +181,7 @@ def makeTool_dump() -> None:
 	prepend_ast = NodeChanger(findThis, doThatPrepend)
 	findThis = IfThis.isFunctionDefIdentifier('_format')
 	def doThat(node: ast.FunctionDef) -> ast.AST:
-		return prepend_ast.visit(node) 
+		return prepend_ast.visit(node)
 	NodeChanger(findThis, doThat).visit(ingredientsFunction.astFunctionDef)
 	pathFilename = PurePosixPath(settingsPackageToManufacture.pathPackage, '_dumpFunctionDef' + settingsPackageToManufacture.fileExtension)
 	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsPackageToManufacture.identifierPackage)
@@ -178,7 +202,7 @@ def makeToolBe() -> None:
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name('TypeGuard'), slice=classAs_astAttribute))
 
-		if versionMinorMinimumClass > pythonVersionMinorMinimum:
+		if versionMinorMinimumClass > pythonMinimumVersionMinor:
 			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
 						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimumClass)])])
@@ -199,17 +223,17 @@ def makeToolClassIsAndAttribute() -> None:
 	def create_ast_stmt(list_ast_expr: list[str], attributeIsNotNone: bool | str) -> ast.stmt:
 		workhorseReturnValue: ast.BoolOp = Make.BoolOp(ast.And(), values=[Make.Call(Make.Name('isinstance'), args=[Make.Name('node'), Make.Name('astClass')])])
 		if attributeIsNotNone:
-			ops: list[ast.cmpop]= [ast.IsNot()] 
+			ops: list[ast.cmpop]= [ast.IsNot()]
 			comparators: list[ast.expr]=[Make.Constant(None)]
 			if attributeIsNotNone == 'Sequence':
-				ops: list[ast.cmpop]= [ast.NotEq()] 
+				ops: list[ast.cmpop]= [ast.NotEq()]
 				comparators: list[ast.expr]=[Make.List([Make.Constant(None)])]
 			workhorseReturnValue.values.append(Make.Compare(Make.Attribute(Make.Name('node'), attribute), ops=ops, comparators=comparators))
 		workhorseReturnValue.values.append(Make.Call(Make.Name('attributeCondition'), args=[Make.Attribute(Make.Name('node'), attribute)]))
-		
+
 		buffaloBuffalo_workhorse_returnsAnnotation: ast.expr = BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])
-		
-		if isOverload:
+
+		if overloadDefinition:
 			decorator_list.append(astName_overload)
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
@@ -220,9 +244,9 @@ def makeToolClassIsAndAttribute() -> None:
 					, returns=buffaloBuffalo_workhorse_returnsAnnotation)
 				, Make.Return(Make.Name('workhorse'))
 			]
-		
+
 		returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
-		
+
 		annotation: ast.expr = (BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')]))
 									for ast_expr in list_ast_expr]))
 
@@ -238,13 +262,13 @@ def makeToolClassIsAndAttribute() -> None:
 
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringClassIsAndAttribute]
 
-	for versionMinorMinimumAttribute, attribute, TypeAlias_hasDOTIdentifier, isOverload, list_ast_expr, attributeIsNotNone, orElseList_ast_expr, orElseAttributeIsNotNone in getElementsClassIsAndAttribute():
+	for versionMinorMinimumAttribute, attribute, TypeAlias_hasDOTIdentifier, overloadDefinition, list_ast_expr, attributeIsNotNone, orElseList_ast_expr, orElseAttributeIsNotNone in getElementsClassIsAndAttribute():
 		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier)
 		decorator_list: list[ast.expr] = [astName_staticmethod]
 
 		ast_stmt: ast.stmt = create_ast_stmt(list_ast_expr, attributeIsNotNone)
 
-		if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
+		if versionMinorMinimumAttribute > pythonMinimumVersionMinor:
 			orElse: list[ast.stmt] = []
 			if orElseList_ast_expr:
 				orElse = [create_ast_stmt(orElseList_ast_expr, orElseAttributeIsNotNone)]
@@ -253,7 +277,7 @@ def makeToolClassIsAndAttribute() -> None:
 						, body=[ast_stmt]
 						, orElse=orElse
 						)
-		
+
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
@@ -291,7 +315,7 @@ def makeToolDOT() -> None:
 
 		ast_stmt: ast.stmt = create_ast_stmt(list_ast_expr)
 
-		if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
+		if versionMinorMinimumAttribute > pythonMinimumVersionMinor:
 			orElse: list[ast.stmt] = []
 			if orElseList_ast_expr:
 				orElse = [create_ast_stmt(orElseList_ast_expr)]
@@ -341,7 +365,7 @@ def makeToolGrab() -> None:
 
 		ast_stmt: ast.stmt = create_ast_stmt(list_ast_expr, attributeIsNotNone)
 
-		if versionMinorMinimumAttribute > pythonVersionMinorMinimum:
+		if versionMinorMinimumAttribute > pythonMinimumVersionMinor:
 			orElse: list[ast.stmt] = []
 			if orElseList_ast_expr:
 				orElse = [create_ast_stmt(orElseList_ast_expr, orElseAttributeIsNotNone)]
@@ -350,7 +374,7 @@ def makeToolGrab() -> None:
 						, body=[ast_stmt]
 						, orElse=orElse
 						)
-		
+
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
@@ -366,7 +390,7 @@ def makeToolGrab() -> None:
 
 def makeToolMake() -> None:
 	# TODO add `ClassDef` for ast subclasses that do not have __init__ parameters. At the very least, it prevents an error if the user uses `Make.GtE()` instead of `ast.GtE()`.
-	# TODO add docstrings for each staticmethod and each ClassDef: idea: `Make.GtE.__doc__ = ast.GtE.__doc__` <-- hahahahaaaaaaaaaa! 
+	# TODO add docstrings for each staticmethod and each ClassDef: idea: `Make.GtE.__doc__ = ast.GtE.__doc__` <-- hahahahaaaaaaaaaa!
 	# But, maybe include the ast docstring to contrast the lack of documentation in ast.
 	# For real, `dictionaryDocstringMake`, keynames = `ClassDefIdentifier`, values = docstrings created in a dedicated module,
 	# currently `astToolFactory/docstrings.py`. I am sure there are many packages designed to help with this.
@@ -378,7 +402,7 @@ def makeToolMake() -> None:
 	def keyword(arg: str | None, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
 	@staticmethod
 	@overload
-	def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...	
+	def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
 	"""
 
 	# TODO overload for Make.TypeAlias:
@@ -388,12 +412,12 @@ def makeToolMake() -> None:
     def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param] = [], *, value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
     @staticmethod
     @overload
-    def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param], value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...	
+    def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param], value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
 	"""
 
 	# TODO remaking **keywordArguments
-	""" 
-if column 'keywordArguments' is True, 
+	"""
+if column 'keywordArguments' is True,
 	build a subclassed dictionary and put it in the `Make` module
 	make sure to not add 14 identical subclassed dictionaries
 	allow for the subclassed dictionary to have more than one new key
@@ -414,7 +438,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 
 	def pattern(**keywordArguments: Unpack[ast_attributes_int]) -> ast.pattern:
 		return ast.pattern(**keywordArguments)
-	
+
 	"""
 	def create_ast_stmt(dictionaryMethodElements: DictionaryMatchArgs) -> ast.FunctionDef:
 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in dictionaryMethodElements['listStr4FunctionDef_args']]
@@ -437,6 +461,8 @@ class ast_attributes_kind(ast_attributes, total=False):
 			, body=[Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 			, decorator_list=[astName_staticmethod]
 			, returns=classAs_astAttribute)
+	# versionMinorMinimumClass, versionMinorMinimum_match_args, ClassDefIdentifier, classAs_astAttribute
+	# listStr4FunctionDef_args, kwarg, defaults, listTupleCall_keywords (do `if kwarg is not None` in datacenter), overloadDefinition (for now, always False: future growth),
 
 		return ast_stmt
 
@@ -499,7 +525,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 		if len(dictionaryAllClassVersions) == 1:
 			for versionMinorMinimumClass, dictionaryAllMatch_argsVersions in dictionaryAllClassVersions.items():
 				ast_stmt = unpackDictionaryAllMatch_argsVersions()
-				if versionMinorMinimumClass > pythonVersionMinorMinimum:
+				if versionMinorMinimumClass > pythonMinimumVersionMinor:
 					versionMinorData: int = versionMinorMinimumClass
 					body = [ast_stmt]
 					orElse = []
@@ -516,7 +542,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 			orElse: list[ast.stmt] = []
 			versionMinorData: int = -999999999999999999
 			for versionMinorMinimumClass, dictionaryAllMatch_argsVersions in dictionaryAllClassVersions.items():
-				if versionMinorMinimumClass > pythonVersionMinorMinimum:
+				if versionMinorMinimumClass > pythonMinimumVersionMinor:
 					body = [unpackDictionaryAllMatch_argsVersions()]
 					versionMinorData = versionMinorMinimumClass
 				else:

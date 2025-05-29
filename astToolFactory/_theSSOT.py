@@ -32,7 +32,7 @@ class PackageSettings:
 
 settingsPackage = PackageSettings()
 
-pythonVersionMinorMinimum: int = 12
+pythonMinimumVersionMinor: int = 12
 keywordArgumentsIdentifier: str = 'keywordArguments'
 
 listPylanceErrorsHARDCODED: list[str] = ['annotation', 'arg', 'args', 'body', 'keys', 'name', 'names', 'op', 'orelse', 'pattern', 'returns', 'target', 'value',]
@@ -46,9 +46,9 @@ listPylanceErrors = listPylanceErrorsHARDCODED
 # NOTE why Z0Z_?
 # `settingsPackageToManufacture` is probably an acceptable way to handle this situation.
 # But I am dissatisfied with the steps to create the information. On the one hand, `'astToolkit'`
-# must be manually set, so I don't want to flag it with HARDCODED. On the other hand, 
+# must be manually set, so I don't want to flag it with HARDCODED. On the other hand,
 # `Z0Z_pathRoot` is obviously specific to my environment. I suspect I need a different paradigm.
-Z0Z_pathRoot = Path('/apps') 
+Z0Z_pathRoot = Path('/apps')
 Z0Z_PackageToManufactureIdentifier: str = 'astToolkit'
 Z0Z_PackageToManufacturePath = Z0Z_pathRoot / Z0Z_PackageToManufactureIdentifier / Z0Z_PackageToManufactureIdentifier
 settingsPackageToManufacture = PackageSettings(identifierPackage=Z0Z_PackageToManufactureIdentifier, pathPackage=Z0Z_PackageToManufacturePath)

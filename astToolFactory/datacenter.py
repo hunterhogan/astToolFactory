@@ -1,6 +1,6 @@
 """API for data. The rest of the package should be ignorant of the specifics of the data source.
 This module provides a set of functions to interact with the data source, allowing for easy retrieval and manipulation of data."""
-from astToolFactory import pythonVersionMinorMinimum, settingsPackage
+from astToolFactory import pythonMinimumVersionMinor, settingsPackage
 from astToolkit import Be, DOT, dump, Make, NodeTourist, Then
 from collections import defaultdict
 from collections.abc import Sequence
@@ -25,12 +25,6 @@ ListTypesASTformAsStr: TypeAlias = list[str]
 TupleTypesForVersion: TypeAlias = tuple[Version, ListTypesASTformAsStr]
 ListTypesByVersion: TypeAlias = list[TupleTypesForVersion]
 
-class Dictionary_type_ast_expr(TypedDict):
-	versionMinorMinimumAttribute: int
-	type_ast_expr: str
-	typeSansNone_ast_expr: str
-	TypeAlias_hasDOTIdentifier: str
-
 class DictionaryToolBe(TypedDict):
 	ClassDefIdentifier: str
 	classAs_astAttribute: str
@@ -46,13 +40,13 @@ class DictionaryClassDef(TypedDict):
 	classAs_astAttribute: str
 	versionMinorMinimumClass: dict[int, dict[int, DictionaryMatchArgs]]
 
-def _sortCaseInsensitive(dataframe: pandas.DataFrame, columns: Sequence[str]) -> pandas.DataFrame:
+def _sortCaseInsensitive(dataframe: pandas.DataFrame, columnsPriority: Sequence[str], columnsNONString: Sequence[str] = [], ascending: bool | Sequence[bool] = True) -> pandas.DataFrame:
 	dataframeCopy: pandas.DataFrame = dataframe.copy()
-	for columnName in columns:
-		dataframeCopy[columnName] = dataframe[columnName].str.lower() # pyright: ignore[reportUnknownMemberType]
+	columnsString = list(set(columnsPriority) - set(columnsNONString))
+	dataframeCopy[columnsString] = dataframe[columnsString].map(str.lower)
 
-	sorted_index = dataframeCopy.sort_values(by=columns).index
-	return dataframe.loc[sorted_index]
+	indicesSorted = dataframeCopy.sort_values(by=columnsPriority, ascending=ascending).index
+	return dataframe.loc[indicesSorted]
 
 def getDataframe(includeDeprecated: bool, versionMinorMaximum: int | None, modifyVersionMinorMinimum: bool = True, *indices: str) -> pandas.DataFrame:
 	dataframe: pandas.DataFrame = pandas.read_pickle(pathFilenameDataframeAST)
@@ -65,7 +59,7 @@ def getDataframe(includeDeprecated: bool, versionMinorMaximum: int | None, modif
 
 	if modifyVersionMinorMinimum:
 		columnsVersion: list[str] = ['versionMinorMinimumAttribute', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args']
-		dataframe[columnsVersion] = dataframe[columnsVersion].where(dataframe[columnsVersion] > pythonVersionMinorMinimum, -1)
+		dataframe[columnsVersion] = dataframe[columnsVersion].where(dataframe[columnsVersion] > pythonMinimumVersionMinor, -1)
 	if indices:
 		dataframe = dataframe.set_index(list(indices))  # pyright: ignore[reportUnknownMemberType]
 
@@ -75,9 +69,11 @@ def getElementsBe(includeDeprecated: bool = False, versionMinorMaximum: int | No
 	listElementsHARDCODED: list[str] = ['ClassDefIdentifier', 'classAs_astAttribute', 'versionMinorMinimumClass']
 	listElements: list[str] = listElementsHARDCODED
 
-	dataframe: pandas.DataFrame = getDataframe(includeDeprecated, versionMinorMaximum)
-
-	dataframe = dataframe[listElements].drop_duplicates()
+	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
+		[listElements]
+		.drop_duplicates()
+		.pipe(_sortCaseInsensitive, ['ClassDefIdentifier'], ['versionMinorMinimumClass'])
+	)
 
 	return dataframe.to_dict(orient='records')   # pyright: ignore[reportReturnType]
 
@@ -87,12 +83,10 @@ def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinor
 
 	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
 		.query("attributeKind == '_field'")
-		.pipe(_sortCaseInsensitive, listElements[0:2])
+		.pipe(_sortCaseInsensitive, listElements[0:2], ['versionMinorMinimumAttribute'])
 		[listElements]
 		.drop_duplicates()
-		.sort_values('versionMinorMinimumAttribute')
-		.drop_duplicates(subset=['attribute', 'TypeAlias_hasDOTSubcategory'], keep='first')
-	)
+		.drop_duplicates(subset=['attribute', 'TypeAlias_hasDOTSubcategory'], keep='first')	)
 	# Vectorized calculation of attributeIsNotNone
 	dataframe = dataframe.copy()  # Avoid SettingWithCopyWarning
 	dataframe['hasNone'] = dataframe['type_ast_expr'].astype(str).str.contains('None', na=False)
@@ -100,21 +94,21 @@ def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinor
 	dataframe['attributeIsNotNone'] = dataframe.apply(lambda row: 'Sequence' if row['hasNone'] and row['hasSequence'] else True if row['hasNone'] else False, axis=1)   # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType, reportUnknownMemberType]
 
 	listTuples: list[tuple[int, str, str, bool, list[str], bool | str, list[str], bool | str]] = []
-	
+
 	for attribute, groupAttribute in dataframe.groupby('attribute'):
 		TypeAlias_hasDOTIdentifier = str(groupAttribute['TypeAlias_hasDOTIdentifier'].iloc[0]) # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 		subcategories = groupAttribute.groupby('TypeAlias_hasDOTSubcategory')
-		
-		def addTuple(versionMinorMinimumAttribute: int, subcategoryIdentifier: str, isOverload: bool, 
+
+		def addTuple(versionMinorMinimumAttribute: int, subcategoryIdentifier: str, isOverload: bool,
 					list_ast_expr: list[str], attributeIsNotNone: bool | str) -> None:
 			orElseList_ast_expr: list[str] = []
 			orElseAttributeIsNotNone: bool | str = False
-			listTuples.append((versionMinorMinimumAttribute, str(attribute), subcategoryIdentifier, 
+			listTuples.append((versionMinorMinimumAttribute, str(attribute), subcategoryIdentifier,
 							isOverload, list_ast_expr, attributeIsNotNone, orElseList_ast_expr, orElseAttributeIsNotNone))
-		
+
 		if len(subcategories) == 1:
 			# Single subcategory case
-			subcategoryData = groupAttribute.iloc[0] 
+			subcategoryData = groupAttribute.iloc[0]
 			addTuple(
 				int(cast(int, subcategoryData['versionMinorMinimumAttribute'])),
 				TypeAlias_hasDOTIdentifier,
@@ -134,17 +128,17 @@ def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinor
 					[str(subcategoryData['typeSansNone_ast_expr'])],
 					subcategoryData['attributeIsNotNone']
 				)			# Add combined entry
-			unique_typeSansNone_ast_expr = sorted(groupAttribute['typeSansNone_ast_expr'].drop_duplicates().astype(str).tolist())
+			unique_typeSansNone_ast_expr = sorted(groupAttribute['typeSansNone_ast_expr'].drop_duplicates().astype(str).tolist(), key=str.lower)
 			attributeNotNoneValues = [val for val in groupAttribute['attributeIsNotNone'].tolist()]
 			hasSequenceInAny = any(str(val) == 'Sequence' for val in attributeNotNoneValues)
 			hasTruthyInAny = any(bool(val) and str(val) != 'False' for val in attributeNotNoneValues)
 			combinedAttributeIsNotNone: bool | str = (
 				'Sequence' if hasSequenceInAny
-				else True if hasTruthyInAny 
+				else True if hasTruthyInAny
 				else False
 			)
 			minimum_version = int(groupAttribute['versionMinorMinimumAttribute'].min())
-			
+
 			addTuple(
 				minimum_version,
 				TypeAlias_hasDOTIdentifier,
@@ -162,33 +156,40 @@ def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Versio
 	listElementsHARDCODED: list[str] = ['attribute', 'versionMinorMinimumAttribute', 'type_ast_expr', 'typeSansNone_ast_expr', 'TypeAlias_hasDOTIdentifier']
 	listElements: list[str] = listElementsHARDCODED
 
-	dataframe: pandas.DataFrame = getDataframe(includeDeprecated, versionMinorMaximum)
+	dataframeSource: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
+		.query("attributeKind == '_field'")
+	)
 
-	dataframe = dataframe[dataframe['attributeKind'] == '_field']
+	dataframe: pandas.DataFrame = (dataframeSource
+		[listElements]
+		.drop_duplicates()
+		.drop_duplicates(subset=['attribute', 'typeSansNone_ast_expr'], keep='first')
+		.pipe(_sortCaseInsensitive, ['attribute'])
+	)
 
-	dataframe = dataframe[listElements]
-	dataframe = dataframe.drop_duplicates()
-	dataframe = dataframe.drop_duplicates(subset=['attribute', 'typeSansNone_ast_expr'], keep='first')
 	dataframe = dataframe.groupby(['attribute', 'versionMinorMinimumAttribute'])['typeSansNone_ast_expr'].aggregate(list).reset_index()
-	dataframe['typeSansNone_ast_expr'] = dataframe['typeSansNone_ast_expr'].apply(sorted, key=str.lower) 
-	dataframe['listTypesByVersion'] = dataframe[['versionMinorMinimumAttribute', 'typeSansNone_ast_expr']].apply(tuple, axis=1) 
-	
+	dataframe['typeSansNone_ast_expr'] = dataframe['typeSansNone_ast_expr'].apply(sorted, key=str.lower)
+	dataframe['listTypesByVersion'] = dataframe[['versionMinorMinimumAttribute', 'typeSansNone_ast_expr']].apply(tuple, axis=1)
+
 	# Add TypeAlias_hasDOTIdentifier back by merging
-	dataframeWithIdentifier: pandas.DataFrame = getDataframe(includeDeprecated, versionMinorMaximum)
-	dataframeWithIdentifier = dataframeWithIdentifier[dataframeWithIdentifier['attributeKind'] == '_field']
-	dataframeWithIdentifier = dataframeWithIdentifier[['attribute', 'TypeAlias_hasDOTIdentifier']].drop_duplicates()
+	dataframeWithIdentifier: pandas.DataFrame = (dataframeSource
+		[['attribute', 'TypeAlias_hasDOTIdentifier']]
+		.drop_duplicates()
+		.pipe(_sortCaseInsensitive, ['attribute'])
+	)
 	dataframe = dataframe.merge(dataframeWithIdentifier, on='attribute', how='left')
-		# Create the tuple list structure
+
+	# Create the tuple list structure
 	listTuples: list[tuple[int, str, str, list[str], bool, list[str], bool]] = []
 	for attribute, group in dataframe.groupby('attribute'):
 		listTypesByVersion: list[tuple[int, list[str]]] = cast(ListTypesByVersion, group['listTypesByVersion'].tolist())
 		TypeAlias_hasDOTIdentifier: str = cast(str, group['TypeAlias_hasDOTIdentifier'].iloc[0])   # pyright: ignore[reportUnknownMemberType]
-		
+
 		if len(listTypesByVersion) > 1:
 			# Handle multiple versions: create combined version for max version
 			versionMax: int = max([typesForVersion[0] for typesForVersion in listTypesByVersion])
 			combinedTypes: list[str] = sorted(chain(*[typesForVersion[1] for typesForVersion in listTypesByVersion]), key=str.lower)
-			
+
 			# Add entry for minimum version
 			versionMin: int = min([typesForVersion[0] for typesForVersion in listTypesByVersion])
 			minVersionTypes: list[str] = []
@@ -196,8 +197,8 @@ def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Versio
 				if versionMinorMinimumAttribute == versionMin:
 					minVersionTypes = list_type_ast_expr
 					break
-			
-			if versionMin > pythonVersionMinorMinimum:
+
+			if versionMin > pythonMinimumVersionMinor:
 				# Entry for minimum version with orElse pointing to combined types
 				listTuples.append((versionMin, str(attribute), TypeAlias_hasDOTIdentifier, minVersionTypes, False, combinedTypes, False))
 			else:
@@ -207,7 +208,7 @@ def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Versio
 			# Single version case
 			versionMinorMinimumAttribute, list_type_ast_expr = listTypesByVersion[0]
 			listTuples.append((versionMinorMinimumAttribute, str(attribute), TypeAlias_hasDOTIdentifier, list_type_ast_expr, False, [], False))
-	
+
 	return listTuples
 
 def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, DictionaryClassDef]:
@@ -228,9 +229,10 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 	listElements: list[str] = listElementsHARDCODED
 	columnsHashable: slice = slice(0, 9)
 
-	dataframe: pandas.DataFrame = getDataframe(includeDeprecated, versionMinorMaximum)
-	dataframe = dataframe[dataframe['attribute'] != "No"]
-	# dataframe = dataframe[listElements].drop_duplicates(subset=listElements[columnsHashable])
+	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
+		.query("attribute != 'No'")
+		.pipe(_sortCaseInsensitive, ['ClassDefIdentifier'], ['versionMinorMinimumClass', 'versionMinorMinimum_match_args'])
+	)
 
 	def compute_kwarg(group: pandas.Series) -> str:   # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
 		list_kwargAnnotation: list[str] = sorted(value for value in group.unique() if value != "No")
@@ -270,51 +272,50 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 	listElementsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'classAs_astAttribute', 'TypeAlias_hasDOTIdentifier']
 	listElements: list[str] = listElementsHARDCODED
 
-	dataframe: pandas.DataFrame = getDataframe(includeDeprecated, versionMinorMaximum)
-	dataframe = dataframe[dataframe['attributeKind'] == '_field']
-	dataframe = _sortCaseInsensitive(dataframe, listElements[0:2])
-	dataframe = dataframe[listElements].drop_duplicates()
-
+	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
+		.query("attributeKind == '_field'")
+		.pipe(_sortCaseInsensitive, listElements[0:2])
+		[listElements]
+		.drop_duplicates()
+	)
 	def compute_combined_versions(group: pandas.DataFrame) -> dict[int, list[str]]:
 		"""Combine and aggregate version data using pandas vectorized operations."""
-		group = group.copy()
-		group['classAs_astAttribute_lower'] = group['classAs_astAttribute'].str.lower() # pyright: ignore[reportUnknownMemberType]
-		group = group.sort_values('classAs_astAttribute_lower')
-		
+		group = _sortCaseInsensitive(group, ['classAs_astAttribute'])
+
 		versionData: dict[int, list[str]] = {}
 		for versionMinorMinimumAttribute, version_group in group.groupby('versionMinorMinimumAttribute'):
 			versionData[int(cast(int, versionMinorMinimumAttribute))] = sorted(
-				version_group['classAs_astAttribute'].unique(), 
+				version_group['classAs_astAttribute'].unique(),
 				key=str.lower
 			)
-		
+
 		if len(versionData) > 1:
 			all_versions: list[int] = sorted(versionData.keys())
 			max_version: int = max(all_versions)
 			min_version: int = min(all_versions)
-			
+
 			combined_classes: list[str] = []
 			for version_classes in versionData.values():
 				combined_classes.extend(version_classes)
 			combined_sorted = sorted(set(combined_classes), key=str.lower)
-			
-			if min_version <= pythonVersionMinorMinimum:
+
+			if min_version <= pythonMinimumVersionMinor:
 				aggregated_data: dict[int, list[str]] = {min_version: versionData[min_version]}
-				if max_version > pythonVersionMinorMinimum:
+				if max_version > pythonMinimumVersionMinor:
 					aggregated_data[max_version] = combined_sorted
 				return aggregated_data
-		
+
 		return versionData
 
 	listTuples: list[tuple[int, str, list[str], list[str]]] = []
-	
+
 	for _attribute, attribute_group in dataframe.groupby('attribute'):
 		TypeAlias_hasDOTIdentifier = str(attribute_group['TypeAlias_hasDOTIdentifier'].iloc[0]) # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
 		subcategories: dict[str, dict[int, list[str]]] = {}
-		
+
 		for TypeAlias_hasDOTSubcategory, subcategory_group in attribute_group.groupby('TypeAlias_hasDOTSubcategory'):
 			subcategories[str(TypeAlias_hasDOTSubcategory)] = compute_combined_versions(subcategory_group)
-		
+
 		if len(subcategories) == 1:
 			single_subcategory_data: dict[int, list[str]] = next(iter(subcategories.values()))
 			for versionMinorData, listClassAs_astAttribute in single_subcategory_data.items():
@@ -325,22 +326,22 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 				for versionMinorData, listClassAs_astAttribute in subcategory_data.items():
 					orElseListClassAs_astAttribute: list[str] = []
 					listTuples.append((versionMinorData, TypeAlias_hasDOTSubcategory, listClassAs_astAttribute, orElseListClassAs_astAttribute))
-			
+
 			attributeDictionaryVersions: dict[int, list[str]] = defaultdict(list)
 			for typeAliasSubcategory, dictionaryVersions in subcategories.items():
 				astNameTypeAlias: ast.Name = Make.Name(typeAliasSubcategory)
 				dumped_name: str = dump(astNameTypeAlias)
-				
-				if any(version <= pythonVersionMinorMinimum for version in dictionaryVersions.keys()):
+
+				if any(version <= pythonMinimumVersionMinor for version in dictionaryVersions.keys()):
 					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(dumped_name)
 				else:
 					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(dumped_name)
 					attributeDictionaryVersions[max(dictionaryVersions.keys())].append(dumped_name)
-			
+
 			for versionMinorData, listClassAs_astAttribute in attributeDictionaryVersions.items():
 				orElseListClassAs_astAttribute: list[str] = []
 				listTuples.append((versionMinorData, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute, orElseListClassAs_astAttribute))
-	
+
 	return listTuples
 
 def updateDataframe() -> None:
@@ -378,8 +379,8 @@ def updateDataframe() -> None:
 	'keywordArguments',
 
 	'ast_arg',
-	'listStr4FunctionDef_args', 
-	'listDefaults', 
+	'listStr4FunctionDef_args',
+	'listDefaults',
 	'listTupleCall_keywords',
 	'TypeAlias_hasDOTIdentifier',
 ]
@@ -414,20 +415,20 @@ def updateDataframe() -> None:
 	] = "ConstantValueType"
 
 	dataframe['versionMinorMinimum_match_args'] = numpy.where(
-		dataframe.groupby(['ClassDefIdentifier', 'match_args'])['versionMinorData'].transform('min') == versionMinor_astMinimumSupported, 
-		-1, 
+		dataframe.groupby(['ClassDefIdentifier', 'match_args'])['versionMinorData'].transform('min') == versionMinor_astMinimumSupported,
+		-1,
 		dataframe.groupby(['ClassDefIdentifier', 'match_args'])['versionMinorData'].transform('min')
 	)
 
 	dataframe['versionMinorMinimumAttribute'] = numpy.where(
-		dataframe.groupby(['ClassDefIdentifier', 'attribute'])['versionMinorData'].transform('min') == versionMinor_astMinimumSupported, 
-		-1, 
+		dataframe.groupby(['ClassDefIdentifier', 'attribute'])['versionMinorData'].transform('min') == versionMinor_astMinimumSupported,
+		-1,
 		dataframe.groupby(['ClassDefIdentifier', 'attribute'])['versionMinorData'].transform('min')
 	)
 
 	dataframe['versionMinorMinimumClass'] = numpy.where(
-		dataframe.groupby('ClassDefIdentifier')['versionMinorData'].transform('min') == versionMinor_astMinimumSupported, 
-		-1, 
+		dataframe.groupby('ClassDefIdentifier')['versionMinorData'].transform('min') == versionMinor_astMinimumSupported,
+		-1,
 		dataframe.groupby('ClassDefIdentifier')['versionMinorData'].transform('min')
 	)
 
@@ -435,7 +436,7 @@ def updateDataframe() -> None:
 		astModule: ast.Module = ast.parse(string)
 		ast_expr: ast.expr = raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
 		return dump(ast_expr)
-	
+
 	def typeSansNone(string: str) -> str:
 		return str2expr(string.replace(' | None', ''))
 
@@ -453,14 +454,14 @@ def updateDataframe() -> None:
 
 	# Update 'ast_arg' column based on conditions
 	dataframe['ast_arg'] = dataframe.apply(
-		lambda row: "No" if row['attribute'] == "No" else dump(Make.arg(row['attributeRename'] if row['attributeRename'] != "No" else row['attribute'], eval(row['type_ast_expr']))),   # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]  
+		lambda row: "No" if row['attribute'] == "No" else dump(Make.arg(row['attributeRename'] if row['attributeRename'] != "No" else row['attribute'], eval(row['type_ast_expr']))),   # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
 		axis=1
-	)			
+	)
 
 	# Add TypeAlias_hasDOTIdentifier computation
 	dataframe['TypeAlias_hasDOTIdentifier'] = numpy.where(
 		dataframe['attributeKind'] == '_field',
-		"hasDOT" + cast(str, dataframe['attribute']), 
+		"hasDOT" + cast(str, dataframe['attribute']),
 		"No"
 	)
 
@@ -478,7 +479,7 @@ def updateDataframe() -> None:
 		"No",
 		cast(str, dataframe['TypeAlias_hasDOTIdentifier']) + "_" + processedTypeString
 	)
-	
+
 	# Update 'listStr4FunctionDef_args', 'listDefaults', 'listTupleCall_keywords' columns based on match_args
 	def compute_listFunctionDef_args(row: pandas.Series) -> pandas.Series:   # pyright: ignore[reportUnknownParameterType, reportMissingTypeArgument]
 		if row['attribute'] == "No":
@@ -509,17 +510,17 @@ def updateDataframe() -> None:
 				if matching_row.iloc[0]['keywordArguments']:
 					keywordValue = cast(str, matching_row.iloc[0]['defaultValue'])
 				else:
-					ast_arg: str = cast(str, matching_row.iloc[0]['ast_arg'])					
+					ast_arg: str = cast(str, matching_row.iloc[0]['ast_arg'])
 					if matching_row.iloc[0]['attributeRename'] != "No":
 						keywordValue = cast(str, matching_row.iloc[0]['attributeRename'])
 					keywordValue = f"ast.Name('{keywordValue}')"
 					if matching_row.iloc[0]['list2Sequence']:
 						keywordValue = f"ast.Call(ast.Name('list'), args=[{keywordValue}])"
 					if matching_row.iloc[0]['defaultValue'] != "No":
-						listDefaults.append(cast(str, matching_row.iloc[0]['defaultValue'])) 
+						listDefaults.append(cast(str, matching_row.iloc[0]['defaultValue']))
 					listStr4FunctionDef_args.append(ast_arg)
-			listTupleCall_keywords.append((argIdentifier, keywordValue)) 
-		return pandas.Series([listStr4FunctionDef_args, listDefaults, listTupleCall_keywords], index=[ 
+			listTupleCall_keywords.append((argIdentifier, keywordValue))
+		return pandas.Series([listStr4FunctionDef_args, listDefaults, listTupleCall_keywords], index=[
 			'listStr4FunctionDef_args',
 			'listDefaults',
 			'listTupleCall_keywords'

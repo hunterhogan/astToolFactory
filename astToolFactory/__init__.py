@@ -1,7 +1,7 @@
 from astToolFactory._theSSOT import (
 	keywordArgumentsIdentifier as keywordArgumentsIdentifier,
 	listPylanceErrors as listPylanceErrors,
-	pythonVersionMinorMinimum as pythonVersionMinorMinimum,
+	pythonMinimumVersionMinor as pythonMinimumVersionMinor,
     settingsPackage as settingsPackage,
     settingsPackageToManufacture as settingsPackageToManufacture,
 )
@@ -17,7 +17,6 @@ from astToolFactory._snippets import (
 )
 
 from astToolFactory.datacenter import (
-	Dictionary_type_ast_expr as Dictionary_type_ast_expr,
 	DictionaryClassDef as DictionaryClassDef,
 	DictionaryMatchArgs as DictionaryMatchArgs,
 	getElementsBe as getElementsBe,
