@@ -87,46 +87,47 @@ def make_astTypes() -> None:
 		])
 	)
 
-	# list_match_case: list[ast.match_case] = []
-
-	# for useMatchCase, versionMinorMinimum, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute in getElementsTypeAlias():
-	# 	astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier, ast.Store())
-	# 	TypeAliasClasses: ast.expr = BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute])
-	# 	ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, TypeAliasClasses)
-
-	# 	if useMatchCase:
-	# 		if versionMinorMinimum > pythonMinimumVersionMinor:
-	# 			pattern: ast.MatchAs = Make.MatchAs(name = 'version')
-	# 			guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimum)])])
-	# 		else:
-	# 			pattern = Make.MatchAs()
-	# 			guard = None
-	# 		list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
-
-	# 		if useMatchCase > 1:
-	# 			continue
-	# 		else:
-	# 			ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
-	# 			list_match_case.clear()
-
-	# 	list4ModuleBody.append(ast_stmt)
-
-	def create_ast_stmt(listClassAs_astAttribute: Sequence[str]) -> ast.stmt:
-		return Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in listClassAs_astAttribute]))
-
-	for versionMinorMinimumAttribute, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute, orElseListClassAs_astAttribute in getElementsTypeAlias():
+	# The new code
+	list_match_case: list[ast.match_case] = []
+	for TypeAlias_hasDOTIdentifier, list4TypeAlias_value, useMatchCase, versionMinorMinimum in getElementsTypeAlias():
 		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier, ast.Store())
-		ast_stmt: ast.stmt = create_ast_stmt(listClassAs_astAttribute)
-		if versionMinorMinimumAttribute > pythonMinimumVersionMinor:
-			orElse: list[ast.stmt]= []
-			if orElseListClassAs_astAttribute:
-				orElse = [create_ast_stmt(orElseListClassAs_astAttribute)]
-			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()]
-							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimumAttribute)])])
-						, body=[ast_stmt]
-						, orElse=orElse
-						)
+		TypeAlias_value: ast.expr = BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in list4TypeAlias_value])
+		ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, value=TypeAlias_value)
+
+		if useMatchCase:
+			if versionMinorMinimum > pythonMinimumVersionMinor:
+				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
+				guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimum)])])
+			else:
+				pattern = Make.MatchAs()
+				guard = None
+			list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
+
+			if useMatchCase > 1:
+				continue
+			else:
+				ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
+				list_match_case.clear()
+
 		list4ModuleBody.append(ast_stmt)
+
+	# The OLD code
+	# def create_ast_stmt(list4TypeAlias_value: Sequence[str]) -> ast.stmt:
+	# 	return Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in list4TypeAlias_value]))
+
+	# for versionMinorMinimumAttribute, TypeAlias_hasDOTIdentifier, list4TypeAlias_value, orElseList4TypeAlias_value in getElementsTypeAlias():
+	# 	astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier, ast.Store())
+	# 	ast_stmt: ast.stmt = create_ast_stmt(list4TypeAlias_value)
+	# 	if versionMinorMinimumAttribute > pythonMinimumVersionMinor:
+	# 		orElse: list[ast.stmt]= []
+	# 		if orElseList4TypeAlias_value:
+	# 			orElse = [create_ast_stmt(orElseList4TypeAlias_value)]
+	# 		ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()]
+	# 						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimumAttribute)])])
+	# 					, body=[ast_stmt]
+	# 					, orElse=orElse
+	# 					)
+	# 	list4ModuleBody.append(ast_stmt)
 
 	astModule: ast.Module = Make.Module(
 		body=[

@@ -269,8 +269,44 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 	return dictionaryClassDef
 
 def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[int, str, list[str], list[str]]]:
-	listElementsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'classAs_astAttribute', 'TypeAlias_hasDOTIdentifier']
+	listElementsHARDCODED: list[str] = [
+		'attribute',
+		'TypeAlias_hasDOTSubcategory',
+		'versionMinorMinimumAttribute',
+		'ClassDefIdentifier',
+		'classAs_astAttribute',
+		'TypeAlias_hasDOTIdentifier',
+		]
 	listElements: list[str] = listElementsHARDCODED
+
+	# relationships between columns
+		# each 'attribute'
+		# has at least one 'versionMinorMinimumAttribute',
+		# has one overall 'TypeAlias_hasDOTIdentifier',
+		# 	each 'TypeAlias_hasDOTSubcategory',
+		# 	has a 'versionMinorMinimumAttribute' and it might higher than the overall 'versionMinorMinimumAttribute',
+		# 	has at least one 'classAs_astAttribute', which we want to sort using 'ClassDefIdentifier' because in the future, 'classAs_astAttribute' will be an ast object but 'ClassDefIdentifier' will always be a string
+
+	# output
+	# the tuple
+	# TypeAlias_hasDOTIdentifier, list4TypeAlias_value, useMatchCase, versionMinorMinimum
+
+	# source of values
+	# useMatchCase = 0 (+1 for each unique value of versionMinorMinimumAttribute > pythonMinimumVersionMinor; then +1 if any versionMinorMinimumAttribute <= pythonMinimumVersionMinor)
+	# versionMinorMinimum = 'versionMinorMinimumAttribute'
+	# TypeAlias_hasDOTIdentifier = 'TypeAlias_hasDOTIdentifier' | 'TypeAlias_hasDOTSubcategory'
+	# list4TypeAlias_value = list['classAs_astAttribute'] (the column) | list[TypeAlias_hasDOTIdentifier] (the variable)
+
+	# sorting: the sort is partially based on columns that are NOT in the tuples
+	# 1. 'attribute', CaseInsensitive, ascending
+	# 2. TypeAlias_hasDOTIdentifier (the variable/tuple value)
+	# 	A. 'TypeAlias_hasDOTSubcategory' before 'TypeAlias_hasDOTIdentifier'
+	# 		a. 'TypeAlias_hasDOTSubcategory', CaseInsensitive, ascending
+	# 		b. versionMinorMinimum, _descending_, which should cause useMatchCase to be descending
+	# 	B. 'TypeAlias_hasDOTIdentifier'
+	# 		a. versionMinorMinimum, _descending_, which should cause useMatchCase to be descending
+
+	# list4TypeAlias_value is sorted within the list, CaseInsensitive, ascending
 
 	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
 		.query("attributeKind == '_field'")
@@ -278,6 +314,7 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 		[listElements]
 		.drop_duplicates()
 	)
+
 	def compute_combined_versions(group: pandas.DataFrame) -> dict[int, list[str]]:
 		"""Combine and aggregate version data using pandas vectorized operations."""
 		group = _sortCaseInsensitive(group, ['classAs_astAttribute'])
@@ -318,14 +355,14 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 
 		if len(subcategories) == 1:
 			single_subcategory_data: dict[int, list[str]] = next(iter(subcategories.values()))
-			for versionMinorData, listClassAs_astAttribute in single_subcategory_data.items():
-				orElseListClassAs_astAttribute: list[str] = []
-				listTuples.append((versionMinorData, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute, orElseListClassAs_astAttribute))
+			for versionMinorData, list4TypeAlias_value in single_subcategory_data.items():
+				orElseList4TypeAlias_value: list[str] = []
+				listTuples.append((versionMinorData, TypeAlias_hasDOTIdentifier, list4TypeAlias_value, orElseList4TypeAlias_value))
 		else:
 			for TypeAlias_hasDOTSubcategory, subcategory_data in subcategories.items():
-				for versionMinorData, listClassAs_astAttribute in subcategory_data.items():
-					orElseListClassAs_astAttribute: list[str] = []
-					listTuples.append((versionMinorData, TypeAlias_hasDOTSubcategory, listClassAs_astAttribute, orElseListClassAs_astAttribute))
+				for versionMinorData, list4TypeAlias_value in subcategory_data.items():
+					orElseList4TypeAlias_value: list[str] = []
+					listTuples.append((versionMinorData, TypeAlias_hasDOTSubcategory, list4TypeAlias_value, orElseList4TypeAlias_value))
 
 			attributeDictionaryVersions: dict[int, list[str]] = defaultdict(list)
 			for typeAliasSubcategory, dictionaryVersions in subcategories.items():
@@ -338,9 +375,9 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 					attributeDictionaryVersions[min(dictionaryVersions.keys())].append(dumped_name)
 					attributeDictionaryVersions[max(dictionaryVersions.keys())].append(dumped_name)
 
-			for versionMinorData, listClassAs_astAttribute in attributeDictionaryVersions.items():
-				orElseListClassAs_astAttribute: list[str] = []
-				listTuples.append((versionMinorData, TypeAlias_hasDOTIdentifier, listClassAs_astAttribute, orElseListClassAs_astAttribute))
+			for versionMinorData, list4TypeAlias_value in attributeDictionaryVersions.items():
+				orElseList4TypeAlias_value: list[str] = []
+				listTuples.append((versionMinorData, TypeAlias_hasDOTIdentifier, list4TypeAlias_value, orElseList4TypeAlias_value))
 
 	return listTuples
 
