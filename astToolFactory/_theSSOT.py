@@ -38,6 +38,8 @@ keywordArgumentsIdentifier: str = 'keywordArguments'
 listPylanceErrorsHARDCODED: list[str] = ['annotation', 'arg', 'args', 'body', 'keys', 'name', 'names', 'op', 'orelse', 'pattern', 'returns', 'target', 'value',]
 listPylanceErrorsHARDCODED.extend(['argtypes', 'bases', 'cases', 'comparators', 'decorator_list', 'defaults', 'elts', 'finalbody', 'generators', 'ifs', 'items',])
 listPylanceErrorsHARDCODED.extend(['keywords', 'kw_defaults', 'kwd_patterns', 'ops', 'patterns', 'targets', 'type_params', 'values',])
+listPylanceErrorsHARDCODED.extend(['asname', 'bound', 'cause', 'default_value', 'exc', 'format_spec', 'guard', 'kind', 'kwarg',])
+listPylanceErrorsHARDCODED.extend(['lower', 'module', 'msg', 'optional_vars', 'rest', 'step', 'type_comment', 'type', 'upper', 'vararg',])
 
 listPylanceErrors = listPylanceErrorsHARDCODED
 

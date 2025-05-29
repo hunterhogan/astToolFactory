@@ -18,13 +18,14 @@ from astToolFactory.factory_annex import (
 )
 from astToolkit import (
 	Add, astModuleToIngredientsFunction, BitOr, ClassIsAndAttribute, IfThis, IngredientsFunction,
-	IngredientsModule, LedgerOfImports, Make, NodeChanger, parseLogicalPath2astModule,
+	IngredientsModule, LedgerOfImports, Make, NodeChanger, NodeTourist, parseLogicalPath2astModule,
+	Then,
 )
 from astToolkit.transformationTools import write_astModule
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from pathlib import PurePosixPath
-from typing import cast
-from Z0Z_tools import writeStringToHere
+from typing import cast, TypeGuard
+from Z0Z_tools import raiseIfNone, writeStringToHere
 import ast
 import autoflake
 
@@ -195,11 +196,14 @@ def makeToolBe() -> None:
 	writeClass('Be', list4ClassDefBody, list4ModuleBody)
 
 def makeToolClassIsAndAttribute() -> None:
-	def create_ast_stmt(list_ast_expr: list[str], attributeIsNotNone: bool) -> ast.stmt:
+	def create_ast_stmt(list_ast_expr: list[str], attributeIsNotNone: bool | str) -> ast.stmt:
 		workhorseReturnValue: ast.BoolOp = Make.BoolOp(ast.And(), values=[Make.Call(Make.Name('isinstance'), args=[Make.Name('node'), Make.Name('astClass')])])
 		if attributeIsNotNone:
 			ops: list[ast.cmpop]= [ast.IsNot()] 
 			comparators: list[ast.expr]=[Make.Constant(None)]
+			if attributeIsNotNone == 'Sequence':
+				ops: list[ast.cmpop]= [ast.NotEq()] 
+				comparators: list[ast.expr]=[Make.List([Make.Constant(None)])]
 			workhorseReturnValue.values.append(Make.Compare(Make.Attribute(Make.Name('node'), attribute), ops=ops, comparators=comparators))
 		workhorseReturnValue.values.append(Make.Call(Make.Name('attributeCondition'), args=[Make.Attribute(Make.Name('node'), attribute)]))
 		
@@ -417,14 +421,14 @@ class ast_attributes_kind(ast_attributes, total=False):
 		kwarg: ast.arg | None = None
 		if str(dictionaryMethodElements['kwarg']) != 'No':
 			setKeywordArgumentsAnnotationTypeAlias.add(dictionaryMethodElements['kwarg'])
-			kwarg = ast.arg(keywordArgumentsIdentifier, annotation=ast.Name(str(dictionaryMethodElements['kwarg'])))
+			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Name(str(dictionaryMethodElements['kwarg'])))
 
 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in dictionaryMethodElements['listDefaults']]
 
 		listCall_keyword: list[ast.keyword] = []
 		for tupleCall_keywords in dictionaryMethodElements['listTupleCall_keywords']:
 			argIdentifier, keywordValue = tupleCall_keywords
-			listCall_keyword.append(ast.keyword(argIdentifier, value=eval(keywordValue)))
+			listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
 		if kwarg is not None:
 			listCall_keyword.append(toolMakeFunctionDefReturnCall_keywords)
 
@@ -444,16 +448,16 @@ class ast_attributes_kind(ast_attributes, total=False):
 				if versionMinorMinimum_match_args > versionMinorMinimumClass:
 					versionMinorData: int = versionMinorMinimum_match_args
 					body = [ast_stmt]
-					orelse = []
-					ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
+					orElse = []
+					ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
-								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorData)])])
+								, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
 							, body=body
-							, orelse=orelse
+							, orElse=orElse
 						)
 		else:
 			body: list[ast.stmt] = []
-			orelse: list[ast.stmt] = []
+			orElse: list[ast.stmt] = []
 			versionMinorData: int = -999999999999999999
 			for versionMinorMinimum_match_args, dictionaryMethodElements in dictionaryAllMatch_argsVersions.items():
 				# Do some variations of the method need to be conditional on the Python version?
@@ -462,12 +466,12 @@ class ast_attributes_kind(ast_attributes, total=False):
 					body = [create_ast_stmt(dictionaryMethodElements)]
 					versionMinorData = versionMinorMinimum_match_args
 				else:
-					orelse = [create_ast_stmt(dictionaryMethodElements)]
-			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
+					orElse = [create_ast_stmt(dictionaryMethodElements)]
+			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
-						, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorData)])])
+						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
 					, body=body
-					, orelse=orelse
+					, orElse=orElse
 				)
 		assert ast_stmt is not None, "Coding by brinkmanship!"
 		return ast_stmt
@@ -498,30 +502,30 @@ class ast_attributes_kind(ast_attributes, total=False):
 				if versionMinorMinimumClass > pythonVersionMinorMinimum:
 					versionMinorData: int = versionMinorMinimumClass
 					body = [ast_stmt]
-					orelse = []
-					ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
+					orElse = []
+					ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
 								, ops=[ast.GtE()]
-								, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorData)])])
+								, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
 							, body=body
-							, orelse=orelse
+							, orElse=orElse
 						)
 
 		else:
 			# Does _every_ variation of the method need to be conditional on the Python version?
 			body: list[ast.stmt] = []
-			orelse: list[ast.stmt] = []
+			orElse: list[ast.stmt] = []
 			versionMinorData: int = -999999999999999999
 			for versionMinorMinimumClass, dictionaryAllMatch_argsVersions in dictionaryAllClassVersions.items():
 				if versionMinorMinimumClass > pythonVersionMinorMinimum:
 					body = [unpackDictionaryAllMatch_argsVersions()]
 					versionMinorData = versionMinorMinimumClass
 				else:
-					orelse = [unpackDictionaryAllMatch_argsVersions()]
-			ast_stmt = ast.If(ast.Compare(ast.Attribute(ast.Name('sys'), 'version_info')
+					orElse = [unpackDictionaryAllMatch_argsVersions()]
+			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
-						, comparators=[ast.Tuple([ast.Constant(3), ast.Constant(versionMinorData)])])
+						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
 					, body=body
-					, orelse=orelse
+					, orElse=orElse
 				)
 
 		assert ast_stmt is not None, "Coding by brinkmanship!"
@@ -548,5 +552,5 @@ if __name__ == "__main__":
 	makeToolDOT()
 	makeToolGrab()
 	makeToolMake()
-	makeTool_dump()
+	# makeTool_dump()
 
