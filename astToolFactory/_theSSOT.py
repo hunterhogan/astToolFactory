@@ -52,4 +52,9 @@ Z0Z_pathRoot = Path('/apps')
 Z0Z_PackageToManufactureIdentifier: str = 'astToolkit'
 Z0Z_PackageToManufacturePath = Z0Z_pathRoot / Z0Z_PackageToManufactureIdentifier / Z0Z_PackageToManufactureIdentifier
 settingsPackageToManufacture = PackageSettings(identifierPackage=Z0Z_PackageToManufactureIdentifier, pathPackage=Z0Z_PackageToManufacturePath)
+# TODO datacenter needs to do all data manipulation, not factory.py
+# TODO more and better pandas usage
+
+pathFilenameDataframeAST: Path = settingsPackage.pathPackage / 'dataframeAST.pkl'
+versionMinor_astMinimumSupported = 9
 

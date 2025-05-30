@@ -1,11 +1,11 @@
 """API for data. The rest of the package should be ignorant of the specifics of the data source.
 This module provides a set of functions to interact with the data source, allowing for easy retrieval and manipulation of data."""
-from astToolFactory import pythonMinimumVersionMinor, settingsPackage
+from astToolFactory import (
+	pathFilenameDataframeAST, pythonMinimumVersionMinor, versionMinor_astMinimumSupported,
+)
 from astToolkit import Be, DOT, dump, Make, NodeTourist, Then
-from collections import defaultdict
 from collections.abc import Sequence
 from itertools import chain
-from pathlib import Path
 from typing import cast, TypeAlias, TypedDict
 from Z0Z_tools import raiseIfNone
 import ast
@@ -13,13 +13,6 @@ import numpy
 import pandas
 import re
 
-# TODO datacenter needs to do all data manipulation, not factory.py
-# TODO more and better pandas usage
-
-pathFilenameDataframeAST: Path = settingsPackage.pathPackage / 'dataframeAST.pkl'
-versionMinor_astMinimumSupported = 9
-
-Attribute: TypeAlias = str
 Version: TypeAlias = int
 ListTypesASTformAsStr: TypeAlias = list[str]
 TupleTypesForVersion: TypeAlias = tuple[Version, ListTypesASTformAsStr]
@@ -75,7 +68,7 @@ def getElementsBe(includeDeprecated: bool = False, versionMinorMaximum: int | No
 		.pipe(_sortCaseInsensitive, ['ClassDefIdentifier'], ['versionMinorMinimumClass'])
 	)
 
-	return dataframe.to_dict(orient='records')   # pyright: ignore[reportReturnType]
+	return cast(list[DictionaryToolBe], dataframe.to_dict(orient='records'))
 
 def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[int, str, str, bool, list[str], bool | str, list[str], bool | str]]:
 	listElementsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'typeSansNone_ast_expr', 'TypeAlias_hasDOTIdentifier']
@@ -108,7 +101,7 @@ def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinor
 
 		if len(subcategories) == 1:
 			# Single subcategory case
-			subcategoryData = groupAttribute.iloc[0]
+			subcategoryData = groupAttribute.iloc[0] # pyright: ignore[reportUnknownVariableType]
 			addTuple(
 				int(cast(int, subcategoryData['versionMinorMinimumAttribute'])),
 				TypeAlias_hasDOTIdentifier,
@@ -120,24 +113,24 @@ def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinor
 			# Multiple subcategories case
 			# Add individual overload entries
 			for subcategoryName, subcategoryGroup in subcategories:
-				subcategoryData = subcategoryGroup.iloc[0]
+				subcategoryData = subcategoryGroup.iloc[0] # pyright: ignore[reportUnknownVariableType]
 				addTuple(
-					int(subcategoryData['versionMinorMinimumAttribute']),
+					int(cast(int, subcategoryData['versionMinorMinimumAttribute'])),
 					str(subcategoryName),
 					True,  # isOverload
-					[str(subcategoryData['typeSansNone_ast_expr'])],
-					subcategoryData['attributeIsNotNone']
+					[str(cast(str, subcategoryData['typeSansNone_ast_expr']))],
+					cast(bool | str, subcategoryData['attributeIsNotNone'])
 				)			# Add combined entry
 			unique_typeSansNone_ast_expr = sorted(groupAttribute['typeSansNone_ast_expr'].drop_duplicates().astype(str).tolist(), key=str.lower)
-			attributeNotNoneValues = [val for val in groupAttribute['attributeIsNotNone'].tolist()]
-			hasSequenceInAny = any(str(val) == 'Sequence' for val in attributeNotNoneValues)
-			hasTruthyInAny = any(bool(val) and str(val) != 'False' for val in attributeNotNoneValues)
+			attributeNotNoneValues: list[bool | str] = [value for value in groupAttribute['attributeIsNotNone'].tolist()] # pyright: ignore[reportUnknownVariableType]
+			hasSequenceInAny = any(str(value) == 'Sequence' for value in attributeNotNoneValues)
+			hasTruthyInAny = any(bool(value) and str(value) != 'False' for value in attributeNotNoneValues)
 			combinedAttributeIsNotNone: bool | str = (
 				'Sequence' if hasSequenceInAny
 				else True if hasTruthyInAny
 				else False
 			)
-			minimum_version = int(groupAttribute['versionMinorMinimumAttribute'].min())
+			minimum_version = int(cast(int, groupAttribute['versionMinorMinimumAttribute'].min()))
 
 			addTuple(
 				minimum_version,
@@ -268,7 +261,6 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 			dictionaryClassDef[cast(str, ClassDefIdentifier)]['versionMinorMinimumClass'][cast(int, versionMinorMinimumClass)] = idkHowToNameThingsOrFollowInstructions(groupbyClassVersion)
 	return dictionaryClassDef
 
-
 def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, list[str], int, int]]:
 	# START keep this
 	listElementsHARDCODED: list[str] = [
@@ -281,52 +273,10 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 		]
 	listElements: list[str] = listElementsHARDCODED
 
-	# relationships between columns
-		# by each 'attribute'
-		# has at least one 'versionMinorMinimumAttribute',
-		# has one overall 'TypeAlias_hasDOTIdentifier',
-		# 	each 'TypeAlias_hasDOTSubcategory',
-		# 	has at least one 'versionMinorMinimumAttribute',
-		# 		the value(s) might be higher than the smallest overall 'versionMinorMinimumAttribute',
-		# 	has at least one 'classAs_astAttribute',
-		# 		which we want to sort using 'ClassDefIdentifier' because in the future, 'classAs_astAttribute' will be an ast object but 'ClassDefIdentifier' will always be a string,
-
-	# output
-	# the tuple
-	# TypeAlias_hasDOTIdentifier, list4TypeAlias_value, useMatchCase, versionMinorMinimum
-
-	# source of values
-	# TypeAlias_hasDOTIdentifier = 'TypeAlias_hasDOTIdentifier' | 'TypeAlias_hasDOTSubcategory'
-	# list4TypeAlias_value = list['classAs_astAttribute'] (the column) | list[TypeAlias_hasDOTIdentifier] (the variable)
-	# 		if there is more than one versionMinorMinimumAttribute, then the elements of for each version's list are the elements whose versionMinorMinimumAttribute is <= the versionMinorMinimum being aggregated
-	# useMatchCase = 0 (+1 for each unique value of versionMinorMinimumAttribute > pythonMinimumVersionMinor; then +1 if any versionMinorMinimumAttribute <= pythonMinimumVersionMinor)
-	# versionMinorMinimum = 'versionMinorMinimumAttribute'
-
-	# sorting: the sort is partially based on columns that are NOT in the tuples
-	# 1. 'attribute', CaseInsensitive, ascending
-	# 2. TypeAlias_hasDOTIdentifier (the variable/tuple value)
-	# 	A. 'TypeAlias_hasDOTSubcategory' before 'TypeAlias_hasDOTIdentifier'
-	# 		a. 'TypeAlias_hasDOTSubcategory', CaseInsensitive, ascending
-	# 		b. versionMinorMinimum, _descending_, which should cause useMatchCase to be descending
-	# 	B. 'TypeAlias_hasDOTIdentifier'
-	# 		a. versionMinorMinimum, _descending_, which should cause useMatchCase to be descending
-
-	# use _sortCaseInsensitive for sorting
-	# use _sortCaseInsensitive for sorting
-	# ONLY use _sortCaseInsensitive for sorting
-	# do not sort columns any other way
-	# ONLY use _sortCaseInsensitive for sorting
-
-	# list4TypeAlias_value is sorted within the list, CaseInsensitive, ascending
-
 	# no lambda. period. NO. lambda. period. no lambda.
 	# no intermediate data structures
 	# no `for`, no `iterrows`, no loops.
-	# no intermediate data structures
 	# no duplicate statements: if even one line is a duplicate, I will reject the entire thing
-	# no intermediate data structures, which means no dictionaries
-	# no new functions	# no intermediate data structures
-	# no new classes
 	# END keep this
 
 	def _makeNameDumped(subcategoryName: str) -> str:
@@ -337,31 +287,18 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 		[listElements]
 		.drop_duplicates()
 	)
-	print(dataframe.columns)
+
 	# Apply sorting
 	dataframe = _sortCaseInsensitive(
 		dataframe,
 		['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute'],
 		['versionMinorMinimumAttribute'],
 		ascending=[True, True, False]
-	)
+	).reset_index()
 
 	# Calculate derived columns using vectorized operations
 	dataframe['subcategoryCount'] = dataframe.groupby('attribute')['TypeAlias_hasDOTSubcategory'].transform('nunique')
 	dataframe['versionMinorMinimumAttribute'] = dataframe['versionMinorMinimumAttribute'].astype(int)
-
-	# For each attribute-version combination, include all classes available up to that version
-	dataframe = dataframe.merge(
-		dataframe.groupby('attribute')['versionMinorMinimumAttribute'].unique().reset_index(),
-		on='attribute',
-		suffixes=('', '_all')
-	)
-	dataframe = dataframe.explode('versionMinorMinimumAttribute_all')
-	dataframe = dataframe[
-		dataframe['versionMinorMinimumAttribute'] <= dataframe['versionMinorMinimumAttribute_all']
-	]
-	dataframe['versionMinorMinimumTarget'] = dataframe['versionMinorMinimumAttribute_all']
-	print(dataframe.columns)
 
 	# Calculate useMatchCase based on whether any version is above minimum Python version
 	dataframe['useMatchCase'] = (
@@ -371,39 +308,39 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 	# Determine identifier target
 	dataframe['identifierTarget'] = numpy.where(
 		dataframe['subcategoryCount'] == 1,
-		dataframe['TypeAlias_hasDOTIdentifier'],
-		dataframe['TypeAlias_hasDOTSubcategory']
+		dataframe['TypeAlias_hasDOTIdentifier'].astype(str),
+		dataframe['TypeAlias_hasDOTSubcategory'].astype(str)
 	)
-	print(dataframe.columns)
+
 	# Group and aggregate to get final result
 	resultDataframe = (dataframe
-		.groupby(['identifierTarget', 'versionMinorMinimumTarget', 'useMatchCase'], sort=False)
-		.agg({'classAs_astAttribute': list})
+		.groupby(['identifierTarget', 'versionMinorMinimumAttribute', 'useMatchCase'], sort=False)
+		.aggregate({'classAs_astAttribute': list}) # pyright: ignore[reportUnknownMemberType]
 		.reset_index()
 	)
 
 	# For multiple subcategory cases, create aggregated rows and insert them after the subcategory rows
 	multipleSubcategoryMask = dataframe['subcategoryCount'] > 1
 	if multipleSubcategoryMask.any():
-		aggregatedRows = (dataframe[multipleSubcategoryMask][['attribute', 'TypeAlias_hasDOTIdentifier', 'versionMinorMinimumTarget', 'TypeAlias_hasDOTSubcategory', 'useMatchCase']]
+		aggregatedRows = (dataframe[multipleSubcategoryMask][['attribute', 'TypeAlias_hasDOTIdentifier', 'versionMinorMinimumAttribute', 'TypeAlias_hasDOTSubcategory', 'useMatchCase']]
 			.drop_duplicates()
-			.assign(dumpedName=lambda df: [_makeNameDumped(name) for name in df['TypeAlias_hasDOTSubcategory']])
-			.groupby(['TypeAlias_hasDOTIdentifier', 'versionMinorMinimumTarget', 'useMatchCase'])['dumpedName']
+			.assign(dumpedName=lambda df: df['TypeAlias_hasDOTSubcategory'].map(_makeNameDumped)) # pyright: ignore[reportUnknownMemberType]
+			.groupby(['TypeAlias_hasDOTIdentifier', 'versionMinorMinimumAttribute', 'useMatchCase'])['dumpedName']
 			.apply(list)
 			.reset_index()
 			.rename(columns={'TypeAlias_hasDOTIdentifier': 'identifierTarget', 'dumpedName': 'classAs_astAttribute'})
 		)
 
 		# Insert aggregated rows after their corresponding subcategory rows
-		for _rowIndex, aggregatedRow in aggregatedRows.iterrows():
-			identifierTarget = aggregatedRow['identifierTarget']
-			versionMinorMinimumTarget = aggregatedRow['versionMinorMinimumTarget']
-			useMatchCase = aggregatedRow['useMatchCase']
+		for _rowIndex, aggregatedRow in aggregatedRows.iterrows(): # pyright: ignore[reportUnknownVariableType]
+			identifierTarget = str(cast(str, aggregatedRow['identifierTarget']))
+			versionMinorMinimumAttribute = int(cast(int, aggregatedRow['versionMinorMinimumAttribute']))
+			useMatchCase = int(cast(int, aggregatedRow['useMatchCase']))
 
 			# Find the position of the last subcategory row for this group
 			maskSubcategoryRows = (
-				(resultDataframe['identifierTarget'].str.contains(f'{identifierTarget}_', na=False)) &
-				(resultDataframe['versionMinorMinimumTarget'] == versionMinorMinimumTarget) &
+				(resultDataframe['identifierTarget'].str.contains(f'{identifierTarget}_', na=False)) & # pyright: ignore[reportUnknownMemberType]
+				(resultDataframe['versionMinorMinimumAttribute'] == versionMinorMinimumAttribute) &
 				(resultDataframe['useMatchCase'] == useMatchCase)
 			)
 
@@ -411,15 +348,13 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 				insertPosition = resultDataframe[maskSubcategoryRows].index[-1] + 1
 				resultDataframe = pandas.concat([
 					resultDataframe.iloc[:insertPosition],
-					pandas.DataFrame([aggregatedRow]),
+					pandas.DataFrame([aggregatedRow]), # pyright: ignore[reportUnknownArgumentType]
 					resultDataframe.iloc[insertPosition:]
 				], ignore_index=True)
 
 	return list(resultDataframe
-		.assign(classAs_astAttribute=lambda df: [
-			sorted(set(classList), key=str.lower) for classList in df['classAs_astAttribute']
-		])
-		[['identifierTarget', 'classAs_astAttribute', 'useMatchCase', 'versionMinorMinimumTarget']].to_records(index=False))
+		.assign(classAs_astAttribute=lambda df: df['classAs_astAttribute'].apply(lambda classList: sorted(classList, key=str.lower))) # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType, reportUnknownArgumentType]
+		[['identifierTarget', 'classAs_astAttribute', 'useMatchCase', 'versionMinorMinimumAttribute']].to_records(index=False)) # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
 def updateDataframe() -> None:
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=None, modifyVersionMinorMinimum=False)
@@ -466,9 +401,9 @@ def updateDataframe() -> None:
 	# dataframe = dataframe[_columns]
 
 	# Update 'classAs_astAttribute' column with formatted value
-	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].apply(
-		lambda attribute: dump(Make.Attribute(Make.Name('ast'), attribute))    # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
-	)
+	def _makeClassAs_astAttribute(ClassDefIdentifier:str):
+		return dump(Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
+	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].map(_makeClassAs_astAttribute) # pyright: ignore[reportUnknownMemberType]
 
 	# Update 'type' column with standardized formatting and accurate information
 	def transform_type(value: str, identifiers: list[str]) -> str:
