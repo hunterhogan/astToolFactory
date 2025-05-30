@@ -45,6 +45,8 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 		pythonSource = "# ruff: noqa: F403, F405\n" + pythonSource
 	if 'ClassIsAndAttribute' in moduleIdentifier:
 		pythonSource = "# pyright: reportArgumentType=false\n" + pythonSource
+	if 'DOT' in moduleIdentifier:
+		pythonSource = "# pyright: reportReturnType=false\n" + pythonSource
 	if 'Grab' in moduleIdentifier:
 		listTypeIgnore: list[ast.TypeIgnore] = []
 		tag = '[reportArgumentType, reportAttributeAccessIssue]'
@@ -397,43 +399,24 @@ def makeToolMake() -> None:
     def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param], value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
 	"""
 
-	# TODO remaking **keywordArguments
-	"""
-if column 'keywordArguments' is True,
-	build a subclassed dictionary and put it in the `Make` module
-	make sure to not add 14 identical subclassed dictionaries
-	allow for the subclassed dictionary to have more than one new key
-	analytically, this is not much different than how I construct a TypeAlias such as `intORstrORtype_params`
-	But, the code complexity is higher in this case and the benefit is better.
-
-class ast_attributes_kind(ast_attributes, total=False):
-	kind: str | None
-
-	def Break(**keywordArguments: Unpack[ast_attributes]) -> ast.Break:
-		return ast.Break(**keywordArguments)
-
-	def Constant(value: Any, **keywordArguments: ast_attributes_kind) -> ast.Constant:
-		return ast.Constant(value=value, kind=None, **keywordArguments)
-
-	def Dict(keys: Sequence[ast.expr | None]=[None], values: Sequence[ast.expr]=[], **keywordArguments: ast_attributes) -> ast.Dict:
-		return ast.Dict(keys=list(keys), values=list(values), **keywordArguments)
-
-	def pattern(**keywordArguments: Unpack[ast_attributes_int]) -> ast.pattern:
-		return ast.pattern(**keywordArguments)
-
-	"""
 	def create_ast_stmt(dictionaryMethodElements: DictionaryMatchArgs) -> ast.FunctionDef:
 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in dictionaryMethodElements['listStr4FunctionDef_args']]
 		kwarg: ast.arg | None = None
-		if str(dictionaryMethodElements['kwarg']) != 'No':
-			setKeywordArgumentsAnnotationTypeAlias.add(dictionaryMethodElements['kwarg'])
-			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Name(str(dictionaryMethodElements['kwarg'])))
+		# if str(dictionaryMethodElements['kwarg']) != 'No':
+		if str(dictionaryMethodElements['kwarg_annotationIdentifier']) != 'No':
+			setKeywordArgumentsAnnotationTypeAlias.add(dictionaryMethodElements['kwarg_annotationIdentifier'])
+			# setKeywordArgumentsAnnotationTypeAlias.add(dictionaryMethodElements['kwarg'])
+			# kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Name(str(dictionaryMethodElements['kwarg'])))
+			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(dictionaryMethodElements['kwarg_annotationIdentifier'])))
 
 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in dictionaryMethodElements['listDefaults']]
 
 		listCall_keyword: list[ast.keyword] = []
 		for tupleCall_keywords in dictionaryMethodElements['listTupleCall_keywords']:
 			argIdentifier, keywordValue = tupleCall_keywords
+			# If there are not call keywords
+			if keywordValue == 'No':
+				break
 			listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
 		if kwarg is not None:
 			listCall_keyword.append(toolMakeFunctionDefReturnCall_keywords)
@@ -444,7 +427,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 			, decorator_list=[astName_staticmethod]
 			, returns=classAs_astAttribute)
 	# versionMinorMinimumClass, versionMinorMinimum_match_args, ClassDefIdentifier, classAs_astAttribute
-	# listStr4FunctionDef_args, kwarg, defaults, listTupleCall_keywords (do `if kwarg is not None` in datacenter), overloadDefinition (for now, always False: future growth),
+	# listStr4FunctionDef_args, kwarg_annotationIdentifier, defaults, listTupleCall_keywords (do `if kwarg is not None` in datacenter), overloadDefinition (for now, always False: future growth),
 
 		return ast_stmt
 
@@ -546,6 +529,7 @@ class ast_attributes_kind(ast_attributes, total=False):
 		Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
 		, Make.ImportFrom('collections.abc', [Make.alias('Sequence')])
 		, Make.ImportFrom('typing', [Make.alias('Any')])
+		, Make.ImportFrom('typing_extensions', [Make.alias('Unpack')])
 		, Make.Import('ast')
 		, Make.Import('sys')
 		]

@@ -25,6 +25,7 @@ class DictionaryToolBe(TypedDict):
 
 class DictionaryMatchArgs(TypedDict):
 	kwarg: str
+	kwarg_annotationIdentifier: str
 	listDefaults: list[str]
 	listStr4FunctionDef_args: list[str]
 	listTupleCall_keywords: list[tuple[str, str]]
@@ -207,24 +208,28 @@ def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Versio
 def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, DictionaryClassDef]:
 	listElementsHARDCODED: list[str] = [
 	'ClassDefIdentifier',
-	'classAs_astAttribute',
-	'list2Sequence',
 	'versionMinorMinimumClass',
 	'versionMinorMinimum_match_args',
 	'hashableListStr4FunctionDef_args',
 	'hashableListDefaults',
 	'hashableListTupleCall_keywords',
+	'classAs_astAttribute',
+	'list2Sequence',
 	'kwargAnnotation',
+	'kwarg_annotationIdentifier',
 	'listStr4FunctionDef_args',
 	'listDefaults',
 	'listTupleCall_keywords',
 	]
 	listElements: list[str] = listElementsHARDCODED
-	columnsHashable: slice = slice(0, 9)
+	columnsHashable: slice = slice(0, 10)
 
 	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
 		.query("attribute != 'No'")
-		.pipe(_sortCaseInsensitive, ['ClassDefIdentifier'], ['versionMinorMinimumClass', 'versionMinorMinimum_match_args'])
+		.pipe(_sortCaseInsensitive, ['ClassDefIdentifier', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args']
+									, ['versionMinorMinimumClass', 'versionMinorMinimum_match_args']
+									, [True, False, False]
+			)
 	)
 
 	def compute_kwarg(group: pandas.Series) -> str:   # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
@@ -246,7 +251,8 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 				'kwarg': row['kwarg'],
 				'listDefaults': row['listDefaults'],
 				'listStr4FunctionDef_args': row['listStr4FunctionDef_args'],
-				'listTupleCall_keywords': row['listTupleCall_keywords']
+				'listTupleCall_keywords': row['listTupleCall_keywords'],
+				'kwarg_annotationIdentifier': row['kwarg_annotationIdentifier'],
 			}
 			for _rowIndex, row in groupbyClassVersion.iterrows()   # pyright: ignore[reportUnknownVariableType]
 		}
@@ -511,6 +517,9 @@ def updateDataframe() -> None:
 		listDefaults: list[str] = []
 		listTupleCall_keywords: list[tuple[str, str]] = []
 		for attributeTarget in listAttributes:
+			# type_comment is in keywordArguments
+			if attributeTarget == 'type_comment':
+				continue
 			argIdentifier: str = attributeTarget
 			keywordValue: str = attributeTarget
 			matching_row: pandas.DataFrame = dataframe[

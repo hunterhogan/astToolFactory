@@ -86,13 +86,13 @@ FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
 						, vararg=Make.arg('attribute', annotation=Make.Name('str'))
 						, kwonlyargs=[Make.arg('context', annotation=Make.Attribute(Make.Name('ast'), 'expr_context'))]
 						, kw_defaults=[Make.Call(Make.Attribute(Make.Name('ast'), 'Load'))]
-						, kwarg=Make.arg('keywordArguments', annotation=Make.Name('int')))
+						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 	, body=[FunctionDefMake_AttributeDocstring
 		, Make.FunctionDef('addDOTattribute'
 			, args=Make.arguments(args=[Make.arg('chain', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
 										, Make.arg('identifier', annotation=Make.Name('str'))
 										, Make.arg('context', annotation=Make.Attribute(Make.Name('ast'), 'expr_context'))]
-								, kwarg=Make.arg('keywordArguments', annotation=Make.Name('int')))
+								, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 			, body=[Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), 'Attribute')
 										, list_keyword=[Make.keyword('value', Make.Name('chain')), Make.keyword('attr', Make.Name('identifier'))
 													, Make.keyword('ctx', Make.Name('context')), Make.keyword(None, value=Make.Name('keywordArguments'))]))]
@@ -114,7 +114,7 @@ FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
 FunctionDefMake_Import: ast.stmt = Make.FunctionDef('Import'
 	, args=Make.arguments(args=[Make.arg('dotModule', annotation=Make.Name('identifierDotAttribute'))
 							, Make.arg('asName', annotation=BitOr().join([Make.Name('str'), Make.Constant(None)]))]
-					, kwarg=Make.arg('keywordArguments', annotation=Make.Name('int'))
+					, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
 					, defaults=[Make.Constant(None)])
 	, body=[Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), 'Import')
 							, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias'), args=[Make.Name('dotModule'), Make.Name('asName')])]))
