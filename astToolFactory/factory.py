@@ -407,15 +407,7 @@ def makeToolMake() -> None:
 	# # The order of the tuple elements is the order in which they are used in the flow of the code.
 	# for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, useMatchCase, versionMinorMinimum in getElementsMake():
 	# 	# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
-	# 	if ClassDefIdentifier == 'Attribute':
-	# 		ast_stmt = FunctionDefMake_Attribute
-	# 		list4ClassDefBody.append(ast_stmt)
-	# 		continue
-	# 	elif ClassDefIdentifier == 'Import':
-	# 		ast_stmt = FunctionDefMake_Import
-	# 		list4ClassDefBody.append(ast_stmt)
-	# 		list_aliasIdentifier.append('identifierDotAttribute')
-	# 		continue
+
 	# 	else:
 	# 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in listStr4FunctionDef_args]
 	# 		kwarg: ast.arg | None = None
@@ -468,6 +460,15 @@ def makeToolMake() -> None:
 	# 			list_match_case.clear()
 
 	# 	list4ClassDefBody.append(ast_stmt)
+
+	setKeywordArgumentsAnnotationTypeAlias.add('ast_attributes')
+	list4ClassDefBody.extend([
+		FunctionDef_boolopJoinMethod
+		, FunctionDef_operatorJoinMethod
+		])
+
+	listBoolOpIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.boolop.__subclasses__()])
+	listOperatorIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.operator.__subclasses__()])
 
 	# OLD code
 	def create_ast_stmt(dictionaryMethodElements: DictionaryMatchArgs) -> ast.FunctionDef:
@@ -535,13 +536,23 @@ def makeToolMake() -> None:
 	dictionaryToolElements: dict[str, DictionaryClassDef] = getElementsMake()
 	for ClassDefIdentifier, dictionaryClassDef in dictionaryToolElements.items():
 		# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
-		if ClassDefIdentifier == 'Attribute':
-			ast_stmt = FunctionDefMake_Attribute
-			list4ClassDefBody.append(ast_stmt)
+		if ClassDefIdentifier in listBoolOpIdentifiers:
+			list4ClassDefBody.append(Make.ClassDef(ClassDefIdentifier
+				, bases=[Make.Attribute(Make.Name('ast'), ClassDefIdentifier)]
+				, body=[ClassDefDocstring_ast_boolop, FunctionDef_join_boolop]
+			))
+			continue
+		elif ClassDefIdentifier in listOperatorIdentifiers:
+			list4ClassDefBody.append(Make.ClassDef(ClassDefIdentifier
+				, bases=[Make.Attribute(Make.Name('ast'), ClassDefIdentifier)]
+				, body=[ClassDefDocstring_ast_operator, FunctionDef_join_operator]
+			))
+			continue
+		elif ClassDefIdentifier == 'Attribute':
+			list4ClassDefBody.append(FunctionDefMake_Attribute)
 			continue
 		elif ClassDefIdentifier == 'Import':
-			ast_stmt = FunctionDefMake_Import
-			list4ClassDefBody.append(ast_stmt)
+			list4ClassDefBody.append(FunctionDefMake_Import)
 			list_aliasIdentifier.append('identifierDotAttribute')
 			continue
 		else:
@@ -591,7 +602,7 @@ def makeToolMake() -> None:
 	list_aliasIdentifier = sorted(set([*setKeywordArgumentsAnnotationTypeAlias, *list_aliasIdentifier]), key=str.lower)
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
-		, Make.ImportFrom('collections.abc', [Make.alias('Sequence')])
+		, Make.ImportFrom('collections.abc', [Make.alias('Iterable'), Make.alias('Sequence')])
 		, Make.ImportFrom('typing', [Make.alias('Any')])
 		, Make.ImportFrom('typing_extensions', [Make.alias('Unpack')])
 		, Make.Import('ast')

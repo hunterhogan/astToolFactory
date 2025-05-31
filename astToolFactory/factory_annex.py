@@ -17,17 +17,20 @@ FunctionDefGrab_andDoAllOf: ast.stmt = Make.FunctionDef('andDoAllOf'
 	, decorator_list=[Make.Name('staticmethod')]
 	, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('个')]), Make.Name('个')])))
 
-# `.join` classmethod =====================================================================
+# `Make` =====================================================================
 def makeFunctionDef_join(identifierContainer: str, identifierCallee: str, docstring: ast.Expr) -> ast.stmt:
 	return Make.FunctionDef('join'
 		, Make.arguments(args=[Make.arg('cls'), Make.arg('expressions', annotation=Make.Subscript(Make.Name(identifierContainer), slice=Make.Attribute(Make.Name('ast'), 'expr')))]
 						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 		, body=[docstring
-			, Make.Return(Make.Call(callee=Make.Name(identifierCallee), args=[Make.Name('cls'), Make.Name('expressions')], list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))]
+			, Make.Return(Make.Call(callee=Make.Attribute(Make.Name('Make'), identifierCallee), args=[Make.Name('cls'), Make.Name('expressions')], list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))]
 		, decorator_list=[Make.Name('classmethod')]
 		, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
-FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef('boolopJoinMethod'
+identifier_operatorJoinMethod: str = '_operatorJoinMethod'
+identifier_boolopJoinMethod: str = '_boolopJoinMethod'
+
+FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(identifier_boolopJoinMethod
     , args=Make.arguments(args=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'boolop')))
             , Make.arg('expressions', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'expr')))
             ]
@@ -54,12 +57,13 @@ FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef('boolopJoinMethod'
                         ]
                     )
         , Make.Return(Make.Name('expressionsJoined'))]
+	, decorator_list=[Make.Name('staticmethod')]
     , returns=BitOr().join([Make.Attribute(Make.Name('ast'), 'expr'), Make.Attribute(Make.Name('ast'), 'BoolOp')]))
 
-FunctionDef_join_boolop: ast.stmt = makeFunctionDef_join('Sequence', 'boolopJoinMethod', FunctionDefDocstring_join_boolop)
-FunctionDef_join_operator: ast.stmt = makeFunctionDef_join('Iterable', 'operatorJoinMethod', FunctionDefDocstring_join_operator)
+FunctionDef_join_boolop: ast.stmt = makeFunctionDef_join('Sequence', identifier_boolopJoinMethod, FunctionDefDocstring_join_boolop)
+FunctionDef_join_operator: ast.stmt = makeFunctionDef_join('Iterable', identifier_operatorJoinMethod, FunctionDefDocstring_join_operator)
 
-FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef('operatorJoinMethod'
+FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(identifier_operatorJoinMethod
 	, Make.arguments(args=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'operator')))
 						, Make.arg('expressions', annotation=Make.Subscript(Make.Name('Iterable'), slice=Make.Attribute(Make.Name('ast'), 'expr')))]
 					, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
@@ -78,9 +82,9 @@ FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef('operatorJoinMethod'
 											, Make.keyword('right', Make.Name('expression'))
 											, Make.keyword(None, value=Make.Name('keywordArguments'))]))])
 		, Make.Return(Make.Name('expressionsJoined'))]
+	, decorator_list=[Make.Name('staticmethod')]
 	, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
-# `Make` =====================================================================
 FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
 	, args=Make.arguments(args=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
 						, vararg=Make.arg('attribute', annotation=Make.Name('str'))
