@@ -24,7 +24,6 @@ class DictionaryToolBe(TypedDict):
 	versionMinorMinimumClass: int
 
 class DictionaryMatchArgs(TypedDict):
-	kwarg: str
 	kwarg_annotationIdentifier: str
 	listDefaults: list[str]
 	listStr4FunctionDef_args: list[str]
@@ -206,6 +205,7 @@ def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Versio
 	return listTuples
 
 def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, DictionaryClassDef]:
+	# START keep this; do not delete.
 	listElementsHARDCODED: list[str] = [
 	'ClassDefIdentifier',
 	'versionMinorMinimumClass',
@@ -223,44 +223,37 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 	]
 	listElements: list[str] = listElementsHARDCODED
 	columnsHashable: slice = slice(0, 10)
-
+	# no lambda. period. NO. lambda. period. no lambda.
+	# no intermediate data structures
+	# no `for`, no `iterrows`, no loops.
+	# no duplicate statements: if even one line is a duplicate, I will reject the entire thing
+	# END keep this; do not delete.
 	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
-		.query("attribute != 'No'")
+		# .query("attribute != 'No'")
 		.pipe(_sortCaseInsensitive, ['ClassDefIdentifier', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args']
 									, ['versionMinorMinimumClass', 'versionMinorMinimum_match_args']
 									, [True, False, False]
 			)
 	)
 
-	def compute_kwarg(group: pandas.Series) -> str:   # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
-		list_kwargAnnotation: list[str] = sorted(value for value in group.unique() if value != "No")
-		return 'OR'.join(list_kwargAnnotation) if list_kwargAnnotation else "No"
-	dataframe['kwarg'] = (dataframe.groupby(['ClassDefIdentifier', 'versionMinorMinimum_match_args'])['kwargAnnotation'].transform(compute_kwarg))   # pyright: ignore[reportUnknownArgumentType]
-
-	dataframe = dataframe.drop(columns=['kwargAnnotation'])
-	listElements.insert(listElements.index('kwargAnnotation'), 'kwarg')
-	listElements.remove('kwargAnnotation')
-
 	# TODO keep='last' is necessary for ast.FunctionDef.type_params when `pythonVersionMinorMinimum` == 12
 	# But I don't think that should be necessary, so investigate why it is.
 	dataframe = dataframe.drop_duplicates(subset=listElements[columnsHashable], keep='last')
-
 	def idkHowToNameThingsOrFollowInstructions(groupbyClassVersion: pandas.DataFrame) -> dict[int, DictionaryMatchArgs]:
 		return {
 			row['versionMinorMinimum_match_args']: {
-				'kwarg': row['kwarg'],
 				'listDefaults': row['listDefaults'],
 				'listStr4FunctionDef_args': row['listStr4FunctionDef_args'],
 				'listTupleCall_keywords': row['listTupleCall_keywords'],
 				'kwarg_annotationIdentifier': row['kwarg_annotationIdentifier'],
 			}
-			for _rowIndex, row in groupbyClassVersion.iterrows()   # pyright: ignore[reportUnknownVariableType]
+			for _rowIndex, row in groupbyClassVersion.iterrows() # pyright: ignore[reportUnknownVariableType]
 		}
 
 	dictionaryClassDef: dict[str, DictionaryClassDef] = {}
 	for ClassDefIdentifier, class_group in dataframe.groupby('ClassDefIdentifier', sort=False):
 		dictionaryClassDef[cast(str, ClassDefIdentifier)] = {
-			'classAs_astAttribute': class_group['classAs_astAttribute'].iloc[0],   # pyright: ignore[reportUnknownMemberType]
+			'classAs_astAttribute': class_group['classAs_astAttribute'].iloc[0], # pyright: ignore[reportUnknownMemberType]
 			'versionMinorMinimumClass': {}
 		}
 		for versionMinorMinimumClass, groupbyClassVersion in class_group.groupby('versionMinorMinimumClass'):
@@ -268,7 +261,7 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 	return dictionaryClassDef
 
 def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, list[str], int, int]]:
-	# START keep this
+	# START keep this; do not delete.
 	listElementsHARDCODED: list[str] = [
 		'attribute',
 		'TypeAlias_hasDOTSubcategory',
@@ -283,7 +276,7 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 	# no intermediate data structures
 	# no `for`, no `iterrows`, no loops.
 	# no duplicate statements: if even one line is a duplicate, I will reject the entire thing
-	# END keep this
+	# END keep this; do not delete.
 
 	def _makeNameDumped(subcategoryName: str) -> str:
 		return dump(Make.Name(subcategoryName))
@@ -500,16 +493,26 @@ def updateDataframe() -> None:
 
 	# Update 'listStr4FunctionDef_args', 'listDefaults', 'listTupleCall_keywords' columns based on match_args
 	def compute_listFunctionDef_args(row: pandas.Series) -> pandas.Series:   # pyright: ignore[reportUnknownParameterType, reportMissingTypeArgument]
-		if row['attribute'] == "No":
+		if row['attributeKind'] == "No":
 			return pandas.Series([
-				"No",
-				"No",
-				"No"
+				[],
+				[],
+				[]
 			], index=[
 				'listStr4FunctionDef_args',
 				'listDefaults',
 				'listTupleCall_keywords'
 			])
+		# if row['attribute'] == "No":
+		# 	return pandas.Series([
+		# 		"No",
+		# 		"No",
+		# 		"No"
+		# 	], index=[
+		# 		'listStr4FunctionDef_args',
+		# 		'listDefaults',
+		# 		'listTupleCall_keywords'
+		# 	])
 		listAttributes = cast(str, row['match_args']).replace("'","").replace(" ","").split(',')
 		className = cast(str, row['ClassDefIdentifier'])
 		version = cast(int, row['versionMinorMinimum_match_args'])

@@ -96,7 +96,7 @@ def make_astTypes() -> None:
 		ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, value=TypeAlias_value)
 
 		if useMatchCase:
-			if versionMinorMinimum > pythonMinimumVersionMinor:
+			if versionMinorMinimum >= pythonMinimumVersionMinor:
 				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
 				guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
 			else:
@@ -372,41 +372,109 @@ def makeToolGrab() -> None:
 
 	writeClass('Grab', list4ClassDefBody, list4ModuleBody)
 
+# TODO add docstrings for each staticmethod and each ClassDef: idea: `Make.GtE.__doc__ = ast.GtE.__doc__` <-- hahahahaaaaaaaaaa!
+# But, maybe include the ast docstring to contrast the lack of documentation in ast.
+# For real, `dictionaryDocstringMake`, keynames = `ClassDefIdentifier`, values = docstrings created in a dedicated module,
+# currently `astToolFactory/docstrings.py`. I am sure there are many packages designed to help with this.
+
+# TODO overload for Make.keyword:
+"""
+@staticmethod
+@overload
+def keyword(arg: str | None, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
+@staticmethod
+@overload
+def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
+"""
+
+# TODO overload for Make.TypeAlias:
+"""
+@staticmethod
+@overload
+def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param] = [], *, value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
+@staticmethod
+@overload
+def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param], value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
+"""
+
+# TODO add `ClassDef` for ast subclasses that do not have __init__ parameters. At the very least, it prevents an error if the user uses `Make.GtE()` instead of `ast.GtE()`.
 def makeToolMake() -> None:
-	# TODO add `ClassDef` for ast subclasses that do not have __init__ parameters. At the very least, it prevents an error if the user uses `Make.GtE()` instead of `ast.GtE()`.
-	# TODO add docstrings for each staticmethod and each ClassDef: idea: `Make.GtE.__doc__ = ast.GtE.__doc__` <-- hahahahaaaaaaaaaa!
-	# But, maybe include the ast docstring to contrast the lack of documentation in ast.
-	# For real, `dictionaryDocstringMake`, keynames = `ClassDefIdentifier`, values = docstrings created in a dedicated module,
-	# currently `astToolFactory/docstrings.py`. I am sure there are many packages designed to help with this.
+	list_aliasIdentifier: list[str] = ['ConstantValueType']
+	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringMake]
+	setKeywordArgumentsAnnotationTypeAlias: set[str] = set()
 
-	# TODO overload for Make.keyword:
-	"""
-	@staticmethod
-	@overload
-	def keyword(arg: str | None, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
-	@staticmethod
-	@overload
-	def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
-	"""
+	# list_match_case: list[ast.match_case] = []
+	# # The order of the tuple elements is the order in which they are used in the flow of the code.
+	# for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, useMatchCase, versionMinorMinimum in getElementsMake():
+	# 	# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
+	# 	if ClassDefIdentifier == 'Attribute':
+	# 		ast_stmt = FunctionDefMake_Attribute
+	# 		list4ClassDefBody.append(ast_stmt)
+	# 		continue
+	# 	elif ClassDefIdentifier == 'Import':
+	# 		ast_stmt = FunctionDefMake_Import
+	# 		list4ClassDefBody.append(ast_stmt)
+	# 		list_aliasIdentifier.append('identifierDotAttribute')
+	# 		continue
+	# 	else:
+	# 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in listStr4FunctionDef_args]
+	# 		kwarg: ast.arg | None = None
+	# 		if kwarg_annotationIdentifier != 'No':
+	# 			setKeywordArgumentsAnnotationTypeAlias.add(kwarg_annotationIdentifier)
+	# 			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(kwarg_annotationIdentifier)))
+	# 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in listDefaults]
+	# 		decorator_list: list[ast.expr] = [astName_staticmethod]
+	# 		classAs_astAttribute: ast.expr = eval(classAs_astAttributeAsStr)
 
-	# TODO overload for Make.TypeAlias:
-	"""
-    @staticmethod
-    @overload
-    def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param] = [], *, value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
-    @staticmethod
-    @overload
-    def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param], value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
-	"""
+	# 		if overloadDefinition:
+	# 			decorator_list.append(astName_overload)
+	# 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
+	# 		else:
+	# 			listCall_keyword: list[ast.keyword] = []
+	# 			for tupleCall_keywords in listTupleCall_keywords:
+	# 				argIdentifier, keywordValue = tupleCall_keywords
+	# 				# If there are not call keywords
+	# 				if keywordValue == 'No':
+	# 					break
+	# 				listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
+	# 			if kwarg is not None:
+	# 				listCall_keyword.append(toolMakeFunctionDefReturnCall_keywords)
+	# 			body = [Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 
+	# 		ast_stmt = Make.FunctionDef(
+	# 			ClassDefIdentifier
+	# 			, args=Make.arguments(args=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
+	# 			, body=body
+	# 			, decorator_list=decorator_list
+	# 			, returns=classAs_astAttribute)
+
+
+	# 	# If there are multiple versions, create a match-case for this version.
+	# 	if useMatchCase:
+	# 		# Create a guard or a catch-all match-case and append to list_match_case.
+	# 		if versionMinorMinimum >= pythonMinimumVersionMinor:
+	# 			pattern: ast.MatchAs = Make.MatchAs(name = 'version')
+	# 			guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+	# 		else:
+	# 			pattern = Make.MatchAs()
+	# 			guard = None
+	# 		list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
+
+	# 		# If there are more match-case in the queue, then wait to create ast.Match.
+	# 		if useMatchCase > 1:
+	# 			continue
+	# 		else:
+	# 			ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
+	# 			list_match_case.clear()
+
+	# 	list4ClassDefBody.append(ast_stmt)
+
+	# OLD code
 	def create_ast_stmt(dictionaryMethodElements: DictionaryMatchArgs) -> ast.FunctionDef:
 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in dictionaryMethodElements['listStr4FunctionDef_args']]
 		kwarg: ast.arg | None = None
-		# if str(dictionaryMethodElements['kwarg']) != 'No':
 		if str(dictionaryMethodElements['kwarg_annotationIdentifier']) != 'No':
 			setKeywordArgumentsAnnotationTypeAlias.add(dictionaryMethodElements['kwarg_annotationIdentifier'])
-			# setKeywordArgumentsAnnotationTypeAlias.add(dictionaryMethodElements['kwarg'])
-			# kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Name(str(dictionaryMethodElements['kwarg'])))
 			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(dictionaryMethodElements['kwarg_annotationIdentifier'])))
 
 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in dictionaryMethodElements['listDefaults']]
@@ -426,9 +494,6 @@ def makeToolMake() -> None:
 			, body=[Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 			, decorator_list=[astName_staticmethod]
 			, returns=classAs_astAttribute)
-	# versionMinorMinimumClass, versionMinorMinimum_match_args, ClassDefIdentifier, classAs_astAttribute
-	# listStr4FunctionDef_args, kwarg_annotationIdentifier, defaults, listTupleCall_keywords (do `if kwarg is not None` in datacenter), overloadDefinition (for now, always False: future growth),
-
 		return ast_stmt
 
 	def unpackDictionaryAllMatch_argsVersions() -> ast.stmt:
@@ -467,23 +532,21 @@ def makeToolMake() -> None:
 		assert ast_stmt is not None, "Coding by brinkmanship!"
 		return ast_stmt
 
-	list_aliasIdentifier: list[str] = ['ConstantValueType']
-	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringMake]
-	setKeywordArgumentsAnnotationTypeAlias: set[str] = set()
-
 	dictionaryToolElements: dict[str, DictionaryClassDef] = getElementsMake()
-
 	for ClassDefIdentifier, dictionaryClassDef in dictionaryToolElements.items():
-		ast_stmt = None
+		# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
 		if ClassDefIdentifier == 'Attribute':
 			ast_stmt = FunctionDefMake_Attribute
 			list4ClassDefBody.append(ast_stmt)
 			continue
-		if ClassDefIdentifier == 'Import':
+		elif ClassDefIdentifier == 'Import':
 			ast_stmt = FunctionDefMake_Import
 			list4ClassDefBody.append(ast_stmt)
 			list_aliasIdentifier.append('identifierDotAttribute')
 			continue
+		else:
+			ast_stmt = None
+
 		classAs_astAttribute: ast.expr = eval(dictionaryClassDef['classAs_astAttribute'])
 		dictionaryAllClassVersions: dict[int, dict[int, DictionaryMatchArgs]] = dictionaryClassDef['versionMinorMinimumClass']
 
@@ -521,6 +584,7 @@ def makeToolMake() -> None:
 
 		assert ast_stmt is not None, "Coding by brinkmanship!"
 		list4ClassDefBody.append(ast_stmt)
+	# END OLD code
 
 	# Module-level operations ===============
 	setKeywordArgumentsAnnotationTypeAlias.discard('int')
