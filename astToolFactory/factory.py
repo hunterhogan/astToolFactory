@@ -17,7 +17,7 @@ from astToolFactory.factory_annex import (
 	FunctionDefMake_Import, listHandmade_astTypes, listOverloads_keyword, listOverloadsTypeAlias,
 )
 from astToolkit import (
-	Add, astModuleToIngredientsFunction, BitOr, ClassIsAndAttribute, IfThis, IngredientsFunction,
+	astModuleToIngredientsFunction, ClassIsAndAttribute, IfThis, IngredientsFunction,
 	IngredientsModule, LedgerOfImports, Make, NodeChanger, parseLogicalPath2astModule,
 )
 from astToolkit.transformationTools import write_astModule
@@ -104,7 +104,7 @@ def make_astTypes() -> None:
 	list_match_case: list[ast.match_case] = []
 	for TypeAlias_hasDOTIdentifier, list4TypeAlias_value, useMatchCase, versionMinorMinimum in getElementsTypeAlias():
 		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier, ast.Store())
-		TypeAlias_value: ast.expr = BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in list4TypeAlias_value])
+		TypeAlias_value: ast.expr = Make.BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in list4TypeAlias_value])
 		ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, value=TypeAlias_value)
 
 		if useMatchCase:
@@ -140,7 +140,7 @@ def makeTool_dump() -> None:
 	astConstant: ast.Constant = Make.Constant('ast.')
 	findThis = ClassIsAndAttribute.valueIs(ast.Attribute, IfThis.isAttributeNamespaceIdentifier('node', '__class__'))
 	def doThatPrepend(node: ast.Attribute) -> ast.AST:
-		return Add.join([astConstant, cast(ast.expr, node)])
+		return Make.Add.join([astConstant, cast(ast.expr, node)])
 	prepend_ast = NodeChanger(findThis, doThatPrepend)
 	findThis = IfThis.isFunctionDefIdentifier('_format')
 	def doThat(node: ast.FunctionDef) -> ast.AST:
@@ -160,8 +160,8 @@ def makeToolBe() -> None:
 		versionMinorMinimumClass: int = dictionaryToolElements['versionMinorMinimumClass']
 
 		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
-			, args=Make.arguments(args=[Make.arg('node', annotation=Make.Name('ast.AST'))])
-			, body=[Make.Return(Make.Call(Make.Name('isinstance'), args=[Make.Name('node'), classAs_astAttribute]))]
+			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Name('ast.AST'))])
+			, body=[Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), classAs_astAttribute]))]
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name('TypeGuard'), slice=classAs_astAttribute))
 
@@ -184,7 +184,7 @@ def makeToolBe() -> None:
 
 def makeToolClassIsAndAttribute() -> None:
 	def create_ast_stmt(list_ast_expr: list[str], attributeIsNotNone: bool | str) -> ast.stmt:
-		workhorseReturnValue: ast.BoolOp = Make.BoolOp(ast.And(), values=[Make.Call(Make.Name('isinstance'), args=[Make.Name('node'), Make.Name('astClass')])])
+		workhorseReturnValue: ast.BoolOp = Make.BoolOp(ast.And(), values=[Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), Make.Name('astClass')])])
 		if attributeIsNotNone:
 			ops: list[ast.cmpop]= [ast.IsNot()]
 			comparators: list[ast.expr]=[Make.Constant(None)]
@@ -192,9 +192,9 @@ def makeToolClassIsAndAttribute() -> None:
 				ops: list[ast.cmpop]= [ast.NotEq()]
 				comparators: list[ast.expr]=[Make.List([Make.Constant(None)])]
 			workhorseReturnValue.values.append(Make.Compare(Make.Attribute(Make.Name('node'), attribute), ops=ops, comparators=comparators))
-		workhorseReturnValue.values.append(Make.Call(Make.Name('attributeCondition'), args=[Make.Attribute(Make.Name('node'), attribute)]))
+		workhorseReturnValue.values.append(Make.Call(Make.Name('attributeCondition'), listParameters=[Make.Attribute(Make.Name('node'), attribute)]))
 
-		buffaloBuffalo_workhorse_returnsAnnotation: ast.expr = BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])
+		buffaloBuffalo_workhorse_returnsAnnotation: ast.expr = Make.BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])
 
 		if overloadDefinition:
 			decorator_list.append(astName_overload)
@@ -202,7 +202,7 @@ def makeToolClassIsAndAttribute() -> None:
 		else:
 			body = [
 				Make.FunctionDef('workhorse',
-					args=Make.arguments(args=[Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
+					argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
 					, body=[Make.Return(workhorseReturnValue)]
 					, returns=buffaloBuffalo_workhorse_returnsAnnotation)
 				, Make.Return(Make.Name('workhorse'))
@@ -210,11 +210,11 @@ def makeToolClassIsAndAttribute() -> None:
 
 		returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), buffaloBuffalo_workhorse_returnsAnnotation]))
 
-		annotation: ast.expr = (BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')]))
+		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')]))
 									for ast_expr in list_ast_expr]))
 
 		return Make.FunctionDef(attribute + 'Is'
-				, args=Make.arguments(args=[
+				, argumentSpecification=Make.arguments(list_arg=[
 					Make.arg('astClass', annotation=Make.Subscript(Make.Name('type'), astNameTypeAlias)),
 					Make.arg('attributeCondition', annotation=annotation)
 				])
@@ -262,10 +262,10 @@ def makeToolDOT() -> None:
 		else:
 			body = [Make.Return(Make.Attribute(Make.Name('node'), attribute))]
 
-		returns: ast.expr = BitOr.join([eval(ast_expr) for ast_expr in list_ast_expr])
+		returns: ast.expr = Make.BitOr.join([eval(ast_expr) for ast_expr in list_ast_expr])
 
 		return Make.FunctionDef(attribute
-			, args=Make.arguments(args=[Make.arg('node', annotation=astNameTypeAlias)])
+			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=astNameTypeAlias)])
 			, body=body
 			, decorator_list=decorator_list
 			, returns=returns
@@ -307,12 +307,12 @@ def makeToolGrab() -> None:
 			type_ast_expr = eval(type_ast_exprAsStr)
 			list_ast_expr4annotation.append(Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([type_ast_expr]), type_ast_expr])))
 
-		ast_expr4annotation = BitOr.join(list_ast_expr4annotation)
+		ast_expr4annotation = Make.BitOr.join(list_ast_expr4annotation)
 
 		return Make.FunctionDef(attribute + 'Attribute'
-			, args=Make.arguments(args=[Make.arg('action', annotation=ast_expr4annotation)])
+			, argumentSpecification=Make.arguments(list_arg=[Make.arg('action', annotation=ast_expr4annotation)])
 			, body=[Make.FunctionDef('workhorse'
-						, args=Make.arguments(args=[Make.arg('node', annotation=hasDOTTypeAliasName_Load)])
+						, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=hasDOTTypeAliasName_Load)])
 						, body=[Make.Assign([Make.Attribute(Make.Name('node'), attribute, context=ast.Store())], value=Make.Call(Make.Name('action'), [Make.Attribute(Make.Name('node'), attribute)]))
 								, Make.Return(Make.Name('node'))
 						]
@@ -394,7 +394,7 @@ def makeToolMake() -> None:
 
 	# 		ast_stmt = Make.FunctionDef(
 	# 			ClassDefIdentifier
-	# 			, args=Make.arguments(args=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
+	# 			, argumentSpecification=Make.arguments(list_arg=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
 	# 			, body=body
 	# 			, decorator_list=decorator_list
 	# 			, returns=classAs_astAttribute)
@@ -450,7 +450,7 @@ def makeToolMake() -> None:
 			listCall_keyword.append(keywordKeywordArguments4Call)
 
 		ast_stmt = Make.FunctionDef(ClassDefIdentifier
-			, args=Make.arguments(args=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
+			, argumentSpecification=Make.arguments(list_arg=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
 			, body=[Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 			, decorator_list=[astName_staticmethod]
 			, returns=classAs_astAttribute)

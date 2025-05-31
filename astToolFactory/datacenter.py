@@ -532,16 +532,6 @@ def updateDataframe() -> None:
 				'listDefaults',
 				'listTupleCall_keywords'
 			])
-		# if row['attribute'] == "No":
-		# 	return pandas.Series([
-		# 		"No",
-		# 		"No",
-		# 		"No"
-		# 	], index=[
-		# 		'listStr4FunctionDef_args',
-		# 		'listDefaults',
-		# 		'listTupleCall_keywords'
-		# 	])
 		listAttributes = cast(str, row['match_args']).replace("'","").replace(" ","").split(',')
 		className = cast(str, row['ClassDefIdentifier'])
 		version = cast(int, row['versionMinorMinimum_match_args'])
