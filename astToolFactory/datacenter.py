@@ -416,8 +416,37 @@ def updateDataframe() -> None:
 		axis=1
 	)
 
-	# TODO add logic for column 'attributeRename' similar to 'type' column override
-	# `ImportFrom.module`: "dotModule"
+	listAttributeRename: list[tuple[str, str]] = [
+		('arg', 'Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'),
+		('asname', 'asName'),
+		('attr', 'attribute'),
+		('ctx', 'context'),
+		('elt', 'element'),
+		('elts', 'listElements'),
+		('func', 'callee'),
+		('keywords', 'list_keyword'),
+		('module', 'dotModule'),
+		('orelse', 'orElse'),
+	]
+	for attribute, attributeRename in listAttributeRename:
+		dataframe.loc[
+			(dataframe['attribute'] == attribute),
+			'attributeRename'
+		] = attributeRename
+
+	listAttributeRenamePerClass: list[tuple[str, str, str]] = [
+		('arguments', 'args', 'list_arg'),
+		('AsyncFunctionDef', 'args', 'argumentSpecification'),
+		('Call', 'args', 'listParameters'),
+		('FunctionDef', 'args', 'argumentSpecification'),
+		('ImportFrom', 'names', 'list_alias'),
+		('Lambda', 'args', 'argumentSpecification'),
+	]
+	for ClassDefIdentifier, attribute, attributeRename in listAttributeRenamePerClass:
+		dataframe.loc[
+			(dataframe['ClassDefIdentifier'] == ClassDefIdentifier) & (dataframe['attribute'] == attribute),
+			'attributeRename'
+		] = attributeRename
 
 	# Override column 'type' for class `ast.Constant`, attribute `value`
 	dataframe.loc[

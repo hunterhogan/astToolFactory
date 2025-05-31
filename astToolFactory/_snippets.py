@@ -14,4 +14,4 @@ astName_typing_TypeVar: ast.expr = cast(ast.expr, Make.Name('typing_TypeVar'))
 format_hasDOTIdentifier: str = "hasDOT{attribute}"
 formatTypeAliasSubcategory: str = "{hasDOTIdentifier}_{TypeAliasSubcategory}"
 
-toolMakeFunctionDefReturnCall_keywords = Make.keyword(None, Make.Name(keywordArgumentsIdentifier))
+keywordKeywordArguments4Call = Make.keyword(None, Make.Name(keywordArgumentsIdentifier))

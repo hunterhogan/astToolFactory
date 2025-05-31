@@ -1,4 +1,5 @@
 """Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
+from astToolFactory import astName_overload, astName_staticmethod
 from astToolFactory.docstrings import (
 	FunctionDefDocstring_join_boolop, FunctionDefDocstring_join_operator,
 	FunctionDefMake_AttributeDocstring,
@@ -14,7 +15,7 @@ FunctionDefGrab_andDoAllOf: ast.stmt = Make.FunctionDef('andDoAllOf'
 			, body=[Make.For(Make.Name('action', ast.Store()), iter=Make.Name('listOfActions')
 					, body=[Make.Assign([Make.Name('node', ast.Store())], value=Make.Call(Make.Name('action'), args=[Make.Name('node')]))]), Make.Return(Make.Name('node'))]
 			, returns=Make.Name('个')), Make.Return(Make.Name('workhorse'))]
-	, decorator_list=[Make.Name('staticmethod')]
+	, decorator_list=[astName_staticmethod]
 	, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('个')]), Make.Name('个')])))
 
 # `Make` =====================================================================
@@ -57,7 +58,7 @@ FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(identifier_boolopJoinM
                         ]
                     )
         , Make.Return(Make.Name('expressionsJoined'))]
-	, decorator_list=[Make.Name('staticmethod')]
+	, decorator_list=[astName_staticmethod]
     , returns=BitOr().join([Make.Attribute(Make.Name('ast'), 'expr'), Make.Attribute(Make.Name('ast'), 'BoolOp')]))
 
 FunctionDef_join_boolop: ast.stmt = makeFunctionDef_join('Sequence', identifier_boolopJoinMethod, FunctionDefDocstring_join_boolop)
@@ -82,7 +83,7 @@ FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(identifier_operatorJ
 											, Make.keyword('right', Make.Name('expression'))
 											, Make.keyword(None, value=Make.Name('keywordArguments'))]))])
 		, Make.Return(Make.Name('expressionsJoined'))]
-	, decorator_list=[Make.Name('staticmethod')]
+	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
 FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
@@ -109,7 +110,7 @@ FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
 																				, args=[Make.Name('buffaloBuffalo'), Make.Name('identifier'), Make.Name('context')]
 																				, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))])
 		, Make.Return(Make.Name('buffaloBuffalo'))]
-	, decorator_list=[Make.Name('staticmethod')]
+	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), 'Attribute'))
 
 # This relatively simple can probably be removed from the annex after I tweak a few things in the dataframe.
@@ -123,8 +124,51 @@ FunctionDefMake_Import: ast.stmt = Make.FunctionDef('Import'
 	, body=[Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), 'Import')
 							, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias'), args=[Make.Name('dotModule'), Make.Name('asName')])]))
 										, Make.keyword(None, value=Make.Name('keywordArguments'))]))]
-	, decorator_list=[Make.Name('staticmethod')]
+	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), 'Import'))
+
+listOverloads_keyword: list[ast.stmt] = [
+	Make.FunctionDef('keyword'
+		, args=Make.arguments(args=[Make.arg('Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo', annotation=Make.BinOp(left=Make.Name('str'), op=ast.BitOr(), right=Make.Constant(None)))
+							, Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
+							]
+						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
+		, body=[Make.Expr(value=Make.Constant(...))]
+		, decorator_list=[Make.Name('staticmethod'), Make.Name('overload')]
+		, returns=Make.Attribute(Make.Name('ast'), 'keyword'))
+	, Make.FunctionDef('keyword'
+		, args=Make.arguments(args=[Make.arg('Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo', annotation=Make.BinOp(left=Make.Name('str'), op=ast.BitOr(), right=Make.Constant(None)))]
+						, kwonlyargs=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
+						, kw_defaults=[None]
+						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
+						, defaults=[Make.Constant(None)])
+		, body=[Make.Expr(value=Make.Constant(...))]
+		, decorator_list=[Make.Name('staticmethod'), Make.Name('overload')]
+		, returns=Make.Attribute(Make.Name('ast'), 'keyword'))]
+
+listOverloadsTypeAlias: list[ast.stmt] = [
+	Make.FunctionDef('TypeAlias'
+		, args=Make.arguments(args=[Make.arg('name', annotation=Make.Attribute(Make.Name('ast'), 'Name'))
+				, Make.arg('type_params', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'type_param')))
+			]
+			, kwonlyargs=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
+			, kw_defaults=[None]
+			, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
+			, defaults=[Make.List()]
+		)
+		, body=[Make.Expr(Make.Constant(...))]
+		, decorator_list=[astName_staticmethod, astName_overload]
+		, returns=Make.Attribute(Make.Name('ast'), 'TypeAlias'))
+	, Make.FunctionDef('TypeAlias'
+		, args=Make.arguments(args=[Make.arg('name', annotation=Make.Attribute(Make.Name('ast'), 'Name'))
+				, Make.arg('type_params', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'type_param')))
+				, Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
+			]
+			, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
+		, body=[Make.Expr(Make.Constant(...))]
+		, decorator_list=[astName_staticmethod, astName_overload]
+		, returns=Make.Attribute(Make.Name('ast'), 'TypeAlias'))
+]
 
 # `TypeAlias` =====================================================================
 listHandmade_astTypes: list[ast.stmt] = [

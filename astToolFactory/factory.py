@@ -2,8 +2,8 @@ from astToolFactory import (
 	astName_overload, astName_staticmethod, astName_typing_TypeAlias, DictionaryClassDef,
 	DictionaryMatchArgs, getElementsBe, getElementsClassIsAndAttribute, getElementsDOT,
 	getElementsGrab, getElementsMake, getElementsTypeAlias, keywordArgumentsIdentifier,
-	listPylanceErrors, pythonMinimumVersionMinor, settingsPackageToManufacture,
-	toolMakeFunctionDefReturnCall_keywords,
+	keywordKeywordArguments4Call, listPylanceErrors, pythonMinimumVersionMinor,
+	settingsPackageToManufacture,
 )
 from astToolFactory.datacenter import DictionaryToolBe
 from astToolFactory.docstrings import (
@@ -14,18 +14,16 @@ from astToolFactory.docstrings import (
 from astToolFactory.factory_annex import (
 	FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
 	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute,
-	FunctionDefMake_Import, listHandmade_astTypes,
+	FunctionDefMake_Import, listHandmade_astTypes, listOverloads_keyword, listOverloadsTypeAlias,
 )
 from astToolkit import (
 	Add, astModuleToIngredientsFunction, BitOr, ClassIsAndAttribute, IfThis, IngredientsFunction,
-	IngredientsModule, LedgerOfImports, Make, NodeChanger, NodeTourist, parseLogicalPath2astModule,
-	Then,
+	IngredientsModule, LedgerOfImports, Make, NodeChanger, parseLogicalPath2astModule,
 )
 from astToolkit.transformationTools import write_astModule
-from collections.abc import Callable, Sequence
 from pathlib import PurePosixPath
-from typing import cast, TypeGuard
-from Z0Z_tools import raiseIfNone, writeStringToHere
+from typing import cast
+from Z0Z_tools import writeStringToHere
 import ast
 import autoflake
 
@@ -54,11 +52,25 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 			for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
 				if 'node.'+attribute in line:
 					listTypeIgnore.append(ast.TypeIgnore(splitlinesNumber+1, tag))
+					# get the first occurrence of the match in the source code
 					break
 		astModule = ast.parse(pythonSource)
 		astModule.type_ignores.extend(listTypeIgnore)
 		pythonSource = ast.unparse(astModule)
 		pythonSource = "# ruff: noqa: F403, F405\n" + pythonSource
+		pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
+	if 'Make' in moduleIdentifier:
+		listTypeIgnore: list[ast.TypeIgnore] = []
+		lineno: int = 0
+		for attribute, tag in [('keyword', '[reportInconsistentOverload]'), ('MatchClass', '[reportSelfClsParameterName]'), ('TypeAlias', '[reportInconsistentOverload]')]:
+			for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
+				if 'def ' + attribute in line:
+					# get the last occurrence of the match in the source code
+					lineno = splitlinesNumber + 1
+			listTypeIgnore.append(ast.TypeIgnore(lineno, tag))
+		astModule = ast.parse(pythonSource)
+		astModule.type_ignores.extend(listTypeIgnore)
+		pythonSource = ast.unparse(astModule)
 		pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
 	autoflake_additional_imports: list[str] = ['astToolkit']
 	pythonSource = autoflake.fix_code(pythonSource, autoflake_additional_imports, expand_star_imports=False, remove_all_unused_imports=True, remove_duplicate_keys = False, remove_unused_variables = False)
@@ -122,39 +134,6 @@ def make_astTypes() -> None:
 		)
 
 	writeModule(astModule, '_astTypes')
-
-def makeJoinClassmethod() -> None:
-	list_aliasIdentifier: list[str] = ['ast_attributes', 'Make']
-	list4ModuleBody: list[ast.stmt] = [
-		FunctionDef_boolopJoinMethod
-		, FunctionDef_operatorJoinMethod
-		]
-
-	listBoolOpIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.boolop.__subclasses__()])
-	listOperatorIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.operator.__subclasses__()])
-
-	for identifier in listBoolOpIdentifiers:
-		list4ModuleBody.append(Make.ClassDef(identifier
-			, bases=[Make.Attribute(Make.Name('ast'), identifier)]
-			, body=[ClassDefDocstring_ast_boolop, FunctionDef_join_boolop]
-		))
-
-	for identifier in listOperatorIdentifiers:
-		list4ModuleBody.append(Make.ClassDef(identifier
-			, bases=[Make.Attribute(Make.Name('ast'), identifier)]
-			, body=[ClassDefDocstring_ast_operator, FunctionDef_join_operator]
-		))
-
-	astModule: ast.Module = Make.Module([docstringWarning
-		, Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
-		, Make.ImportFrom('collections.abc', [Make.alias('Iterable'), Make.alias('Sequence')])
-		, Make.ImportFrom('typing', [Make.alias('TypedDict'), Make.alias('Unpack')])
-		, Make.Import('ast')
-		, Make.Import('sys')
-		, *list4ModuleBody
-	])
-
-	writeModule(astModule, '_joinClassmethod')
 
 def makeTool_dump() -> None:
 	ingredientsFunction: IngredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule('ast'), 'dump')
@@ -377,42 +356,22 @@ def makeToolGrab() -> None:
 # For real, `dictionaryDocstringMake`, keynames = `ClassDefIdentifier`, values = docstrings created in a dedicated module,
 # currently `astToolFactory/docstrings.py`. I am sure there are many packages designed to help with this.
 
-# TODO overload for Make.keyword:
-"""
-@staticmethod
-@overload
-def keyword(arg: str | None, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
-@staticmethod
-@overload
-def keyword(arg: str | None = None, *, value: ast.expr, **keywordArguments: int) -> ast.keyword:...
-"""
-
-# TODO overload for Make.TypeAlias:
-"""
-@staticmethod
-@overload
-def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param] = [], *, value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
-@staticmethod
-@overload
-def TypeAlias(name: ast.Name, type_params: Sequence[ast.type_param], value: ast.expr, **keywordArguments: int) -> ast.TypeAlias:...
-"""
-
-# TODO add `ClassDef` for ast subclasses that do not have __init__ parameters. At the very least, it prevents an error if the user uses `Make.GtE()` instead of `ast.GtE()`.
 def makeToolMake() -> None:
-	list_aliasIdentifier: list[str] = ['ConstantValueType']
+	ledgerOfImports: LedgerOfImports = LedgerOfImports()
+	ledgerOfImports.addImportFrom_asStr('astToolkit', 'ConstantValueType')
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringMake]
-	setKeywordArgumentsAnnotationTypeAlias: set[str] = set()
 
 	# list_match_case: list[ast.match_case] = []
 	# # The order of the tuple elements is the order in which they are used in the flow of the code.
 	# for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, useMatchCase, versionMinorMinimum in getElementsMake():
 	# 	# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
-
+	# 	if False:
+	# 		pass
 	# 	else:
 	# 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in listStr4FunctionDef_args]
 	# 		kwarg: ast.arg | None = None
 	# 		if kwarg_annotationIdentifier != 'No':
-	# 			setKeywordArgumentsAnnotationTypeAlias.add(kwarg_annotationIdentifier)
+	# 			ledgerOfImports.addImportFrom_asStr('astToolkit', kwarg_annotationIdentifier)
 	# 			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(kwarg_annotationIdentifier)))
 	# 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in listDefaults]
 	# 		decorator_list: list[ast.expr] = [astName_staticmethod]
@@ -430,7 +389,7 @@ def makeToolMake() -> None:
 	# 					break
 	# 				listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
 	# 			if kwarg is not None:
-	# 				listCall_keyword.append(toolMakeFunctionDefReturnCall_keywords)
+	# 				listCall_keyword.append(keywordKeywordArguments4Call)
 	# 			body = [Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 
 	# 		ast_stmt = Make.FunctionDef(
@@ -461,7 +420,7 @@ def makeToolMake() -> None:
 
 	# 	list4ClassDefBody.append(ast_stmt)
 
-	setKeywordArgumentsAnnotationTypeAlias.add('ast_attributes')
+	ledgerOfImports.addImportFrom_asStr('astToolkit', 'ast_attributes')
 	list4ClassDefBody.extend([
 		FunctionDef_boolopJoinMethod
 		, FunctionDef_operatorJoinMethod
@@ -475,7 +434,7 @@ def makeToolMake() -> None:
 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in dictionaryMethodElements['listStr4FunctionDef_args']]
 		kwarg: ast.arg | None = None
 		if str(dictionaryMethodElements['kwarg_annotationIdentifier']) != 'No':
-			setKeywordArgumentsAnnotationTypeAlias.add(dictionaryMethodElements['kwarg_annotationIdentifier'])
+			ledgerOfImports.addImportFrom_asStr('astToolkit', dictionaryMethodElements['kwarg_annotationIdentifier'])
 			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(dictionaryMethodElements['kwarg_annotationIdentifier'])))
 
 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in dictionaryMethodElements['listDefaults']]
@@ -488,7 +447,7 @@ def makeToolMake() -> None:
 				break
 			listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
 		if kwarg is not None:
-			listCall_keyword.append(toolMakeFunctionDefReturnCall_keywords)
+			listCall_keyword.append(keywordKeywordArguments4Call)
 
 		ast_stmt = Make.FunctionDef(ClassDefIdentifier
 			, args=Make.arguments(args=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
@@ -553,10 +512,17 @@ def makeToolMake() -> None:
 			continue
 		elif ClassDefIdentifier == 'Import':
 			list4ClassDefBody.append(FunctionDefMake_Import)
-			list_aliasIdentifier.append('identifierDotAttribute')
+			ledgerOfImports.addImportFrom_asStr('astToolkit', 'identifierDotAttribute')
 			continue
-		else:
-			ast_stmt = None
+		# Add prefabricated overloads for a method.
+		elif ClassDefIdentifier == 'TypeAlias':
+			list4ClassDefBody.extend(listOverloadsTypeAlias)
+			ledgerOfImports.addImportFrom_asStr('typing', 'overload')
+		elif ClassDefIdentifier == 'keyword':
+			list4ClassDefBody.extend(listOverloads_keyword)
+			ledgerOfImports.addImportFrom_asStr('typing', 'overload')
+
+		ast_stmt = None
 
 		classAs_astAttribute: ast.expr = eval(dictionaryClassDef['classAs_astAttribute'])
 		dictionaryAllClassVersions: dict[int, dict[int, DictionaryMatchArgs]] = dictionaryClassDef['versionMinorMinimumClass']
@@ -598,22 +564,20 @@ def makeToolMake() -> None:
 	# END OLD code
 
 	# Module-level operations ===============
-	setKeywordArgumentsAnnotationTypeAlias.discard('int')
-	list_aliasIdentifier = sorted(set([*setKeywordArgumentsAnnotationTypeAlias, *list_aliasIdentifier]), key=str.lower)
-	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in list_aliasIdentifier])
-		, Make.ImportFrom('collections.abc', [Make.alias('Iterable'), Make.alias('Sequence')])
+	ledgerOfImports.walkThis(Make.Module([
+		Make.ImportFrom('collections.abc', [Make.alias('Iterable'), Make.alias('Sequence')])
 		, Make.ImportFrom('typing', [Make.alias('Any')])
 		, Make.ImportFrom('typing_extensions', [Make.alias('Unpack')])
 		, Make.Import('ast')
 		, Make.Import('sys')
 		]
+	))
 
+	list4ModuleBody: list[ast.stmt] = [*ledgerOfImports.makeList_ast()]
 	writeClass('Make', list4ClassDefBody, list4ModuleBody)
 
 if __name__ == "__main__":
 	make_astTypes()
-	makeJoinClassmethod()
 	makeToolBe()
 	makeToolClassIsAndAttribute()
 	makeToolDOT()
