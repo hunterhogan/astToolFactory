@@ -170,22 +170,59 @@ listOverloadsTypeAlias: list[ast.stmt] = [
 		, returns=Make.Attribute(Make.Name('ast'), 'TypeAlias'))
 ]
 
+# `theSSOT` =====================================================================
+astModule_theSSOT = Make.Module([
+    Make.ImportFrom('importlib', list_alias=[Make.alias('import_module', asName='importlib_import_module')])
+	, Make.ImportFrom('inspect', list_alias=[Make.alias('getfile', asName='inspect_getfile')])
+	, Make.ImportFrom('pathlib', list_alias=[Make.alias('Path')])
+	, Make.ImportFrom('tomli', list_alias=[Make.alias('load', asName='tomli_load')])
+	, Make.Import(dotModule='dataclasses')
+	, Make.Assign([Make.Name('identifierPackage', Make.Store())], value=Make.Constant('astToolkit'))
+	, Make.FunctionDef('getPathPackageINSTALLING'
+		, argumentSpecification=Make.arguments()
+        , body=[Make.AnnAssign(Make.Name('pathPackage', Make.Store()), annotation=Make.Name('Path')
+				, value=Make.Call(Make.Name('Path')
+					, listParameters=[Make.Call(Make.Name('inspect_getfile')
+						, listParameters=[Make.Call(Make.Name('importlib_import_module')
+							, listParameters=[Make.Name('identifierPackage')])])]))
+			, Make.If(test=Make.Call(Make.Attribute(Make.Name('pathPackage'), 'is_file'))
+				, body=[Make.Assign([Make.Name('pathPackage', Make.Store())], value=Make.Attribute(Make.Name('pathPackage'), 'parent'))])
+			, Make.Return(value=Make.Name('pathPackage'))
+		]
+        , returns=Make.Name('Path')
+	)
+	, Make.ClassDef('PackageSettings'
+		, body=[
+            Make.AnnAssign(Make.Name('fileExtension', Make.Store())
+				, annotation=Make.Name('str')
+                , value=Make.Call(Make.Attribute(Make.Name('dataclasses'), 'field'), list_keyword=[Make.keyword('default', value=Make.Constant('.py'))]))
+			, Make.Expr(value=Make.Constant('Default file extension for generated code files.'))
+			, Make.AnnAssign(Make.Name('packageName', Make.Store())
+				, annotation=Make.Name('str')
+                , value=Make.Call(Make.Attribute(Make.Name('dataclasses'), 'field'), list_keyword=[Make.keyword('default', value=Make.Name('identifierPackage'))]))
+			, Make.Expr(Make.Constant('Name of this package, used for import paths and configuration.'))
+			, Make.AnnAssign(Make.Name('pathPackage', Make.Store())
+				, annotation=Make.Name('Path')
+                , value=Make.Call(Make.Attribute(Make.Name('dataclasses'), 'field'), list_keyword=[Make.keyword('default_factory', value=Make.Name('getPathPackageINSTALLING'))
+												, Make.keyword('metadata', value=Make.Dict(keys=[Make.Constant('evaluateWhen')], values=[Make.Constant('installing')]))
+                                                ]))
+			, Make.Expr(Make.Constant('Absolute path to the installed package directory.'))
+		]
+    , decorator_list=[Make.Attribute(Make.Name('dataclasses'), 'dataclass')]
+    )
+	, Make.Assign([Make.Name('packageSettings', Make.Store())], value=Make.Call(Make.Name('PackageSettings')))])
+
 # `TypeAlias` =====================================================================
 listHandmade_astTypes: list[ast.stmt] = [
-	Make.AnnAssign(Make.Name('intORstr', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('Any')),
-	Make.AnnAssign(Make.Name('intORstrORtype_params', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('Any')),
-	Make.AnnAssign(Make.Name('intORtype_params', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('Any')),
     # _ConstantValue: typing_extensions.TypeAlias = str | bytes | bool | int | float | complex | None | EllipsisType
     # If I automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include `bytes` or `range`.
     # And, I would change the identifier to `ast_ConstantValue`.
-	Make.AnnAssign(Make.Name('ConstantValueType', ast.Store())
-				, annotation=Make.Name('typing_TypeAlias')
-				, value=Make.BitOr().join(Make.Name(identifier)
-									for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float'
-													, 'int', 'None', 'range', 'str'
-													]
-								)
+	Make.AnnAssign(Make.Name('ConstantValueType', ast.Store()), annotation=Make.Name('typing_TypeAlias')
+		, value=Make.BitOr().join(Make.Name(identifier)
+				for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float', 'int', 'None', 'range', 'str']
+			)
 	),
+	Make.AnnAssign(Make.Name('identifierDotAttribute', ast.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('str')),
 	Make.Assign([Make.Name('木', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), listParameters=[Make.Constant('木')], list_keyword=[Make.keyword('bound', value=Make.Attribute(Make.Name('ast'), 'AST')), Make.keyword('covariant', value=Make.Constant(True))])),
 	Make.Assign([Make.Name('个', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), listParameters=[Make.Constant('个')], list_keyword=[Make.keyword('covariant', value=Make.Constant(True))])),
 	Make.Assign([Make.Name('个return', ast.Store())], value=Make.Call(Make.Name('typing_TypeVar'), listParameters=[Make.Constant('个return')], list_keyword=[Make.keyword('covariant', value=Make.Constant(True))])),

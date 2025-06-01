@@ -35,6 +35,9 @@ settingsPackage = PackageSettings()
 pythonMinimumVersionMinor: int = 12
 keywordArgumentsIdentifier: str = 'keywordArguments'
 
+pathFilenameDataframeAST: Path = settingsPackage.pathPackage / 'dataframeAST.pkl'
+versionMinor_astMinimumSupported = 9
+
 listPylanceErrorsHARDCODED: list[str] = ['annotation', 'arg', 'args', 'body', 'keys', 'name', 'names', 'op', 'orelse', 'pattern', 'returns', 'target', 'value',]
 listPylanceErrorsHARDCODED.extend(['argtypes', 'bases', 'cases', 'comparators', 'decorator_list', 'defaults', 'elts', 'finalbody', 'generators', 'ifs', 'items',])
 listPylanceErrorsHARDCODED.extend(['keywords', 'kw_defaults', 'kwd_patterns', 'ops', 'patterns', 'targets', 'type_params', 'values',])
@@ -52,9 +55,21 @@ Z0Z_pathRoot = Path('/apps')
 Z0Z_PackageToManufactureIdentifier: str = 'astToolkit'
 Z0Z_PackageToManufacturePath = Z0Z_pathRoot / Z0Z_PackageToManufactureIdentifier / Z0Z_PackageToManufactureIdentifier
 settingsPackageToManufacture = PackageSettings(identifierPackage=Z0Z_PackageToManufactureIdentifier, pathPackage=Z0Z_PackageToManufacturePath)
-# TODO datacenter needs to do all data manipulation, not factory.py
-# TODO more and better pandas usage
 
-pathFilenameDataframeAST: Path = settingsPackage.pathPackage / 'dataframeAST.pkl'
-versionMinor_astMinimumSupported = 9
+isort_codeConfiguration: dict[str, int | str | list[str]] = {
+	"combine_as_imports": True,
+	"force_alphabetical_sort_within_sections": True,
+	"from_first": True,
+	"honor_noqa": True,
+	"include_trailing_comma": True,
+	"indent": "\t",
+	"line_length": 100,
+	"lines_after_imports": 1,
+	"lines_between_types": 0,
+	"multi_line_output": 5,
+	"no_sections": True,
+	"skip": ["__init__.py"],
+	"use_parentheses": True,
+}
 
+settingsPackageToManufacture.isort_codeConfiguration = isort_codeConfiguration # pyright: ignore[reportAttributeAccessIssue]

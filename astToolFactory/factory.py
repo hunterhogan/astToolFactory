@@ -12,15 +12,17 @@ from astToolFactory.docstrings import (
 	ClassDefDocstringMake, docstringWarning,
 )
 from astToolFactory.factory_annex import (
-	FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
-	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute,
-	FunctionDefMake_Import, listHandmade_astTypes, listOverloads_keyword, listOverloadsTypeAlias,
+	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
+	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf,
+	FunctionDefMake_Attribute, FunctionDefMake_Import, listHandmade_astTypes, listOverloads_keyword,
+	listOverloadsTypeAlias,
 )
 from astToolkit import (
 	astModuleToIngredientsFunction, ClassIsAndAttribute, IfThis, IngredientsFunction,
 	IngredientsModule, LedgerOfImports, Make, NodeChanger, parseLogicalPath2astModule,
 )
 from astToolkit.transformationTools import write_astModule
+from isort import code as isort_code
 from pathlib import PurePosixPath
 from typing import cast
 from Z0Z_tools import writeStringToHere
@@ -39,8 +41,6 @@ TODO protect against AttributeError (I guess) in DOT, Grab, and ClassIsAndAttrib
 def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	ast.fix_missing_locations(astModule)
 	pythonSource: str = ast.unparse(astModule)
-	if 'ClassIsAndAttribute' in moduleIdentifier or 'DOT' in moduleIdentifier or 'Grab' in moduleIdentifier:
-		pythonSource = "# ruff: noqa: F403, F405\n" + pythonSource
 	if 'ClassIsAndAttribute' in moduleIdentifier:
 		pythonSource = "# pyright: reportArgumentType=false\n" + pythonSource
 	if 'DOT' in moduleIdentifier:
@@ -57,7 +57,6 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 		astModule = ast.parse(pythonSource)
 		astModule.type_ignores.extend(listTypeIgnore)
 		pythonSource = ast.unparse(astModule)
-		pythonSource = "# ruff: noqa: F403, F405\n" + pythonSource
 		pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
 	if 'Make' in moduleIdentifier:
 		listTypeIgnore: list[ast.TypeIgnore] = []
@@ -73,7 +72,8 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 		pythonSource = ast.unparse(astModule)
 		pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
 	autoflake_additional_imports: list[str] = ['astToolkit']
-	pythonSource = autoflake.fix_code(pythonSource, autoflake_additional_imports, expand_star_imports=False, remove_all_unused_imports=True, remove_duplicate_keys = False, remove_unused_variables = False)
+	pythonSource = autoflake.fix_code(pythonSource, autoflake_additional_imports, expand_star_imports=True, remove_all_unused_imports=True, remove_duplicate_keys = False, remove_unused_variables = False)
+	pythonSource = isort_code(pythonSource, **settingsPackageToManufacture.isort_codeConfiguration) # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownArgumentType]
 	pathFilenameModule = PurePosixPath(settingsPackageToManufacture.pathPackage, moduleIdentifier + settingsPackageToManufacture.fileExtension)
 	writeStringToHere(pythonSource, pathFilenameModule)
 
@@ -244,7 +244,7 @@ def makeToolClassIsAndAttribute() -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom('astToolkit._astTypes', [Make.alias('*')])
+		Make.ImportFrom('astToolkit', [Make.alias('*')])
 		, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
 		, Make.ImportFrom('typing', [Make.alias(identifier) for identifier in ['Any', 'Literal', 'overload', 'TypeGuard']])
 		, Make.Import('ast')
@@ -291,7 +291,7 @@ def makeToolDOT() -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-			Make.ImportFrom('astToolkit._astTypes', [Make.alias('*')])
+			Make.ImportFrom('astToolkit', [Make.alias('*')])
 			, Make.ImportFrom('collections.abc', [Make.alias('Sequence')])
 			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('Literal'), Make.alias('overload')])
 			, Make.Import('ast')
@@ -341,8 +341,7 @@ def makeToolGrab() -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-			Make.ImportFrom('astToolkit', [Make.alias(identifier) for identifier in ['个']])
-			, Make.ImportFrom('astToolkit._astTypes', [Make.alias('*')])
+			Make.ImportFrom('astToolkit', [Make.alias('*')])
 			, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
 			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('Literal')])
 			, Make.Import('ast')
@@ -576,6 +575,9 @@ def makeToolMake() -> None:
 	list4ModuleBody: list[ast.stmt] = [*ledgerOfImports.makeList_ast()]
 	writeClass('Make', list4ClassDefBody, list4ModuleBody)
 
+def write_theSSOT():
+	writeModule(astModule_theSSOT, '_theSSOT')
+
 if __name__ == "__main__":
 	make_astTypes()
 	makeToolBe()
@@ -584,4 +586,4 @@ if __name__ == "__main__":
 	makeToolGrab()
 	makeToolMake()
 	# makeTool_dump()
-
+	write_theSSOT()

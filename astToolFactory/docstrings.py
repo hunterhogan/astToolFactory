@@ -17,21 +17,53 @@ ClassDefDocstring_ast_operator = ast.Expr(ast.Constant(docstring))
 del docstring
 
 docstring: str = (
+    """Type guard functions for safe AST node identification and type narrowing.
+
+    Provides static methods that perform runtime type checking for all AST node types
+    while enabling compile-time type narrowing through `TypeGuard` annotations. Forms
+    the foundation of type-safe AST analysis and transformation throughout the toolkit.
+
+    Each method takes an `ast.AST` node and returns a `TypeGuard` that confirms both
+    runtime type safety and enables static type checkers to narrow the node type in
+    conditional contexts. This eliminates the need for unsafe casting while providing
+    comprehensive coverage of Python's AST node hierarchy.
+
+    Methods correspond directly to Python AST node types, following the naming convention
+    of the AST classes themselves. Coverage includes expression nodes (`Add`, `Call`,
+    `Name`), statement nodes (`Assign`, `FunctionDef`, `Return`), operator nodes
+    (`And`, `Or`, `Not`), and structural nodes (`Module`, `arguments`, `keyword`).
+
+    The class serves as the primary type-checking component in the antecedent-action
+    pattern, where predicates identify target nodes and actions specify operations.
+    Type guards from this class are commonly used as building blocks in `IfThis`
+    predicates and directly as `findThis` parameters in visitor classes.
+
+    Parameters:
+
+        node: AST node to test for specific type membership
+
+    Returns:
+
+        typeGuard: `TypeGuard` enabling both runtime validation and static type narrowing
+
+    Examples:
+
+        Type-safe node processing with automatic type narrowing:
+
+            if Be.FunctionDef(node):
+                functionName = node.name  # Type-safe access to name attribute
+                parameterCount = len(node.args.args)
+
+        Building complex predicates for visitor patterns:
+
+            NodeTourist(Be.Return, Then.extractIt(DOT.value)).visit(functionNode)
+
+        Combining type guards in conditional logic:
+
+            if Be.Call(node) and Be.Name(node.func):
+                callableName = node.func.id  # Type-safe access to function name
     """
-    Provide type-guard functions for safely verifying AST node types during manipulation.
-
-    The be class contains static methods that perform runtime type verification of AST nodes, returning TypeGuard
-    results that enable static type checkers to narrow node types in conditional branches. These type-guards:
-
-    1. Improve code safety by preventing operations on incompatible node types.
-    2. Enable IDE tooling to provide better autocompletion and error detection.
-    3. Document expected node types in a way that is enforced by the type system.
-    4. Support pattern-matching workflows where node types must be verified before access.
-
-    When used with conditional statements, these type-guards allow for precise, type-safe manipulation of AST nodes
-    while maintaining full static type checking capabilities, even in complex transformation scenarios.
-    """
-    )
+)
 
 ClassDefDocstringBe = ast.Expr(ast.Constant(docstring))
 del docstring
@@ -101,7 +133,7 @@ docstring: str = (
 
     The `ast._Attributes`, lineno, col_offset, end_lineno, and end_col_offset, hold position information; however, they are, importantly, _not_ `ast._fields`.
     """
-    )
+)
 ClassDefDocstringMake = ast.Expr(ast.Constant(docstring))
 del docstring
 
@@ -144,7 +176,6 @@ docstring: str = (
         Handles single expressions and empty iterables gracefully.
         """
 )
-
 FunctionDefDocstring_join_operator = ast.Expr(ast.Constant(docstring))
 del docstring
 
@@ -183,7 +214,6 @@ docstring: str = (
         Handles single expressions and empty sequences gracefully.
         """
 )
-
 FunctionDefDocstring_join_boolop = ast.Expr(ast.Constant(docstring))
 del docstring
 
