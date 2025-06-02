@@ -67,6 +67,13 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 					# get the last occurrence of the match in the source code
 					lineno = splitlinesNumber + 1
 			listTypeIgnore.append(ast.TypeIgnore(lineno, tag))
+		tag = '[reportRedeclaration]'
+		for attribute in ['ParamSpec', 'TypeVar', 'TypeVarTuple']:
+			for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
+				if 'def ' + attribute in line:
+					listTypeIgnore.append(ast.TypeIgnore(splitlinesNumber+1, tag))
+					# get the first occurrence of the match in the source code
+					break
 		astModule = ast.parse(pythonSource)
 		astModule.type_ignores.extend(listTypeIgnore)
 		pythonSource = ast.unparse(astModule)
@@ -360,65 +367,6 @@ def makeToolMake() -> None:
 	ledgerOfImports.addImportFrom_asStr('astToolkit', 'ConstantValueType')
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringMake]
 
-	# list_match_case: list[ast.match_case] = []
-	# # The order of the tuple elements is the order in which they are used in the flow of the code.
-	# for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, useMatchCase, versionMinorMinimum in getElementsMake():
-	# 	# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
-	# 	if False:
-	# 		pass
-	# 	else:
-	# 		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in listStr4FunctionDef_args]
-	# 		kwarg: ast.arg | None = None
-	# 		if kwarg_annotationIdentifier != 'No':
-	# 			ledgerOfImports.addImportFrom_asStr('astToolkit', kwarg_annotationIdentifier)
-	# 			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(kwarg_annotationIdentifier)))
-	# 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in listDefaults]
-	# 		decorator_list: list[ast.expr] = [astName_staticmethod]
-	# 		classAs_astAttribute: ast.expr = eval(classAs_astAttributeAsStr)
-
-	# 		if overloadDefinition:
-	# 			decorator_list.append(astName_overload)
-	# 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
-	# 		else:
-	# 			listCall_keyword: list[ast.keyword] = []
-	# 			for tupleCall_keywords in listTupleCall_keywords:
-	# 				argIdentifier, keywordValue = tupleCall_keywords
-	# 				# If there are not call keywords
-	# 				if keywordValue == 'No':
-	# 					break
-	# 				listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
-	# 			if kwarg is not None:
-	# 				listCall_keyword.append(keywordKeywordArguments4Call)
-	# 			body = [Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
-
-	# 		ast_stmt = Make.FunctionDef(
-	# 			ClassDefIdentifier
-	# 			, argumentSpecification=Make.arguments(list_arg=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
-	# 			, body=body
-	# 			, decorator_list=decorator_list
-	# 			, returns=classAs_astAttribute)
-
-
-	# 	# If there are multiple versions, create a match-case for this version.
-	# 	if useMatchCase:
-	# 		# Create a guard or a catch-all match-case and append to list_match_case.
-	# 		if versionMinorMinimum >= pythonMinimumVersionMinor:
-	# 			pattern: ast.MatchAs = Make.MatchAs(name = 'version')
-	# 			guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-	# 		else:
-	# 			pattern = Make.MatchAs()
-	# 			guard = None
-	# 		list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
-
-	# 		# If there are more match-case in the queue, then wait to create ast.Match.
-	# 		if useMatchCase > 1:
-	# 			continue
-	# 		else:
-	# 			ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
-	# 			list_match_case.clear()
-
-	# 	list4ClassDefBody.append(ast_stmt)
-
 	ledgerOfImports.addImportFrom_asStr('astToolkit', 'ast_attributes')
 	list4ClassDefBody.extend([
 		FunctionDef_boolopJoinMethod
@@ -428,71 +376,9 @@ def makeToolMake() -> None:
 	listBoolOpIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.boolop.__subclasses__()])
 	listOperatorIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.operator.__subclasses__()])
 
-	# OLD code
-	def create_ast_stmt(dictionaryMethodElements: DictionaryMatchArgs) -> ast.FunctionDef:
-		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in dictionaryMethodElements['listStr4FunctionDef_args']]
-		kwarg: ast.arg | None = None
-		if str(dictionaryMethodElements['kwarg_annotationIdentifier']) != 'No':
-			ledgerOfImports.addImportFrom_asStr('astToolkit', dictionaryMethodElements['kwarg_annotationIdentifier'])
-			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(dictionaryMethodElements['kwarg_annotationIdentifier'])))
-
-		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in dictionaryMethodElements['listDefaults']]
-
-		listCall_keyword: list[ast.keyword] = []
-		for tupleCall_keywords in dictionaryMethodElements['listTupleCall_keywords']:
-			argIdentifier, keywordValue = tupleCall_keywords
-			# If there are not call keywords
-			if keywordValue == 'No':
-				break
-			listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
-		if kwarg is not None:
-			listCall_keyword.append(keywordKeywordArguments4Call)
-
-		ast_stmt = Make.FunctionDef(ClassDefIdentifier
-			, argumentSpecification=Make.arguments(list_arg=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
-			, body=[Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
-			, decorator_list=[astName_staticmethod]
-			, returns=classAs_astAttribute)
-		return ast_stmt
-
-	def unpackDictionaryAllMatch_argsVersions() -> ast.stmt:
-		ast_stmt = None
-		if len(dictionaryAllMatch_argsVersions) == 1:
-			for versionMinorMinimum_match_args, dictionaryMethodElements in dictionaryAllMatch_argsVersions.items():
-				ast_stmt = create_ast_stmt(dictionaryMethodElements)
-				if versionMinorMinimum_match_args > versionMinorMinimumClass:
-					versionMinorData: int = versionMinorMinimum_match_args
-					body = [ast_stmt]
-					orElse = []
-					ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
-								, ops=[ast.GtE()]
-								, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
-							, body=body
-							, orElse=orElse
-						)
-		else:
-			body: list[ast.stmt] = []
-			orElse: list[ast.stmt] = []
-			versionMinorData: int = -999999999999999999
-			for versionMinorMinimum_match_args, dictionaryMethodElements in dictionaryAllMatch_argsVersions.items():
-				# Do some variations of the method need to be conditional on the Python version?
-				# if versionMinorMinimum_match_args == versionMinorMinimumClass, then access to versionMinorMinimum_match_args is already conditional on the python version because it is checked at the class level.
-				if versionMinorMinimum_match_args > versionMinorMinimumClass:
-					body = [create_ast_stmt(dictionaryMethodElements)]
-					versionMinorData = versionMinorMinimum_match_args
-				else:
-					orElse = [create_ast_stmt(dictionaryMethodElements)]
-			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
-						, ops=[ast.GtE()]
-						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
-					, body=body
-					, orElse=orElse
-				)
-		assert ast_stmt is not None, "Coding by brinkmanship!"
-		return ast_stmt
-
-	dictionaryToolElements: dict[str, DictionaryClassDef] = getElementsMake()
-	for ClassDefIdentifier, dictionaryClassDef in dictionaryToolElements.items():
+	list_match_case: list[ast.match_case] = []
+	# The order of the tuple elements is the order in which they are used in the flow of the code.
+	for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, useMatchCase, versionMinorMinimum in getElementsMake():
 		# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
 		if ClassDefIdentifier in listBoolOpIdentifiers:
 			list4ClassDefBody.append(Make.ClassDef(ClassDefIdentifier
@@ -521,46 +407,57 @@ def makeToolMake() -> None:
 			list4ClassDefBody.extend(listOverloads_keyword)
 			ledgerOfImports.addImportFrom_asStr('typing', 'overload')
 
-		ast_stmt = None
+		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in listStr4FunctionDef_args]
+		kwarg: ast.arg | None = None
+		if kwarg_annotationIdentifier != 'No':
+			ledgerOfImports.addImportFrom_asStr('astToolkit', kwarg_annotationIdentifier)
+			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(kwarg_annotationIdentifier)))
+		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in listDefaults]
+		decorator_list: list[ast.expr] = [astName_staticmethod]
+		classAs_astAttribute: ast.expr = eval(classAs_astAttributeAsStr)
 
-		classAs_astAttribute: ast.expr = eval(dictionaryClassDef['classAs_astAttribute'])
-		dictionaryAllClassVersions: dict[int, dict[int, DictionaryMatchArgs]] = dictionaryClassDef['versionMinorMinimumClass']
-
-		if len(dictionaryAllClassVersions) == 1:
-			for versionMinorMinimumClass, dictionaryAllMatch_argsVersions in dictionaryAllClassVersions.items():
-				ast_stmt = unpackDictionaryAllMatch_argsVersions()
-				if versionMinorMinimumClass > pythonMinimumVersionMinor:
-					versionMinorData: int = versionMinorMinimumClass
-					body = [ast_stmt]
-					orElse = []
-					ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
-								, ops=[ast.GtE()]
-								, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
-							, body=body
-							, orElse=orElse
-						)
-
+		# For the first refactoring, _all_ `overloadDefinition` are `False` because overload is handled above.
+		if overloadDefinition:
+			decorator_list.append(astName_overload)
+			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
-			# Does _every_ variation of the method need to be conditional on the Python version?
-			body: list[ast.stmt] = []
-			orElse: list[ast.stmt] = []
-			versionMinorData: int = -999999999999999999
-			for versionMinorMinimumClass, dictionaryAllMatch_argsVersions in dictionaryAllClassVersions.items():
-				if versionMinorMinimumClass > pythonMinimumVersionMinor:
-					body = [unpackDictionaryAllMatch_argsVersions()]
-					versionMinorData = versionMinorMinimumClass
-				else:
-					orElse = [unpackDictionaryAllMatch_argsVersions()]
-			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
-						, ops=[ast.GtE()]
-						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorData)])])
-					, body=body
-					, orElse=orElse
-				)
+			listCall_keyword: list[ast.keyword] = []
+			for tupleCall_keywords in listTupleCall_keywords:
+				argIdentifier, keywordValue = tupleCall_keywords
+				# If there are not call keywords
+				if keywordValue == 'No':
+					break
+				listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
+			if kwarg is not None:
+				listCall_keyword.append(keywordKeywordArguments4Call)
+			body = [Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 
-		assert ast_stmt is not None, "Coding by brinkmanship!"
+		ast_stmt = Make.FunctionDef(
+			ClassDefIdentifier
+			, argumentSpecification=Make.arguments(list_arg=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
+			, body=body
+			, decorator_list=decorator_list
+			, returns=classAs_astAttribute)
+
+		# If there are multiple versions, create a match-case for this version.
+		if useMatchCase:
+			# Create a guard or a catch-all match-case and append to list_match_case.
+			if versionMinorMinimum >= pythonMinimumVersionMinor:
+				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
+				guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+			else:
+				pattern = Make.MatchAs()
+				guard = None
+			list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
+
+			# If there are more match-case in the queue, then wait to create ast.Match.
+			if useMatchCase > 1:
+				continue
+			else:
+				ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
+				list_match_case.clear()
+
 		list4ClassDefBody.append(ast_stmt)
-	# END OLD code
 
 	# Module-level operations ===============
 	ledgerOfImports.walkThis(Make.Module([

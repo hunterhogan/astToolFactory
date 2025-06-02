@@ -6,6 +6,7 @@ from astToolFactory import (
 from astToolkit import Be, DOT, dump, Make, NodeTourist, Then
 from collections.abc import Sequence
 from itertools import chain
+from numpy._typing._array_like import NDArray
 from typing import cast, TypeAlias, TypedDict
 from Z0Z_tools import raiseIfNone
 import ast
@@ -204,7 +205,7 @@ def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Versio
 
 	return listTuples
 
-def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> dict[str, DictionaryClassDef]:
+def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, list[str], str, list[str], str, bool, list[tuple[str, str]], int, int]]:
 	# START keep this; do not delete.
 	listElementsHARDCODED: list[str] = [
 	'ClassDefIdentifier',
@@ -213,52 +214,40 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 	'hashableListStr4FunctionDef_args',
 	'hashableListDefaults',
 	'hashableListTupleCall_keywords',
+
 	'classAs_astAttribute',
-	'list2Sequence',
-	'kwargAnnotation',
 	'kwarg_annotationIdentifier',
 	'listStr4FunctionDef_args',
 	'listDefaults',
 	'listTupleCall_keywords',
 	]
 	listElements: list[str] = listElementsHARDCODED
-	columnsHashable: slice = slice(0, 10)
-	# no lambda. period. NO. lambda. period. no lambda.
-	# no intermediate data structures
-	# no `for`, no `iterrows`, no loops.
-	# no duplicate statements: if even one line is a duplicate, I will reject the entire thing
 	# END keep this; do not delete.
+
 	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
-		# .query("attribute != 'No'")
 		.pipe(_sortCaseInsensitive, ['ClassDefIdentifier', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args']
 									, ['versionMinorMinimumClass', 'versionMinorMinimum_match_args']
 									, [True, False, False]
 			)
 	)
 
-	# TODO keep='last' is necessary for ast.FunctionDef.type_params when `pythonVersionMinorMinimum` == 12
-	# But I don't think that should be necessary, so investigate why it is.
-	dataframe = dataframe.drop_duplicates(subset=listElements[columnsHashable], keep='last')
-	def idkHowToNameThingsOrFollowInstructions(groupbyClassVersion: pandas.DataFrame) -> dict[int, DictionaryMatchArgs]:
-		return {
-			row['versionMinorMinimum_match_args']: {
-				'listDefaults': row['listDefaults'],
-				'listStr4FunctionDef_args': row['listStr4FunctionDef_args'],
-				'listTupleCall_keywords': row['listTupleCall_keywords'],
-				'kwarg_annotationIdentifier': row['kwarg_annotationIdentifier'],
-			}
-			for _rowIndex, row in groupbyClassVersion.iterrows() # pyright: ignore[reportUnknownVariableType]
-		}
+	dataframe = dataframe[listElements].drop_duplicates(subset=listElements[0:3])
 
-	dictionaryClassDef: dict[str, DictionaryClassDef] = {}
-	for ClassDefIdentifier, class_group in dataframe.groupby('ClassDefIdentifier', sort=False):
-		dictionaryClassDef[cast(str, ClassDefIdentifier)] = {
-			'classAs_astAttribute': class_group['classAs_astAttribute'].iloc[0], # pyright: ignore[reportUnknownMemberType]
-			'versionMinorMinimumClass': {}
-		}
-		for versionMinorMinimumClass, groupbyClassVersion in class_group.groupby('versionMinorMinimumClass'):
-			dictionaryClassDef[cast(str, ClassDefIdentifier)]['versionMinorMinimumClass'][cast(int, versionMinorMinimumClass)] = idkHowToNameThingsOrFollowInstructions(groupbyClassVersion)
-	return dictionaryClassDef
+	# Calculate useMatchCase as countdown for each ClassDefIdentifier group
+	# If only one version exists, useMatchCase should be 0 (no match-case needed)
+	# If multiple versions exist, countdown from total count to 1
+	dataframe['totalVersionCount'] = dataframe.groupby('ClassDefIdentifier')['versionMinorMinimum_match_args'].transform('nunique')
+	dataframe['versionRank'] = dataframe.groupby('ClassDefIdentifier')['versionMinorMinimum_match_args'].rank(method='first', ascending=False).astype(int)
+	dataframe['useMatchCase'] = numpy.where(
+		dataframe['totalVersionCount'] == 1,
+		0,
+		dataframe['totalVersionCount'] - dataframe['versionRank'] + 1
+	)
+
+	# Create overloadDefinition flag - always False for this refactoring
+	dataframe['overloadDefinition'] = False
+
+	return list(dataframe[['ClassDefIdentifier', 'listStr4FunctionDef_args', 'kwarg_annotationIdentifier', 'listDefaults', 'classAs_astAttribute', 'overloadDefinition', 'listTupleCall_keywords', 'useMatchCase', 'versionMinorMinimum_match_args']].to_records(index=False)) # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType]
 
 def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, list[str], int, int]]:
 	# START keep this; do not delete.
@@ -356,65 +345,67 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 		[['identifierTarget', 'classAs_astAttribute', 'useMatchCase', 'versionMinorMinimumAttribute']].to_records(index=False)) # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
 def updateDataframe() -> None:
+	# === Base Source Columns: Read-Only ===
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=None, modifyVersionMinorMinimum=False)
 
-	_columns: list[str] = ['ClassDefIdentifier',
-	'classAs_astAttribute',
+	_columns: list[str] = [
+	# read from sources
+	'ClassDefIdentifier',
 	'deprecated',
 	'base',
 	'base_typing_TypeAlias',
 	'match_args',
-
 	'attribute',
 	'attributeKind',
-	'type',
-	'kwargAnnotation',
-	'TypeAlias_hasDOTSubcategory',
-	'type_ast_expr',
-
 	'typeC',
 	'type_field_type',
 	'typeStub',
 	'typeStub_typing_TypeAlias',
-
-	'versionMinorMinimumClass',
-	'versionMinorMinimum_match_args',
-	'versionMinorMinimumAttribute',
 	'versionMajorData',
 	'versionMinorData',
 	'versionMicroData',
 
+	# Purely a human choice
 	'attributeRename',
-	'list2Sequence',
-	'defaultValue',
-	'keywordArguments',
+	'move2keywordArguments',
+	'defaultValue', # (for now)
 
+	# columns computed from sources per row
+	'classAs_astAttribute',
+	'type',
+	'type_ast_expr',
+	'typeSansNone_ast_expr',
 	'ast_arg',
+	'TypeAlias_hasDOTIdentifier',
+	'TypeAlias_hasDOTSubcategory',
+
+	# columns computed from sources per group
+	'versionMinorMinimumClass',
+	'versionMinorMinimum_match_args',
+	'versionMinorMinimumAttribute',
 	'listStr4FunctionDef_args',
 	'listDefaults',
 	'listTupleCall_keywords',
-	'TypeAlias_hasDOTIdentifier',
+
+	# columns aught to be computed per row
+	'list2Sequence',
+
+	# columns aught to be computed per group
+	'kwarg_annotationIdentifier',
+
+	# columns computed from other columns per row
+	'hashableListStr4FunctionDef_args',
+	'hashableListDefaults',
+	'hashableListTupleCall_keywords',
+
+	# To be removed
+	'kwargAnnotation',
 ]
 
 	# Change the order of columns
-	# dataframe = dataframe[_columns]
+	dataframe = dataframe[_columns]
 
-	# Update 'classAs_astAttribute' column with formatted value
-	def _makeClassAs_astAttribute(ClassDefIdentifier:str):
-		return dump(Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
-	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].map(_makeClassAs_astAttribute) # pyright: ignore[reportUnknownMemberType]
-
-	# Update 'type' column with standardized formatting and accurate information
-	def transform_type(value: str, identifiers: list[str]) -> str:
-		# Prepend "ast." to substrings matching 'ClassDefIdentifier', case-sensitive
-		pattern: str = r'\b(' + '|'.join(re.escape(identifier) for identifier in identifiers) + r')\b'
-		value = re.sub(pattern, r'ast.\1', value)
-		# Replace "Literal[True, False]" with "bool"
-		return value.replace("Literal[True, False]", "bool")
-	dataframe['type'] = dataframe.apply(
-		lambda row: transform_type(row['typeStub'] if row['typeStub_typing_TypeAlias'] == 'No' else row['typeC'], dataframe['ClassDefIdentifier'].dropna().unique().tolist()),   # pyright: ignore[reportUnknownArgumentType,reportUnknownLambdaType]
-		axis=1
-	)
+	# === Human Overrides (Purely Choice-Based) ===
 
 	listAttributeRename: list[tuple[str, str]] = [
 		('arg', 'Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'),
@@ -448,64 +439,77 @@ def updateDataframe() -> None:
 			'attributeRename'
 		] = attributeRename
 
+	def update_move2keywordArguments(row: pandas.Series) -> str | bool:   # pyright: ignore[reportUnknownParameterType, reportMissingTypeArgument]
+		if row['attributeKind'] in ["No", "_attribute"]:
+			return "No"
+		elif row['attribute'] in ["type_comment"]:
+			return 'Unpack'
+		elif row['attribute'] in ["simple"]:
+			return True
+		else:
+			return False
+	dataframe['move2keywordArguments'] = dataframe.apply(update_move2keywordArguments, axis=1) # pyright: ignore[reportUnknownArgumentType]
+
+	# === Row-Based Column Computation ===
+
+	# Update 'classAs_astAttribute' column with formatted value
+	def _makeClassAs_astAttribute(ClassDefIdentifier:str):
+		return dump(Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
+	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].map(_makeClassAs_astAttribute) # pyright: ignore[reportUnknownMemberType]
+
+	# Update 'type' column with standardized formatting and accurate information
+	def transform_type(value: str, identifiers: list[str]) -> str:
+		# Prepend "ast." to substrings matching 'ClassDefIdentifier', case-sensitive
+		pattern: str = r'\b(' + '|'.join(re.escape(identifier) for identifier in identifiers) + r')\b'
+		value = re.sub(pattern, r'ast.\1', value)
+		# Replace "Literal[True, False]" with "bool"
+		return value.replace("Literal[True, False]", "bool")
+	dataframe['type'] = dataframe.apply(
+		lambda row: transform_type(row['typeStub'] if row['typeStub_typing_TypeAlias'] == 'No' else row['typeC'], dataframe['ClassDefIdentifier'].dropna().unique().tolist()),   # pyright: ignore[reportUnknownArgumentType,reportUnknownLambdaType]
+		axis=1
+	)
+
 	# Override column 'type' for class `ast.Constant`, attribute `value`
 	dataframe.loc[
 		(dataframe['ClassDefIdentifier'] == 'Constant') & (dataframe['attribute'] == 'value'),
 		'type'
 	] = "ConstantValueType"
 
-	dataframe['versionMinorMinimum_match_args'] = numpy.where(
-		dataframe.groupby(['ClassDefIdentifier', 'match_args'])['versionMinorData'].transform('min') == versionMinor_astMinimumSupported,
-		-1,
-		dataframe.groupby(['ClassDefIdentifier', 'match_args'])['versionMinorData'].transform('min')
-	)
-
-	dataframe['versionMinorMinimumAttribute'] = numpy.where(
-		dataframe.groupby(['ClassDefIdentifier', 'attribute'])['versionMinorData'].transform('min') == versionMinor_astMinimumSupported,
-		-1,
-		dataframe.groupby(['ClassDefIdentifier', 'attribute'])['versionMinorData'].transform('min')
-	)
-
-	dataframe['versionMinorMinimumClass'] = numpy.where(
-		dataframe.groupby('ClassDefIdentifier')['versionMinorData'].transform('min') == versionMinor_astMinimumSupported,
-		-1,
-		dataframe.groupby('ClassDefIdentifier')['versionMinorData'].transform('min')
-	)
-
-	def str2expr(string: str) -> str:
+	def pythonCode2expr(string: str) -> str:
 		astModule: ast.Module = ast.parse(string)
 		ast_expr: ast.expr = raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
 		return dump(ast_expr)
 
-	def typeSansNone(string: str) -> str:
-		return str2expr(string.replace(' | None', ''))
-
 	# Update 'type_ast_expr' based on 'type' column
-	dataframe['type_ast_expr'] = numpy.where(dataframe['type'] == 'No', 'No', dataframe['type'].apply(str2expr))
-
+	dataframe['type_ast_expr'] = numpy.where(dataframe['type'] == 'No', 'No', dataframe['type'].apply(pythonCode2expr))
 	# Update 'type_ast_expr' based on 'list2Sequence' column
 	dataframe.loc[dataframe['list2Sequence'] == True, 'type_ast_expr'] = dataframe['type_ast_expr'].str.replace("'list'", "'Sequence'")   # pyright: ignore[reportUnknownMemberType]  # noqa: E712
 
-	# Update 'type_ast_expr' based on 'type' column
-	dataframe['typeSansNone_ast_expr'] = numpy.where(dataframe['type'] == 'No', 'No', dataframe['type'].apply(typeSansNone))
+	def typeSansNone(string: str) -> str:
+		return pythonCode2expr(string.replace(' | None', ''))
 
-	# Update 'type_ast_expr' based on 'list2Sequence' column
+	# Update 'typeSansNone_ast_expr' based on 'type' column
+	dataframe['typeSansNone_ast_expr'] = numpy.where(dataframe['type'] == 'No', 'No', dataframe['type'].apply(typeSansNone))
+	# Update 'typeSansNone_ast_expr' based on 'list2Sequence' column
 	dataframe.loc[dataframe['list2Sequence'] == True, 'typeSansNone_ast_expr'] = dataframe['typeSansNone_ast_expr'].str.replace("'list'", "'Sequence'")  # pyright: ignore[reportUnknownMemberType]  # noqa: E712
 
-	# Update 'ast_arg' column based on conditions
-	dataframe['ast_arg'] = dataframe.apply(
-		lambda row: "No" if row['attribute'] == "No" else dump(Make.arg(row['attributeRename'] if row['attributeRename'] != "No" else row['attribute'], eval(row['type_ast_expr']))),   # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
-		axis=1
-	)
+	def make_ast_arg(row: pandas.Series) -> str:   # pyright: ignore[reportUnknownParameterType, reportMissingTypeArgument]
+		if row['move2keywordArguments'] != False:  # noqa: E712
+			return "No"
+		identifier: str = cast(str, row['attributeRename'] if row['attributeRename'] != "No" else row['attribute'])
+		return dump(Make.arg(identifier, annotation=eval(cast(str, row['type_ast_expr']))))
 
-	# Add TypeAlias_hasDOTIdentifier computation
+	# Update 'ast_arg' column based on conditions
+	dataframe['ast_arg'] = dataframe.apply(make_ast_arg, axis=1) # pyright: ignore[reportUnknownArgumentType]
+
+	# Add TypeAlias_hasDOTIdentifier
 	dataframe['TypeAlias_hasDOTIdentifier'] = numpy.where(
 		dataframe['attributeKind'] == '_field',
 		"hasDOT" + cast(str, dataframe['attribute']),
 		"No"
 	)
 
-	# Add TypeAlias_hasDOTSubcategory computation
+	# Add TypeAlias_hasDOTSubcategory
 	processedTypeString: pandas.Series[str] = (
 		dataframe['type']
 		.str.replace('|', 'Or', regex=False)   # pyright: ignore[reportUnknownMemberType]
@@ -520,26 +524,31 @@ def updateDataframe() -> None:
 		cast(str, dataframe['TypeAlias_hasDOTIdentifier']) + "_" + processedTypeString
 	)
 
+	# === Group-Based Column Computation ===
+	def computeVersionMinimum(columns: list[str]) -> numpy.ndarray[tuple[int, ...], numpy.dtype[numpy.int64]]:
+		return numpy.where(dataframe.groupby(columns)['versionMinorData'].transform('min') == versionMinor_astMinimumSupported,
+			-1, dataframe.groupby(columns)['versionMinorData'].transform('min'))
+
+	dataframe['versionMinorMinimum_match_args'] = computeVersionMinimum(['ClassDefIdentifier', 'match_args'])
+	dataframe['versionMinorMinimumAttribute'] = computeVersionMinimum(['ClassDefIdentifier', 'attribute'])
+	dataframe['versionMinorMinimumClass'] = computeVersionMinimum(['ClassDefIdentifier'])
+
 	# Update 'listStr4FunctionDef_args', 'listDefaults', 'listTupleCall_keywords' columns based on match_args
-	def compute_listFunctionDef_args(row: pandas.Series) -> pandas.Series:   # pyright: ignore[reportUnknownParameterType, reportMissingTypeArgument]
+	def compute_listFunctionDef_args(row: pandas.Series) -> pandas.Series:   # pyright: ignore[reportUnusedFunction, reportUnknownParameterType, reportMissingTypeArgument]
 		if row['attributeKind'] == "No":
-			return pandas.Series([
-				[],
-				[],
-				[]
-			], index=[
+			return pandas.Series([[], [], []], index=[
 				'listStr4FunctionDef_args',
 				'listDefaults',
 				'listTupleCall_keywords'
 			])
-		listAttributes = cast(str, row['match_args']).replace("'","").replace(" ","").split(',')
+		listAttributes: list[str] = list(cast(tuple[str, ...], row['match_args']))
 		className = cast(str, row['ClassDefIdentifier'])
 		version = cast(int, row['versionMinorMinimum_match_args'])
 		listStr4FunctionDef_args: list[str] = []
 		listDefaults: list[str] = []
 		listTupleCall_keywords: list[tuple[str, str]] = []
 		for attributeTarget in listAttributes:
-			# type_comment is in keywordArguments
+			# if dataframe['move2keywordArguments'] == 'Unpack':
 			if attributeTarget == 'type_comment':
 				continue
 			argIdentifier: str = attributeTarget
@@ -549,19 +558,20 @@ def updateDataframe() -> None:
 				(dataframe['ClassDefIdentifier'] == className) &
 				(dataframe['versionMinorMinimum_match_args'] == version)
 			]
-			if not matching_row.empty:
-				if matching_row.iloc[0]['keywordArguments']:
-					keywordValue = cast(str, matching_row.iloc[0]['defaultValue'])
-				else:
-					ast_arg: str = cast(str, matching_row.iloc[0]['ast_arg'])
-					if matching_row.iloc[0]['attributeRename'] != "No":
-						keywordValue = cast(str, matching_row.iloc[0]['attributeRename'])
-					keywordValue = f"ast.Name('{keywordValue}')"
-					if matching_row.iloc[0]['list2Sequence']:
-						keywordValue = f"ast.Call(ast.Name('list'), args=[{keywordValue}])"
-					if matching_row.iloc[0]['defaultValue'] != "No":
-						listDefaults.append(cast(str, matching_row.iloc[0]['defaultValue']))
-					listStr4FunctionDef_args.append(ast_arg)
+
+			if matching_row.iloc[0]['move2keywordArguments']:
+				keywordValue = cast(str, matching_row.iloc[0]['defaultValue'])
+			else:
+				ast_arg: str = cast(str, matching_row.iloc[0]['ast_arg'])
+				if matching_row.iloc[0]['attributeRename'] != "No":
+					keywordValue = cast(str, matching_row.iloc[0]['attributeRename'])
+				keywordValue = dump(Make.Name(keywordValue))
+				if matching_row.iloc[0]['list2Sequence']:
+					# keywordValue = dump(Make.Call(Make.Name('list'), [keywordValue]))
+					keywordValue = f"ast.Call(ast.Name('list'), args=[{keywordValue}])"
+				if matching_row.iloc[0]['defaultValue'] != "No":
+					listDefaults.append(cast(str, matching_row.iloc[0]['defaultValue']))
+				listStr4FunctionDef_args.append(ast_arg)
 			listTupleCall_keywords.append((argIdentifier, keywordValue))
 		return pandas.Series([listStr4FunctionDef_args, listDefaults, listTupleCall_keywords], index=[
 			'listStr4FunctionDef_args',
@@ -570,11 +580,12 @@ def updateDataframe() -> None:
 		])
 	dataframe[['listStr4FunctionDef_args', 'listDefaults', 'listTupleCall_keywords']] = dataframe.apply(compute_listFunctionDef_args, axis=1)   # pyright: ignore[reportUnknownArgumentType]
 
-	# Create hashable versions of list columns for duplicate detection
+	# === Row-Based: Hashable Variants ===
 	dataframe['hashableListStr4FunctionDef_args'] = dataframe['listStr4FunctionDef_args'].astype(str)
 	dataframe['hashableListDefaults'] = dataframe['listDefaults'].astype(str)
 	dataframe['hashableListTupleCall_keywords'] = dataframe['listTupleCall_keywords'].astype(str)
 
+	# === Save Final Result ===
 	dataframe.to_pickle(pathFilenameDataframeAST)
 
 # if __name__ == "__main__":
