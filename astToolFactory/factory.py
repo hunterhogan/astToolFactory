@@ -197,25 +197,28 @@ def makeToolClassIsAndAttribute() -> None:
 
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringClassIsAndAttribute]
 
-	for TypeAlias_hasDOTIdentifier, overloadDefinition, attributeIsNotNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsClassIsAndAttribute():
-		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier)
+	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsClassIsAndAttribute():
+		# Construct the parameters for `Make.FunctionDef`.
+		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 		decorator_list: list[ast.expr] = [astName_staticmethod]
 
-		workhorse_returnsAnnotation: ast.expr = Make.BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeAlias), Make.Name('bool')])
+		workhorse_returnsAnnotation: ast.expr = Make.BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeOfNode), Make.Name('bool')])
 
 		if overloadDefinition:
 			decorator_list.append(astName_overload)
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
+			# Create the body of the function, which is a workhorse function.
 			listAntecedentConditions: list[ast.expr] = [Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), Make.Name('astClass')])]
 
-			if attributeIsNotNone:
+			if canBeNone:
 				ops: list[ast.cmpop]= [ast.IsNot()]
 				comparators: list[ast.expr]=[Make.Constant(None)]
-				if attributeIsNotNone == 'Sequence':
+				if canBeNone == 'list':
 					ops: list[ast.cmpop]= [ast.NotEq()]
 					comparators: list[ast.expr]=[Make.List([Make.Constant(None)])]
 				listAntecedentConditions.append(Make.Compare(Make.Attribute(Make.Name('node'), attribute), ops=ops, comparators=comparators))
+
 			listAntecedentConditions.append(Make.Call(Make.Name('attributeCondition'), listParameters=[Make.Attribute(Make.Name('node'), attribute)]))
 
 			body = [
@@ -228,12 +231,12 @@ def makeToolClassIsAndAttribute() -> None:
 
 		returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), workhorse_returnsAnnotation]))
 
-		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')]))
-									for ast_expr in list_ast_expr]))
+		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')])) for ast_expr in list_ast_expr]))
 
+		# Create the overload or implementation of the function.
 		ast_stmt: ast.stmt = Make.FunctionDef(attribute + 'Is'
 				, argumentSpecification=Make.arguments(list_arg=[
-					Make.arg('astClass', annotation=Make.Subscript(Make.Name('type'), astNameTypeAlias)),
+					Make.arg('astClass', annotation=Make.Subscript(Make.Name('type'), astNameTypeOfNode)),
 					Make.arg('attributeCondition', annotation=annotation)
 				])
 				, body=body
@@ -241,6 +244,7 @@ def makeToolClassIsAndAttribute() -> None:
 				, returns=returns
 			)
 
+		# If the function might not be available in the minimum "supported" version of Python, guard it with a match-case.
 		if useMatchCase:
 			if versionMinorMinimum >= pythonMinimumVersionMinor:
 				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
@@ -280,7 +284,7 @@ def makeToolDOT() -> None:
 		returns: ast.expr = Make.BitOr.join([eval(ast_expr) for ast_expr in list_ast_expr])
 
 		return Make.FunctionDef(attribute
-			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=astNameTypeAlias)])
+			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=astNameTypeOfNode)])
 			, body=body
 			, decorator_list=decorator_list
 			, returns=returns
@@ -288,8 +292,8 @@ def makeToolDOT() -> None:
 
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringDOT]
 
-	for versionMinorMinimumAttribute, attribute, TypeAlias_hasDOTIdentifier, isOverload, list_ast_expr, _attributeIsNotNone, orElseList_ast_expr, _orElseAttributeIsNotNone in getElementsDOT():
-		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier)
+	for versionMinorMinimumAttribute, attribute, identifierTypeOfNode, isOverload, list_ast_expr, _attributeIsNotNone, orElseList_ast_expr, _orElseAttributeIsNotNone in getElementsDOT():
+		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		ast_stmt: ast.stmt = create_ast_stmt(list_ast_expr)
 
@@ -319,23 +323,23 @@ def makeToolGrab() -> None:
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringGrab, FunctionDefGrab_andDoAllOf]
 	list_match_case: list[ast.match_case] = []
 
-	for TypeAlias_hasDOTIdentifier, list_ast_expr, attribute, useMatchCase, versionMinorMinimum in getElementsGrab():
-		hasDOTTypeAliasName: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier)
+	for identifierTypeOfNode, list_ast_expr, attribute, useMatchCase, versionMinorMinimum in getElementsGrab():
+		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), eval(ast_expr)])) for ast_expr in list_ast_expr]))
 
 		ast_stmt: ast.stmt = Make.FunctionDef(attribute + 'Attribute'
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('action', annotation=annotation)])
 			, body=[Make.FunctionDef('workhorse'
-						, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=hasDOTTypeAliasName)])
+						, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=astNameTypeOfNode)])
 						, body=[Make.Assign([Make.Attribute(Make.Name('node'), attribute, context=ast.Store())], value=Make.Call(Make.Name('action'), [Make.Attribute(Make.Name('node'), attribute)]))
 								, Make.Return(Make.Name('node'))
 						]
-						, returns=hasDOTTypeAliasName)
+						, returns=astNameTypeOfNode)
 					, Make.Return(Make.Name('workhorse'))
 				]
 			, decorator_list=[astName_staticmethod]
-			, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([hasDOTTypeAliasName]), hasDOTTypeAliasName])))
+			, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([astNameTypeOfNode]), astNameTypeOfNode])))
 
 		if useMatchCase:
 			# Create a guard or a catch-all match-case and append to list_match_case.
@@ -487,7 +491,7 @@ def write_theSSOT():
 if __name__ == "__main__":
 	make_astTypes()
 	makeToolBe()
-	# makeToolClassIsAndAttribute()
+	makeToolClassIsAndAttribute()
 	# makeToolDOT()
 	makeToolGrab()
 	makeToolMake()

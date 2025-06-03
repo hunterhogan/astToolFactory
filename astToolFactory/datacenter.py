@@ -5,19 +5,12 @@ from astToolFactory import (
 )
 from astToolkit import Be, DOT, dump, Make, NodeTourist, Then
 from collections.abc import Sequence
-from itertools import chain
-from numpy._typing._array_like import NDArray
-from typing import Any, cast, TypeAlias, TypedDict
+from typing import cast, TypedDict
 from Z0Z_tools import raiseIfNone
 import ast
 import numpy
 import pandas
 import re
-
-Version: TypeAlias = int
-ListTypesASTformAsStr: TypeAlias = list[str]
-TupleTypesForVersion: TypeAlias = tuple[Version, ListTypesASTformAsStr]
-ListTypesByVersion: TypeAlias = list[TupleTypesForVersion]
 
 class DictionaryToolBe(TypedDict):
 	ClassDefIdentifier: str
@@ -62,81 +55,121 @@ def getElementsBe(includeDeprecated: bool = False, versionMinorMaximum: int | No
 	return cast(list[DictionaryToolBe], dataframe.to_dict(orient='records'))
 
 def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinorMaximum: int | None = None):
-	listElementsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'typeSansNone_ast_expr', 'TypeAlias_hasDOTIdentifier']
+	listElementsHARDCODED: list[str] = [
+		'attribute',
+		'TypeAlias_hasDOTSubcategory',
+		'versionMinorMinimumAttribute',
+		'typeSansNone_ast_expr',
+		'typeSansNone',
+		'TypeAlias_hasDOTIdentifier',
+		'canBeNone',
+		]
 	listElements: list[str] = listElementsHARDCODED
-	elementsTarget = ['TypeAlias_hasDOTIdentifier', 'overloadDefinition', 'attributeIsNotNone', 'attribute', 'list_ast_expr', 'useMatchCase', 'versionMinorMinimumAttribute']
+	del listElementsHARDCODED
+	elementsTarget = ['identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'useMatchCase', 'versionMinorMinimumAttribute']
 
 	dataframe: pandas.DataFrame = (getDataframe(includeDeprecated, versionMinorMaximum)
 		.query("attributeKind == '_field'")
-		.pipe(_sortCaseInsensitive, listElements[0:2], ['versionMinorMinimumAttribute'])
+		# version is sorted descending
+		.pipe(_sortCaseInsensitive, listElements[0:3], [listElements[2]], [True, True, False])
 		[listElements]
-		.drop_duplicates()
-		.drop_duplicates(subset=['attribute', 'TypeAlias_hasDOTSubcategory'], keep='first')	)
+		# ClassDefIdentifier + attribute can lead to different values for versionMinorMinimumAttribute,
+		# since ClassDefIdentifier is not implicated by this function, we need to keep the lowest
+		# versionMinorMinimumAttribute; hence, we use keep='last' after having sorted descending.
+		.drop_duplicates(subset=listElements[0:2], keep='last')
+		.reset_index(drop=True)
+	)
 
-	dataframe['hasNone'] = dataframe['type_ast_expr'].astype(str).str.contains('None', na=False)
-	dataframe['hasSequence'] = dataframe['type_ast_expr'].astype(str).str.contains('Sequence', na=False)
-	dataframe['attributeIsNotNone'] = dataframe.apply(lambda row: 'Sequence' if row['hasNone'] and row['hasSequence'] else True if row['hasNone'] else False, axis=1)   # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType, reportUnknownMemberType]
+	# Add 'overloadDefinition' based on group size
+	# dataframe['overloadDefinition'] = dataframe.groupby('attribute')['attribute'].transform(lambda x: len(x) > 1)
+	dataframe['overloadDefinition'] = dataframe.groupby('attribute').transform('size') > 1 # pyright: ignore[reportUnknownMemberType]
+	del listElements
 
-	listTuples: list[tuple[int, str, str, bool, list[str], bool | str, list[str], bool | str]] = []
+	# Get unique (attribute, versionMinorMinimumAttribute) pairs and create new rows
+	dataframeImplementationFunctionDefinitions = (
+		dataframe[dataframe['overloadDefinition']]
+		.groupby('attribute')['versionMinorMinimumAttribute']
+		.unique()
+		.explode()
+		.reset_index()
+		.merge(
+			dataframe[['attribute', 'TypeAlias_hasDOTIdentifier']].drop_duplicates('attribute'),
+			on='attribute',
+			how='left'
+		)
+		.assign(
+			overloadDefinition=False,
+			TypeAlias_hasDOTSubcategory="No",
+			typeSansNone_ast_expr="No",
+			typeSansNone="No",
+			canBeNone="Not calculated"
+		)
+		[dataframe.columns]  # Reorder columns to match original
+	)
 
-	for attribute, groupAttribute in dataframe.groupby('attribute'):
-		TypeAlias_hasDOTIdentifier = str(groupAttribute['TypeAlias_hasDOTIdentifier'].iloc[0]) # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
-		subcategories = groupAttribute.groupby('TypeAlias_hasDOTSubcategory')
+	# Concatenate and sort into place by attribute group
+	dataframe = (
+		pandas.concat([dataframe, dataframeImplementationFunctionDefinitions], ignore_index=True)
+		.assign(__sequence_in_group=lambda df: df.groupby('attribute').cumcount())
+		.sort_values(['attribute', '__sequence_in_group'], kind='stable')
+		.drop(columns='__sequence_in_group')
+	)
+	del dataframeImplementationFunctionDefinitions
 
-		def addTuple(versionMinorMinimumAttribute: int, subcategoryIdentifier: str, isOverload: bool,
-					list_ast_expr: list[str], attributeIsNotNone: bool | str) -> None:
-			orElseList_ast_expr: list[str] = []
-			orElseAttributeIsNotNone: bool | str = False
-			listTuples.append((versionMinorMinimumAttribute, str(attribute), subcategoryIdentifier,
-							isOverload, list_ast_expr, attributeIsNotNone, orElseList_ast_expr, orElseAttributeIsNotNone))
+	dataframe['identifierTypeOfNode'] = dataframe['TypeAlias_hasDOTSubcategory'].where( # pyright: ignore[reportUnknownMemberType]
+		dataframe['overloadDefinition'], dataframe['TypeAlias_hasDOTIdentifier']
+	)
+	dataframe.drop(columns=['TypeAlias_hasDOTIdentifier', 'TypeAlias_hasDOTSubcategory',], inplace=True)
 
-		if len(subcategories) == 1:
-			# Single subcategory case
-			subcategoryData = groupAttribute.iloc[0] # pyright: ignore[reportUnknownVariableType]
-			addTuple(
-				int(cast(int, subcategoryData['versionMinorMinimumAttribute'])),
-				TypeAlias_hasDOTIdentifier,
-				False,  # isOverload
-				[str(cast(str, subcategoryData['typeSansNone_ast_expr']))],
-				cast(bool | str, subcategoryData['attributeIsNotNone'])
-			)
+	def calculate_canBeNone(dataframeTarget: pandas.DataFrame) -> str | bool:
+		matchingRows = dataframe[ # pyright: ignore[reportUnknownVariableType]
+			(dataframe['attribute'] == dataframeTarget['attribute']) &
+			(dataframe['canBeNone'] != "Not calculated") &
+			(dataframe['versionMinorMinimumAttribute'] <= dataframeTarget['versionMinorMinimumAttribute'])
+		]['canBeNone']
+
+		if (matchingRows == False).all():  # noqa: E712
+			return False
+		elif any(matchingRows.apply(lambda x: isinstance(x, str))): # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType, reportUnknownArgumentType]
+			return cast(str, matchingRows.loc[matchingRows.apply(lambda x: isinstance(x, str))].iloc[0]) # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType, reportUnknownArgumentType]
+		elif (matchingRows == True).any():  # noqa: E712
+			return True
 		else:
-			# Multiple subcategories case
-			# Add individual overload entries
-			for subcategoryName, subcategoryGroup in subcategories:
-				subcategoryData = subcategoryGroup.iloc[0] # pyright: ignore[reportUnknownVariableType]
-				addTuple(
-					int(cast(int, subcategoryData['versionMinorMinimumAttribute'])),
-					str(subcategoryName),
-					True,  # isOverload
-					[str(cast(str, subcategoryData['typeSansNone_ast_expr']))],
-					cast(bool | str, subcategoryData['attributeIsNotNone'])
-				)			# Add combined entry
-			unique_typeSansNone_ast_expr = sorted(groupAttribute['typeSansNone_ast_expr'].drop_duplicates().astype(str).tolist(), key=str.lower)
-			attributeNotNoneValues: list[bool | str] = [value for value in groupAttribute['attributeIsNotNone'].tolist()] # pyright: ignore[reportUnknownVariableType]
-			hasSequenceInAny = any(str(value) == 'Sequence' for value in attributeNotNoneValues)
-			hasTruthyInAny = any(bool(value) and str(value) != 'False' for value in attributeNotNoneValues)
-			combinedAttributeIsNotNone: bool | str = (
-				'Sequence' if hasSequenceInAny
-				else True if hasTruthyInAny
-				else False
-			)
-			minimum_version = int(cast(int, groupAttribute['versionMinorMinimumAttribute'].min()))
+			return "Not calculated"
 
-			addTuple(
-				minimum_version,
-				TypeAlias_hasDOTIdentifier,
-				False,  # isOverload
-				unique_typeSansNone_ast_expr,
-				combinedAttributeIsNotNone
-			)
+	dataframe.loc[dataframe['canBeNone'] == "Not calculated", 'canBeNone'] = dataframe[dataframe['canBeNone'] == "Not calculated"].apply(calculate_canBeNone, axis=1)
 
-	return listTuples
+	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[str]:   # pyright: ignore[reportUnknownParameterType, reportMissingTypeArgument]
+		if cast(bool, dataframeTarget['overloadDefinition']):
+			return [cast(str, dataframeTarget['typeSansNone_ast_expr'])]
+		matchingRows = dataframe.loc[ # pyright: ignore[reportUnknownVariableType]
+			(dataframe['attribute'] == dataframeTarget['attribute']) &
+			(dataframe['typeSansNone'] != "No") &
+			(dataframe['versionMinorMinimumAttribute'] <= dataframeTarget['versionMinorMinimumAttribute']),
+			'typeSansNone_ast_expr'
+		].drop_duplicates()
+
+		return sorted(matchingRows # pyright: ignore[reportUnknownArgumentType]
+				, key=lambda ast_expr: dataframe.loc[dataframe['typeSansNone_ast_expr'] == ast_expr, 'typeSansNone'].iloc[0].lower() # pyright: ignore[reportUnknownLambdaType, reportUnknownMemberType]
+		)
+
+	dataframe['list_ast_expr'] = dataframe.apply(makeColumn_list_ast_expr, axis=1)
+	dataframe.drop(columns=['typeSansNone_ast_expr', 'typeSansNone',], inplace=True)
+
+	dataframe['useMatchCase'] = numpy.where(
+		((versionsTotal := dataframe.groupby('identifierTypeOfNode')['versionMinorMinimumAttribute'].transform('nunique')) == 1)
+		& (dataframe.groupby('identifierTypeOfNode')['versionMinorMinimumAttribute'].transform('max') <= pythonMinimumVersionMinor),
+		0,
+		numpy.maximum(1, versionsTotal - dataframe.groupby('identifierTypeOfNode')['versionMinorMinimumAttribute'].rank(method='first', ascending=False).astype(int) + 1)
+	)
+
+	dataframe = dataframe[elementsTarget]
+	return list(dataframe.to_records(index=False))  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType]
 
 def getElementsDOT(includeDeprecated: bool = False, versionMinorMaximum: int | None = None):
 	return getElementsClassIsAndAttribute(includeDeprecated, versionMinorMaximum)
 
-def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: Version | None = None) -> list[tuple[str, list[str], str, int, int]]:
+def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, list[str], str, int, int]]:
 	# START keep this; do not delete.
 	listElementsHARDCODED: list[str] = ['TypeAlias_hasDOTIdentifier', 'typeSansNone_ast_expr', 'attribute', 'typeSansNone', 'versionMinorMinimumAttribute']
 	listElements: list[str] = listElementsHARDCODED
@@ -226,10 +259,12 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 		]
 	listElements: list[str] = listElementsHARDCODED
 
+	# Use idiomatic pandas.
 	# no lambda.
 	# no intermediate data structures
 	# no `for`, no `iterrows`, no loops.
 	# no duplicate statements.
+	# Use idiomatic pandas.
 	# END keep this; do not delete.
 
 	def _makeNameDumped(subcategoryName: str) -> str:
@@ -339,6 +374,7 @@ def updateDataframe() -> None:
 	'classAs_astAttribute',
 	'type',
 	'typeSansNone',
+	'canBeNone',
 	'type_ast_expr',
 	'typeSansNone_ast_expr',
 	'ast_arg',
@@ -363,9 +399,6 @@ def updateDataframe() -> None:
 	'hashableListStr4FunctionDef_args',
 	'hashableListDefaults',
 	'hashableListTupleCall_keywords',
-
-	# To be removed
-	'kwargAnnotation',
 ]
 
 	# Change the order of columns
@@ -424,15 +457,18 @@ def updateDataframe() -> None:
 	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].map(_makeClassAs_astAttribute) # pyright: ignore[reportUnknownMemberType]
 
 	# Update 'type' column with standardized formatting and accurate information
-	def transform_type(value: str, identifiers: list[str]) -> str:
-		# Prepend "ast." to substrings matching 'ClassDefIdentifier', case-sensitive
-		pattern: str = r'\b(' + '|'.join(re.escape(identifier) for identifier in identifiers) + r')\b'
-		value = re.sub(pattern, r'ast.\1', value)
-		# Replace "Literal[True, False]" with "bool"
-		return value.replace("Literal[True, False]", "bool")
-	dataframe['type'] = dataframe.apply(
-		lambda row: transform_type(row['typeStub'] if row['typeStub_typing_TypeAlias'] == 'No' else row['typeC'], dataframe['ClassDefIdentifier'].dropna().unique().tolist()),   # pyright: ignore[reportUnknownArgumentType,reportUnknownLambdaType]
-		axis=1
+	# Get unique identifiers once
+	identifiers: list[str] = cast(list[str], dataframe['ClassDefIdentifier'].dropna().unique().tolist()) # pyright: ignore[reportUnknownMemberType]
+
+	dataframe['type'] = (
+		dataframe['typeStub']
+		.where(dataframe['typeStub_typing_TypeAlias'] == 'No', dataframe['typeC']) # pyright: ignore[reportUnknownMemberType]
+		.str.replace(
+			r'\b(' + '|'.join(re.escape(identifier) for identifier in identifiers) + r')\b',
+			r'ast.\1',
+			regex=True
+		)
+		.str.replace("Literal[True, False]", "bool", regex=False)
 	)
 
 	# Override column 'type' for class `ast.Constant`, attribute `value`
@@ -441,19 +477,30 @@ def updateDataframe() -> None:
 		'type'
 	] = "ConstantValueType"
 
+	def update_canBeNone(dataframeTarget: pandas.DataFrame) -> str | bool:
+		if dataframeTarget['type'] in ["No"]:
+			return "No"
+		elif ' | None' in dataframeTarget['type'] and 'list' in dataframeTarget['type']:
+			return "list"
+		elif ' | None' in dataframeTarget['type']:
+			return True
+		else:
+			return False
+	dataframe['canBeNone'] = dataframe.apply(update_canBeNone, axis=1)
+
 	def pythonCode2expr(string: str) -> str:
 		astModule: ast.Module = ast.parse(string)
 		ast_expr: ast.expr = raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
 		return dump(ast_expr)
 
 	# Update 'type_ast_expr' based on 'type' column
-	dataframe['type_ast_expr'] = numpy.where(dataframe['type'] == 'No', 'No', dataframe['type'].apply(pythonCode2expr))
+	dataframe['type_ast_expr'] = numpy.where(dataframe['type'] == 'No', 'No', dataframe['type'].apply(pythonCode2expr)) # pyright: ignore[reportUnknownMemberType]
 	# Update 'type_ast_expr' based on 'list2Sequence' column
 	dataframe.loc[dataframe['list2Sequence'] == True, 'type_ast_expr'] = dataframe['type_ast_expr'].str.replace("'list'", "'Sequence'")   # pyright: ignore[reportUnknownMemberType]  # noqa: E712
 
-	dataframe['typeSansNone'] = dataframe['type'].replace(' \\| None', '', regex=True)
+	dataframe['typeSansNone'] = dataframe['type'].replace(' \\| None', '', regex=True) # pyright: ignore[reportUnknownMemberType]
 	# Update 'typeSansNone_ast_expr' based on 'type' column
-	dataframe['typeSansNone_ast_expr'] = numpy.where(dataframe['typeSansNone'] == 'No', 'No', dataframe['typeSansNone'].apply(pythonCode2expr))
+	dataframe['typeSansNone_ast_expr'] = numpy.where(dataframe['typeSansNone'] == 'No', 'No', dataframe['typeSansNone'].apply(pythonCode2expr)) # pyright: ignore[reportUnknownMemberType]
 	# Update 'typeSansNone_ast_expr' based on 'list2Sequence' column
 	dataframe.loc[dataframe['list2Sequence'] == True, 'typeSansNone_ast_expr'] = dataframe['typeSansNone_ast_expr'].str.replace("'list'", "'Sequence'")  # pyright: ignore[reportUnknownMemberType]  # noqa: E712
 
