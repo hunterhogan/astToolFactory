@@ -19,12 +19,10 @@ from astToolFactory._snippets import (
 )
 
 from astToolFactory.datacenter import (
-	DictionaryClassDef as DictionaryClassDef,
-	DictionaryMatchArgs as DictionaryMatchArgs,
 	getElementsBe as getElementsBe,
 	getElementsClassIsAndAttribute as getElementsClassIsAndAttribute,
 	getElementsDOT as getElementsDOT,
 	getElementsGrab as getElementsGrab,
 	getElementsMake as getElementsMake,
 	getElementsTypeAlias as getElementsTypeAlias,
-	)
+)
