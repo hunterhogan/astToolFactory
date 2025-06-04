@@ -192,10 +192,8 @@ def makeToolBe() -> None:
 	writeClass('Be', list4ClassDefBody, list4ModuleBody)
 
 def makeToolClassIsAndAttribute() -> None:
-	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringDOT]
-	list_match_case: list[ast.match_case] = []
-
 	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringClassIsAndAttribute]
+	list_match_case: list[ast.match_case] = []
 
 	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsClassIsAndAttribute():
 		# Construct the parameters for `Make.FunctionDef`.
@@ -273,9 +271,14 @@ def makeToolClassIsAndAttribute() -> None:
 	writeClass('ClassIsAndAttribute', list4ClassDefBody, list4ModuleBody)
 
 def makeToolDOT() -> None:
-	def create_ast_stmt(list_ast_expr: list[str]) -> ast.stmt:
+	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringDOT]
+	list_match_case: list[ast.match_case] = []
+
+	for identifierTypeOfNode, overloadDefinition, _canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsDOT():
+		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
+
 		decorator_list: list[ast.expr] = [astName_staticmethod]
-		if isOverload:
+		if overloadDefinition:
 			decorator_list.append(astName_overload)
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
@@ -283,36 +286,34 @@ def makeToolDOT() -> None:
 
 		returns: ast.expr = Make.BitOr.join([eval(ast_expr) for ast_expr in list_ast_expr])
 
-		return Make.FunctionDef(attribute
+		ast_stmt: ast.stmt = Make.FunctionDef(attribute
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=astNameTypeOfNode)])
 			, body=body
 			, decorator_list=decorator_list
 			, returns=returns
 		)
 
-	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringDOT]
+		if useMatchCase:
+			if versionMinorMinimum >= pythonMinimumVersionMinor:
+				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
+				guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+			else:
+				pattern = Make.MatchAs()
+				guard = None
+			list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
 
-	for versionMinorMinimumAttribute, attribute, identifierTypeOfNode, isOverload, list_ast_expr, _attributeIsNotNone, orElseList_ast_expr, _orElseAttributeIsNotNone in getElementsDOT():
-		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
-
-		ast_stmt: ast.stmt = create_ast_stmt(list_ast_expr)
-
-		if versionMinorMinimumAttribute > pythonMinimumVersionMinor:
-			orElse: list[ast.stmt] = []
-			if orElseList_ast_expr:
-				orElse = [create_ast_stmt(orElseList_ast_expr)]
-			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()]
-							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimumAttribute)])])
-						, body=[ast_stmt]
-						, orElse=orElse
-						)
+			if useMatchCase > 1:
+				continue
+			else:
+				ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
+				list_match_case.clear()
 
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
 			Make.ImportFrom('astToolkit', [Make.alias('*')])
 			, Make.ImportFrom('collections.abc', [Make.alias('Sequence')])
-			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('Literal'), Make.alias('overload')])
+			, Make.ImportFrom('typing', [Make.alias('overload')])
 			, Make.Import('ast')
 			, Make.Import('sys')
 			]
@@ -492,7 +493,7 @@ if __name__ == "__main__":
 	make_astTypes()
 	makeToolBe()
 	makeToolClassIsAndAttribute()
-	# makeToolDOT()
+	makeToolDOT()
 	makeToolGrab()
 	makeToolMake()
 	# makeTool_dump()
