@@ -174,7 +174,7 @@ def makeToolBe() -> None:
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Name('ast.AST'))])
 			, body=[Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), classAs_astAttribute]))]
 			, decorator_list=[astName_staticmethod]
-			, returns=Make.Subscript(Make.Name('TypeGuard'), slice=classAs_astAttribute))
+			, returns=Make.Subscript(Make.Name('TypeIs'), slice=classAs_astAttribute))
 
 		if versionMinorMinimumClass > pythonMinimumVersionMinor:
 			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
@@ -186,7 +186,7 @@ def makeToolBe() -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom('typing', [Make.alias('TypeGuard')])
+		Make.ImportFrom('typing', [Make.alias('TypeIs')])
 		, Make.Import('ast')
 		, Make.Import('sys')
 	]
@@ -202,7 +202,7 @@ def makeToolClassIsAndAttribute() -> None:
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 		decorator_list: list[ast.expr] = [astName_staticmethod]
 
-		workhorse_returnsAnnotation: ast.expr = Make.BitOr.join([Make.Subscript(Make.Name('TypeGuard'), slice=astNameTypeOfNode), Make.Name('bool')])
+		workhorse_returnsAnnotation: ast.expr = Make.BitOr.join([Make.Subscript(Make.Name('TypeIs'), slice=astNameTypeOfNode), Make.Name('bool')])
 
 		if overloadDefinition:
 			decorator_list.append(astName_overload)
@@ -265,7 +265,7 @@ def makeToolClassIsAndAttribute() -> None:
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom('astToolkit', [Make.alias('*')])
 		, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
-		, Make.ImportFrom('typing', [Make.alias(identifier) for identifier in ['Any', 'Literal', 'overload', 'TypeGuard']])
+		, Make.ImportFrom('typing', [Make.alias(identifier) for identifier in ['Any', 'Literal', 'overload', 'TypeIs']])
 		, Make.Import('ast')
 		, Make.Import('sys')
 	]

@@ -61,7 +61,7 @@ def getElementsBe(includeDeprecated: bool = False, versionMinorMaximum: int | No
 
 	return cast(list[DictionaryToolBe], dataframe.to_dict(orient='records'))
 
-def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinorMaximum: int | None = None):
+def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, bool, str | bool, str, list[str], int, int]]:
 	listElementsHARDCODED: list[str] = [
 		'attribute',
 		'TypeAlias_hasDOTSubcategory',
@@ -170,7 +170,7 @@ def getElementsClassIsAndAttribute(includeDeprecated: bool = False, versionMinor
 	dataframe = dataframe[elementsTarget]
 	return list(dataframe.to_records(index=False))
 
-def getElementsDOT(includeDeprecated: bool = False, versionMinorMaximum: int | None = None):
+def getElementsDOT(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, bool, str | bool, str, list[str], int, int]]:
 	return getElementsClassIsAndAttribute(includeDeprecated, versionMinorMaximum)
 
 def getElementsGrab(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, list[str], str, int, int]]:
@@ -245,7 +245,7 @@ def getElementsMake(includeDeprecated: bool = False, versionMinorMaximum: int | 
 
 	return list(dataframe[['ClassDefIdentifier', 'listStr4FunctionDef_args', 'kwarg_annotationIdentifier', 'listDefaults', 'classAs_astAttribute', 'overloadDefinition', 'listTupleCall_keywords', 'useMatchCase', 'versionMinorMinimum_match_args']].to_records(index=False))
 
-def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: int | None = None):
+def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, list[str], int, int]]:
 	listElementsHARDCODED: list[str] = [
 		'attribute',
 		'TypeAlias_hasDOTSubcategory',

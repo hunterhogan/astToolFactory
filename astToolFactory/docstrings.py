@@ -18,12 +18,13 @@ del docstring
 
 docstring: str = (
     """Type guard functions for safe AST node identification and type narrowing.
+    (AI generated docstring)
 
     Provides static methods that perform runtime type checking for all AST node types
-    while enabling compile-time type narrowing through `TypeGuard` annotations. Forms
+    while enabling compile-time type narrowing through `TypeIs` annotations. Forms
     the foundation of type-safe AST analysis and transformation throughout the toolkit.
 
-    Each method takes an `ast.AST` node and returns a `TypeGuard` that confirms both
+    Each method takes an `ast.AST` node and returns a `TypeIs` that confirms both
     runtime type safety and enables static type checkers to narrow the node type in
     conditional contexts. This eliminates the need for unsafe casting while providing
     comprehensive coverage of Python's AST node hierarchy.
@@ -44,7 +45,7 @@ docstring: str = (
 
     Returns:
 
-        typeGuard: `TypeGuard` enabling both runtime validation and static type narrowing
+        typeIs: `TypeIs` enabling both runtime validation and static type narrowing
 
     Examples:
 
@@ -88,7 +89,7 @@ docstring: str = (
     Create functions that verify AST nodes by type and attribute conditions.
 
     The ClassIsAndAttribute class provides static methods that generate conditional functions for determining if an AST
-    node is of a specific type AND its attribute meets a specified condition. These functions return TypeGuard-enabled
+    node is of a specific type AND its attribute meets a specified condition. These functions return TypeIs-enabled
     callables that can be used in conditional statements to narrow node types during code traversal and transformation.
 
     Each generated function performs two checks:
