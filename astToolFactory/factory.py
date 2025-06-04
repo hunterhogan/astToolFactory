@@ -40,6 +40,8 @@ TODO protect against AttributeError (I guess) in DOT, Grab, and ClassIsAndAttrib
 def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	ast.fix_missing_locations(astModule)
 	pythonSource: str = ast.unparse(astModule)
+	if '_astTypes' in moduleIdentifier:
+		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
 	if 'ClassIsAndAttribute' in moduleIdentifier:
 		pythonSource = "# pyright: reportArgumentType=false\n" + pythonSource
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
@@ -111,8 +113,8 @@ def make_astTypes() -> None:
 	)
 
 	list_match_case: list[ast.match_case] = []
-	for TypeAlias_hasDOTIdentifier, list4TypeAlias_value, useMatchCase, versionMinorMinimum in getElementsTypeAlias():
-		astNameTypeAlias: ast.Name = Make.Name(TypeAlias_hasDOTIdentifier, ast.Store())
+	for identifierTypeAlias, list4TypeAlias_value, useMatchCase, versionMinorMinimum in getElementsTypeAlias():
+		astNameTypeAlias: ast.Name = Make.Name(identifierTypeAlias, ast.Store())
 		TypeAlias_value: ast.expr = Make.BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in list4TypeAlias_value])
 		ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, value=TypeAlias_value)
 
@@ -370,11 +372,6 @@ def makeToolGrab() -> None:
 			]
 
 	writeClass('Grab', list4ClassDefBody, list4ModuleBody)
-
-# TODO add docstrings for each staticmethod and each ClassDef: idea: `Make.GtE.__doc__ = ast.GtE.__doc__` <-- hahahahaaaaaaaaaa!
-# But, maybe include the ast docstring to contrast the lack of documentation in ast.
-# For real, `dictionaryDocstringMake`, keynames = `ClassDefIdentifier`, values = docstrings created in a dedicated module,
-# currently `astToolFactory/docstrings.py`. I am sure there are many packages designed to help with this.
 
 def makeToolMake() -> None:
 	ledgerOfImports: LedgerOfImports = LedgerOfImports()
