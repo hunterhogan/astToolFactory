@@ -1,11 +1,12 @@
 from astToolFactory._theSSOT import (
+	dictionaryIdentifiers as dictionaryIdentifiers,
 	keywordArgumentsIdentifier as keywordArgumentsIdentifier,
 	listPylanceErrors as listPylanceErrors,
 	pathFilenameDataframeAST as pathFilenameDataframeAST,
 	pythonMinimumVersionMinor as pythonMinimumVersionMinor,
-    settingsPackage as settingsPackage,
-    settingsPackageToManufacture as settingsPackageToManufacture,
-    versionMinor_astMinimumSupported as versionMinor_astMinimumSupported,
+	settingsPackage as settingsPackage,
+	settingsPackageToManufacture as settingsPackageToManufacture,
+	versionMinor_astMinimumSupported as versionMinor_astMinimumSupported,
 )
 
 from astToolFactory._snippets import (

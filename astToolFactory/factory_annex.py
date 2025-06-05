@@ -1,9 +1,6 @@
 """Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
-from astToolFactory import astName_overload, astName_staticmethod
-from astToolFactory.docstrings import (
-	FunctionDefDocstring_join_boolop, FunctionDefDocstring_join_operator,
-	FunctionDefMake_AttributeDocstring,
-)
+from astToolFactory import astName_overload, astName_staticmethod, dictionaryIdentifiers
+from astToolFactory.documentation import docstrings
 from astToolkit import Make
 import ast
 
@@ -28,10 +25,7 @@ def makeFunctionDef_join(identifierContainer: str, identifierCallee: str, docstr
 		, decorator_list=[Make.Name('classmethod')]
 		, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
-identifier_operatorJoinMethod: str = '_operatorJoinMethod'
-identifier_boolopJoinMethod: str = '_boolopJoinMethod'
-
-FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(identifier_boolopJoinMethod
+FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(dictionaryIdentifiers['boolopJoinMethod']
     , argumentSpecification=Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'boolop')))
             , Make.arg('expressions', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'expr')))
             ]
@@ -61,10 +55,10 @@ FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(identifier_boolopJoinM
 	, decorator_list=[astName_staticmethod]
     , returns=Make.BitOr().join([Make.Attribute(Make.Name('ast'), 'expr'), Make.Attribute(Make.Name('ast'), 'BoolOp')]))
 
-FunctionDef_join_boolop: ast.stmt = makeFunctionDef_join('Sequence', identifier_boolopJoinMethod, FunctionDefDocstring_join_boolop)
-FunctionDef_join_operator: ast.stmt = makeFunctionDef_join('Iterable', identifier_operatorJoinMethod, FunctionDefDocstring_join_operator)
+FunctionDef_join_boolop: ast.stmt = makeFunctionDef_join('Sequence', dictionaryIdentifiers['boolopJoinMethod'], docstrings[dictionaryIdentifiers['Make']][dictionaryIdentifiers['boolopJoinMethod']])
+FunctionDef_join_operator: ast.stmt = makeFunctionDef_join('Iterable', dictionaryIdentifiers['operatorJoinMethod'], docstrings[dictionaryIdentifiers['Make']][dictionaryIdentifiers['operatorJoinMethod']])
 
-FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(identifier_operatorJoinMethod
+FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(dictionaryIdentifiers['operatorJoinMethod']
 	, Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'operator')))
 						, Make.arg('expressions', annotation=Make.Subscript(Make.Name('Iterable'), slice=Make.Attribute(Make.Name('ast'), 'expr')))]
 					, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
@@ -92,7 +86,7 @@ FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
 						, kwonlyargs=[Make.arg('context', annotation=Make.Attribute(Make.Name('ast'), 'expr_context'))]
 						, kw_defaults=[Make.Call(Make.Attribute(Make.Name('ast'), 'Load'))]
 						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
-	, body=[FunctionDefMake_AttributeDocstring
+	, body=[docstrings[dictionaryIdentifiers['Make']]['Attribute']
 		, Make.FunctionDef('addDOTattribute'
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('chain', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
 										, Make.arg('identifier', annotation=Make.Name('str'))

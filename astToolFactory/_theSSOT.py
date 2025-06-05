@@ -6,7 +6,6 @@ from pathlib import Path
 from tomli import load as tomli_load
 import dataclasses
 
-# TODO generate this for astToolkit.
 try:
 	identifierPackagePACKAGING: str = tomli_load(Path("pyproject.toml").open('rb'))["project"]["name"]
 except Exception:
@@ -37,6 +36,16 @@ keywordArgumentsIdentifier: str = 'keywordArguments'
 
 pathFilenameDataframeAST: Path = settingsPackage.pathPackage / 'dataframeAST.pkl'
 versionMinor_astMinimumSupported = 9
+
+dictionaryIdentifiers: dict[str, str] = {
+	'Be': 'Be',
+	'boolopJoinMethod': '_boolopJoinMethod',
+	'ClassIsAndAttribute': 'ClassIsAndAttribute',
+	'DOT': 'DOT',
+	'Grab': 'Grab',
+	'Make': 'Make',
+	'operatorJoinMethod': '_operatorJoinMethod',
+	}
 
 listPylanceErrorsHARDCODED: list[str] = ['annotation', 'arg', 'args', 'body', 'keys', 'name', 'names', 'op', 'orelse', 'pattern', 'returns', 'target', 'value',]
 listPylanceErrorsHARDCODED.extend(['argtypes', 'bases', 'cases', 'comparators', 'decorator_list', 'defaults', 'elts', 'finalbody', 'generators', 'ifs', 'items',])

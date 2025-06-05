@@ -2,21 +2,18 @@
 NOTE Use special indentation in this file.
     1. The generated files use spaces, not tabs, so use spaces here.
     2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
+from astToolFactory import dictionaryIdentifiers
+from astToolkit import Make
+from collections import defaultdict
 import ast
 
-docstring: str = """This file is generated automatically, so changes to this file will be lost."""
-docstringWarning = ast.Expr(ast.Constant(docstring))
-del docstring
+docstrings: dict[str, dict[str, ast.Expr]] = defaultdict(lambda: defaultdict(lambda: Make.Expr(Make.Constant(''))))
 
-docstring: str = """Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BoolOp` class."""
-ClassDefDocstring_ast_boolop = ast.Expr(ast.Constant(docstring))
-del docstring
+ImaDocstring: str = """This file is generated automatically, so changes to this file will be lost."""
+docstringWarning = Make.Expr(Make.Constant(ImaDocstring))
+del ImaDocstring
 
-docstring: str = """Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BinOp` class."""
-ClassDefDocstring_ast_operator = ast.Expr(ast.Constant(docstring))
-del docstring
-
-docstring: str = (
+ImaDocstring: str = (
     """Type guard functions for safe AST node identification and type narrowing.
     (AI generated docstring)
 
@@ -65,11 +62,10 @@ docstring: str = (
                 callableName = node.func.id  # Type-safe access to function name
     """
 )
+docstrings[dictionaryIdentifiers['Be']][dictionaryIdentifiers['Be']] = Make.Expr(Make.Constant(ImaDocstring))
+del ImaDocstring
 
-ClassDefDocstringBe = ast.Expr(ast.Constant(docstring))
-del docstring
-
-docstring: str = (
+ImaDocstring: str = (
     """
     Access attributes and sub-nodes of AST elements via consistent accessor methods.
 
@@ -81,10 +77,10 @@ docstring: str = (
     node attributes.
     """
 )
-ClassDefDocstringDOT = ast.Expr(ast.Constant(docstring))
-del docstring
+docstrings[dictionaryIdentifiers['DOT']][dictionaryIdentifiers['DOT']] = Make.Expr(Make.Constant(ImaDocstring))
+del ImaDocstring
 
-docstring: str = (
+ImaDocstring: str = (
     """
     Create functions that verify AST nodes by type and attribute conditions.
 
@@ -99,10 +95,10 @@ docstring: str = (
     This enables complex filtering and targeting of AST nodes based on both their type and attribute contents.
     """
 )
-ClassDefDocstringClassIsAndAttribute = ast.Expr(ast.Constant(docstring))
-del docstring
+docstrings[dictionaryIdentifiers['ClassIsAndAttribute']][dictionaryIdentifiers['ClassIsAndAttribute']] = Make.Expr(Make.Constant(ImaDocstring))
+del ImaDocstring
 
-docstring: str = (
+ImaDocstring: str = (
     """
     Modify specific attributes of AST nodes while preserving the node structure.
 
@@ -114,119 +110,7 @@ docstring: str = (
     returns the modified node. This enables fine-grained control when transforming AST structures.
     """
 )
-ClassDefDocstringGrab = ast.Expr(ast.Constant(docstring))
-del docstring
+docstrings[dictionaryIdentifiers['Grab']][dictionaryIdentifiers['Grab']] = Make.Expr(Make.Constant(ImaDocstring))
+del ImaDocstring
 
-docstring: str = (
-    """
-    Almost all parameters described here are only accessible through a method's `**keywordArguments` parameter.
-
-    Parameters:
-        context (ast.Load()): Are you loading from, storing to, or deleting the identifier? The `context` (also, `ctx`) value is `ast.Load()`, `ast.Store()`, or `ast.Del()`.
-        col_offset (0): int Position information specifying the column where an AST node begins.
-        end_col_offset (None): int|None Position information specifying the column where an AST node ends.
-        end_lineno (None): int|None Position information specifying the line number where an AST node ends.
-        level (0): int Module import depth level that controls relative vs absolute imports. Default 0 indicates absolute import.
-        lineno: int Position information manually specifying the line number where an AST node begins.
-        kind (None): str|None Used for type annotations in limited cases.
-        type_comment (None): str|None "type_comment is an optional string with the type annotation as a comment." or `# type: ignore`.
-        type_params: list[ast.type_param] Type parameters for generic type definitions.
-
-    The `ast._Attributes`, lineno, col_offset, end_lineno, and end_col_offset, hold position information; however, they are, importantly, _not_ `ast._fields`.
-    """
-)
-ClassDefDocstringMake = ast.Expr(ast.Constant(docstring))
-del docstring
-
-docstring: str = (
-        """
-        Create a single `ast.expr` from a collection of `ast.expr` by forming nested `ast.BinOp`
-        that are logically "joined" using the `ast.operator` subclass. Like str.join() but for AST expressions.
-
-        Parameters
-        ----------
-        expressions : Iterable[ast.expr]
-            Collection of expressions to join.
-        **keywordArguments : ast._attributes
-
-        Returns
-        -------
-        joinedExpression : ast.expr
-            Single expression representing the joined expressions.
-
-        Examples
-        --------
-        Instead of manually constructing nested ast.BinOp structures:
-        ```
-        ast.BinOp(
-            left=ast.BinOp(
-                left=ast.Name('Crosby')
-                , op=ast.BitOr()
-                , right=ast.Name('Stills'))
-            , op=ast.BitOr()
-            , right=ast.Name('Nash')
-        )
-        ```
-
-        Simply use:
-        ```
-        astToolkit.BitOr().join([ast.Name('Crosby'), ast.Name('Stills'), ast.Name('Nash')])
-        ```
-
-        Both produce the same AST structure but the join() method eliminates the manual nesting.
-        Handles single expressions and empty iterables gracefully.
-        """
-)
-FunctionDefDocstring_join_operator = ast.Expr(ast.Constant(docstring))
-del docstring
-
-docstring: str = (
-        """
-        Create a single `ast.expr` from a sequence of `ast.expr` by forming an `ast.BoolOp`
-        that logically "joins" expressions using the `ast.BoolOp` subclass. Like str.join() but for AST expressions.
-
-        Parameters
-        ----------
-        expressions : Sequence[ast.expr]
-            Collection of expressions to join.
-        **keywordArguments : ast._attributes
-
-        Returns
-        -------
-        joinedExpression : ast.expr
-            Single expression representing the joined expressions.
-
-        Examples
-        --------
-        Instead of manually constructing ast.BoolOp structures:
-        ```
-        ast.BoolOp(
-            op=ast.And(),
-            values=[ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')]
-        )
-        ```
-
-        Simply use:
-        ```
-        astToolkit.And.join([ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')])
-        ```
-
-        Both produce the same AST structure but the join() method eliminates the manual construction.
-        Handles single expressions and empty sequences gracefully.
-        """
-)
-FunctionDefDocstring_join_boolop = ast.Expr(ast.Constant(docstring))
-del docstring
-
-docstring: str = (
-        """
-        If two identifiers are joined by a dot '`.`', they are _usually_ an `ast.Attribute`, but see, for example, `ast.ImportFrom`.
-
-        Parameters:
-            value: the part before the dot (e.g., `ast.Name`.)
-            attribute: an identifier after a dot '`.`'; you can pass multiple `attribute` and they will be chained together.
-        """
-)
-FunctionDefMake_AttributeDocstring = ast.Expr(ast.Constant(docstring))
-del docstring
-
+import documentationMake  # noqa: E402

@@ -1,15 +1,11 @@
 from astToolFactory import (
-	astName_overload, astName_staticmethod, astName_typing_TypeAlias, getElementsBe,
-	getElementsClassIsAndAttribute, getElementsDOT, getElementsGrab, getElementsMake,
+	astName_overload, astName_staticmethod, astName_typing_TypeAlias, dictionaryIdentifiers,
+	getElementsBe, getElementsClassIsAndAttribute, getElementsDOT, getElementsGrab, getElementsMake,
 	getElementsTypeAlias, keywordArgumentsIdentifier, keywordKeywordArguments4Call, listPylanceErrors,
 	pythonMinimumVersionMinor, settingsPackageToManufacture,
 )
 from astToolFactory.datacenter import DictionaryToolBe
-from astToolFactory.docstrings import (
-	ClassDefDocstring_ast_boolop, ClassDefDocstring_ast_operator, ClassDefDocstringBe,
-	ClassDefDocstringClassIsAndAttribute, ClassDefDocstringDOT, ClassDefDocstringGrab,
-	ClassDefDocstringMake, docstringWarning,
-)
+from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factory_annex import (
 	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
 	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf,
@@ -160,8 +156,8 @@ def makeTool_dump() -> None:
 	pathFilename = PurePosixPath(settingsPackageToManufacture.pathPackage, '_dumpFunctionDef' + settingsPackageToManufacture.fileExtension)
 	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsPackageToManufacture.identifierPackage)
 
-def makeToolBe() -> None:
-	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringBe]
+def makeToolBe(identifierToolClass: str) -> None:
+	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers['Be']][dictionaryIdentifiers['Be']]]
 
 	listDictionaryToolElements: list[DictionaryToolBe] = getElementsBe()
 
@@ -186,15 +182,15 @@ def makeToolBe() -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom('typing', [Make.alias('TypeIs')])
+		Make.ImportFrom('typing_extensions', [Make.alias('TypeIs')])
 		, Make.Import('ast')
 		, Make.Import('sys')
 	]
 
-	writeClass('Be', list4ClassDefBody, list4ModuleBody)
+	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolClassIsAndAttribute() -> None:
-	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringClassIsAndAttribute]
+def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
+	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers['ClassIsAndAttribute']][dictionaryIdentifiers['ClassIsAndAttribute']]]
 	list_match_case: list[ast.match_case] = []
 
 	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsClassIsAndAttribute():
@@ -265,15 +261,19 @@ def makeToolClassIsAndAttribute() -> None:
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom('astToolkit', [Make.alias('*')])
 		, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
-		, Make.ImportFrom('typing', [Make.alias(identifier) for identifier in ['Any', 'Literal', 'overload', 'TypeIs']])
+		, Make.ImportFrom('typing', [Make.alias(identifier) for identifier in ['overload']])
+		, Make.ImportFrom('typing_extensions', [Make.alias(identifier) for identifier in ['TypeIs']])
 		, Make.Import('ast')
 		, Make.Import('sys')
+		, Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]),
+			[Make.ImportFrom('astToolkit', [Make.alias('hasDOTdefault_value', 'hasDOTdefault_value')])]
+		)
 	]
 
-	writeClass('ClassIsAndAttribute', list4ClassDefBody, list4ModuleBody)
+	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolDOT() -> None:
-	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringDOT]
+def makeToolDOT(identifierToolClass: str) -> None:
+	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers['DOT']][dictionaryIdentifiers['DOT']]]
 	list_match_case: list[ast.match_case] = []
 
 	for identifierTypeOfNode, overloadDefinition, _canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsDOT():
@@ -313,17 +313,20 @@ def makeToolDOT() -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-			Make.ImportFrom('astToolkit', [Make.alias('*')])
-			, Make.ImportFrom('collections.abc', [Make.alias('Sequence')])
-			, Make.ImportFrom('typing', [Make.alias('overload')])
-			, Make.Import('ast')
-			, Make.Import('sys')
-			]
+		Make.ImportFrom('astToolkit', [Make.alias('*')])
+		, Make.ImportFrom('collections.abc', [Make.alias('Sequence')])
+		, Make.ImportFrom('typing', [Make.alias('overload')])
+		, Make.Import('ast')
+		, Make.Import('sys')
+		, Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]),
+			[Make.ImportFrom('astToolkit', [Make.alias('hasDOTdefault_value', 'hasDOTdefault_value')])]
+		)
+	]
 
-	writeClass('DOT', list4ClassDefBody, list4ModuleBody)
+	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolGrab() -> None:
-	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringGrab, FunctionDefGrab_andDoAllOf]
+def makeToolGrab(identifierToolClass: str) -> None:
+	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers['Grab']][dictionaryIdentifiers['Grab']], FunctionDefGrab_andDoAllOf]
 	list_match_case: list[ast.match_case] = []
 
 	for identifierTypeOfNode, list_ast_expr, attribute, useMatchCase, versionMinorMinimum in getElementsGrab():
@@ -364,19 +367,22 @@ def makeToolGrab() -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-			Make.ImportFrom('astToolkit', [Make.alias('*')])
-			, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
-			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('Literal')])
-			, Make.Import('ast')
-			, Make.Import('sys')
-			]
+		Make.ImportFrom('astToolkit', [Make.alias('*')])
+		, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
+		, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('Literal')])
+		, Make.Import('ast')
+		, Make.Import('sys')
+		, Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]),
+			[Make.ImportFrom('astToolkit', [Make.alias('hasDOTdefault_value', 'hasDOTdefault_value')])]
+		)
+	]
 
-	writeClass('Grab', list4ClassDefBody, list4ModuleBody)
+	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolMake() -> None:
+def makeToolMake(identifierToolClass: str) -> None:
 	ledgerOfImports: LedgerOfImports = LedgerOfImports()
 	ledgerOfImports.addImportFrom_asStr('astToolkit', 'ConstantValueType')
-	list4ClassDefBody: list[ast.stmt] = [ClassDefDocstringMake]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[identifierToolClass][identifierToolClass]]
 
 	ledgerOfImports.addImportFrom_asStr('astToolkit', 'ast_attributes')
 	list4ClassDefBody.extend([
@@ -394,13 +400,13 @@ def makeToolMake() -> None:
 		if ClassDefIdentifier in listBoolOpIdentifiers:
 			list4ClassDefBody.append(Make.ClassDef(ClassDefIdentifier
 				, bases=[Make.Attribute(Make.Name('ast'), ClassDefIdentifier)]
-				, body=[ClassDefDocstring_ast_boolop, FunctionDef_join_boolop]
+				, body=[docstrings[identifierToolClass][ClassDefIdentifier], FunctionDef_join_boolop]
 			))
 			continue
 		elif ClassDefIdentifier in listOperatorIdentifiers:
 			list4ClassDefBody.append(Make.ClassDef(ClassDefIdentifier
 				, bases=[Make.Attribute(Make.Name('ast'), ClassDefIdentifier)]
-				, body=[ClassDefDocstring_ast_operator, FunctionDef_join_operator]
+				, body=[docstrings[identifierToolClass][ClassDefIdentifier], FunctionDef_join_operator]
 			))
 			continue
 		elif ClassDefIdentifier == 'Attribute':
@@ -441,7 +447,10 @@ def makeToolMake() -> None:
 				listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
 			if kwarg is not None:
 				listCall_keyword.append(keywordKeywordArguments4Call)
-			body = [Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
+
+			body = [docstrings[identifierToolClass][ClassDefIdentifier],
+				Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))
+				]
 
 		ast_stmt = Make.FunctionDef(
 			ClassDefIdentifier
@@ -479,19 +488,18 @@ def makeToolMake() -> None:
 		, Make.Import('sys')
 		]
 	))
-
 	list4ModuleBody: list[ast.stmt] = [*ledgerOfImports.makeList_ast()]
-	writeClass('Make', list4ClassDefBody, list4ModuleBody)
+	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def write_theSSOT():
 	writeModule(astModule_theSSOT, '_theSSOT')
 
 if __name__ == "__main__":
 	make_astTypes()
-	makeToolBe()
-	makeToolClassIsAndAttribute()
-	makeToolDOT()
-	makeToolGrab()
-	makeToolMake()
+	makeToolBe(dictionaryIdentifiers['Be'])
+	makeToolClassIsAndAttribute(dictionaryIdentifiers['ClassIsAndAttribute'])
+	makeToolDOT(dictionaryIdentifiers['DOT'])
+	makeToolGrab(dictionaryIdentifiers['Grab'])
+	makeToolMake(dictionaryIdentifiers['Make'])
 	# makeTool_dump()
 	write_theSSOT()
