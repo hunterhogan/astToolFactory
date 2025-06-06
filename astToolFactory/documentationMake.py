@@ -111,320 +111,6 @@ docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['bo
 
 docstrings[dictionaryIdentifiers[identifierToolClass]]['Attribute'] = Make.Expr(Make.Constant(
         """
-        If two identifiers are joined by a dot '`.`', they are _usually_ an `ast.Attribute`, but see, for example, `ast.ImportFrom`.
-
-        Parameters:
-            value: the part before the dot (e.g., `ast.Name`.)
-            attribute: an identifier after a dot '`.`'; you can pass multiple `attribute` and they will be chained together.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['cmpop'] = Make.Expr(Make.Constant(
-        """
-        Abstract ***c***o***mp***arison ***op***erator `object` for use in AST construction.
-        (AI generated docstring)
-
-        Class `ast.cmpop` is the base for all comparison operators in Python's AST.
-        It serves as the abstract parent for specific comparison operators: `ast.Eq`, `ast.NotEq`,
-        `ast.Lt`, `ast.LtE`, `ast.Gt`, `ast.GtE`, `ast.Is`, `ast.IsNot`, `ast.In`, `ast.NotIn`.
-        This factory method makes a generic comparison operator `object` that can be used
-        in the antecedent-action pattern with visitor classes.
-
-        Returns
-        -------
-        comparisonOperator: ast.cmpop
-            Abstract comparison operator `object` that serves as the base `class` for all
-            Python comparison operators in AST structures.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Eq'] = Make.Expr(Make.Constant(
-        """
-        'Eq', meaning 'is ***Eq***ual to', is the `object` representation of Python comparison operator '`==`'.
-
-        `class` `ast.Eq` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
-
-        Returns
-        -------
-        equalityOperator:
-            AST `object` representing the '`==`' equality comparison operator for use
-            in `ast.Compare`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Is'] = Make.Expr(Make.Constant(
-        """
-        'Is', meaning 'Is identical to', is the `object` representation of Python keyword '`is`'.
-
-        `class` `ast.Is` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
-
-        The Python interpreter declares *This* logical `object` 'Is identical to' *That* logical `object` if they use the same physical memory location. Therefore, modifying one `object` will necessarily modify the other `object`.
-
-        What's the difference between equality and identity?
-        - The work of Jane Austen 'is Equal to' the work of Franz Kafka.
-        - The work of Mark Twain 'is Equal to' the work of Samuel Clemens.
-        - And Mark Twain 'Is identical to' Samuel Clemens: because they are the same person.
-
-        Returns
-        -------
-        identityOperator:
-            AST `object` representing the '`is`' identity comparison operator for use in `ast.Compare`.
-
-        Examples
-        --------
-        ```python
-        # Logically equivalent to: `... valueAttributes is None ...`
-        comparisonNode = Make.Compare(
-            left=Make.Name('valueAttributes'),
-            ops=[Make.Is()],
-            comparators=[Make.Constant(None)]
-        )
-        ```
-
-            In the first example, the two statements are logically equal but they cannot be identical.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['IsNot'] = Make.Expr(Make.Constant(
-        """
-        'IsNot', meaning 'Is Not identical to', is the `object` representation of Python keywords '`is not`'.
-
-        `class` `ast.IsNot` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
-
-        The Python interpreter declares *This* logical `object` 'Is Not identical to' *That* logical `object` if they do not use the same physical memory location.
-
-        What's the difference between equality and identity?
-        - The work of Jane Austen 'is Equal to' the work of Franz Kafka.
-        - The work of Mark Twain 'is Equal to' the work of Samuel Clemens.
-        - And Mark Twain 'Is identical to' Samuel Clemens: because they are the same person.
-
-        Python programmers frequently use '`is not None`' because keyword `None` does not have a physical memory location, so `if chicken is not None`, `chicken` must have a physical memory location (and be in the current scope and blah blah blah...).
-
-        Returns
-        -------
-        identityNegationOperator:
-            AST `object` representing the '`is not`' identity comparison operator for use in `ast.Compare`.
-
-        Examples
-        --------
-        ```python
-        # Logically equivalent to: `... chicken is not None ...`
-        comparisonNode = Make.Compare(
-            left=Make.Name('chicken'),
-            ops=[Make.IsNot()],
-            comparators=[Make.Constant(None)]
-        )
-        ```
-
-            In the first example, the two statements are logically equal but they cannot be identical.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['NotEq'] = Make.Expr(Make.Constant(
-        """
-        'NotEq' meaning 'is ***Not*** ***Eq***ual to', is the `object` representation of Python comparison operator '`!=`'.
-
-        `class` `ast.NotEq` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
-
-        Returns
-        -------
-        inequalityOperator:
-            AST `object` representing the '`!=`' inequality comparison operator for use
-            in `ast.Compare`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Lt'] = Make.Expr(Make.Constant(
-        """
-        'Lt', meaning 'is Less than', is the `object` representation of Python comparison operator '`<`'.
-
-        `class` `ast.Lt` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
-
-        Returns
-        -------
-        lessThanOperator:
-            AST `object` representing the '`<`' less-than comparison operator for use
-            in `ast.Compare`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['LtE'] = Make.Expr(Make.Constant(
-        """
-        'LtE', meaning 'is Less than or Equal to', is the `object` representation of Python comparison operator '`<=`'.
-
-        `class` `ast.LtE` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
-
-        Returns
-        -------
-        lessThanOrEqualOperator:
-            AST `object` representing the '`<=`' less-than-or-equal comparison operator
-            for use in `ast.Compare`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Gt'] = Make.Expr(Make.Constant(
-        """
-        'Gt', meaning 'Greater than', is the `object` representation of Python operator '`>`'.
-
-        `class` `ast.Gt` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
-
-        Returns
-        -------
-        greaterThanOperator:
-            AST `object` representing the '`>`' greater-than comparison operator for use
-            in `ast.Compare`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['GtE'] = Make.Expr(Make.Constant(
-        """
-        'GtE', meaning 'is Greater than or Equal to', is the `object` representation of Python comparison operator '`>=`'.
-
-        `class` `ast.GtE` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
-
-        Returns
-        -------
-        greaterThanOrEqualOperator:
-            AST `object` representing the '`>=`' greater-than-or-equal comparison operator
-            for use in `ast.Compare`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['In'] = Make.Expr(Make.Constant(
-        """
-        'In', meaning 'is ***In***cluded in' or 'has membership In', is the `object` representation of Python keyword '`in`'.
-
-        `class` `ast.In` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***. The Python interpreter
-        declares *This* `object` 'is ***In***cluded in' *That* `iterable` if *This* `object` matches a part of *That* `iterable`.
-
-        Returns
-        -------
-        membershipOperator:
-            AST `object` representing the keyword '`in`' membership test operator for use
-            in `ast.Compare`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['NotIn'] = Make.Expr(Make.Constant(
-        """
-        'NotIn', meaning 'is Not ***In***cluded in' or 'does Not have membership In', is the `object` representation of Python keywords '`not in`'.
-
-        `class` `ast.NotIn` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
-        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***. The Python interpreter
-        declares *This* `object` 'is Not ***In***cluded in' *That* `iterable` if *This* `object` does not match a part of *That* `iterable`.
-
-        Returns
-        -------
-        negativeMembershipOperator:
-            AST `object` representing the keywords '`not in`' negative membership test operator
-            for use in `ast.Compare`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['unaryop'] = Make.Expr(Make.Constant(
-        """
-        Abstract ***un***ary ***op***erator `object` for use in AST construction.
-        (AI generated docstring)
-
-        Class `ast.unaryop` is the base for all unary operators in Python's AST.
-        It serves as the abstract parent for specific unary operators: `ast.Invert`,
-        `ast.Not`, `ast.UAdd`, `ast.USub`. This factory method makes a generic
-        unary operator `object` that can be used in the antecedent-action pattern with visitor classes.
-
-        Unlike `ast.cmpop` which handles binary comparison operations between two operands,
-        `ast.unaryop` represents operators that act on a single operand. Both serve as abstract
-        base classes but for different categories of operations: `ast.cmpop` for comparisons
-        and `ast.unaryop` for unary transformations.
-
-        Returns
-        -------
-        unaryOperator: ast.unaryop
-            Abstract unary operator `object` that serves as the base `class` for all
-            Python unary operators in AST structures.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Invert'] = Make.Expr(Make.Constant(
-        """
-        Bitwise complement operator representing Python '`~`' operator.
-        (AI generated docstring)
-
-        Class `ast.Invert` is a subclass of `ast.unaryop` and represents the bitwise complement
-        or inversion operator '`~`' in Python source code. This operator performs bitwise
-        NOT operation, flipping all bits of its operand. Used within `ast.UnaryOp`
-        as the `op` parameter.
-
-        Returns
-        -------
-        bitwiseComplementOperator: ast.Invert
-            AST `object` representing the '`~`' bitwise complement operator for use
-            in `ast.UnaryOp`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Not'] = Make.Expr(Make.Constant(
-        """
-        Logical negation operator representing Python keyword '`not`'.
-        (AI generated docstring)
-
-        Class `ast.Not` is a subclass of `ast.unaryop` and represents the logical negation
-        operator keyword '`not`' in Python source code. This operator returns the boolean
-        inverse of its operand's truthiness. Used within `ast.UnaryOp` as the
-        `op` parameter.
-
-        Returns
-        -------
-        logicalNegationOperator: ast.Not
-            AST `object` representing the keyword '`not`' logical negation operator for use
-            in `ast.UnaryOp`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['UAdd'] = Make.Expr(Make.Constant(
-        """
-        'UAdd', meaning 'Unary Addition', operator representing Python '`+`' operator.
-        (AI generated docstring)
-
-        Class `ast.UAdd` is a subclass of `ast.unaryop` and represents the unary positive
-        operator '`+`' in Python source code. This operator explicitly indicates
-        a positive numeric value. Used within `ast.UnaryOp` as the `op` parameter.
-
-        Returns
-        -------
-        unaryPositiveOperator: ast.UAdd
-            AST `object` representing the '`+`' unary positive operator for use
-            in `ast.UnaryOp`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['USub'] = Make.Expr(Make.Constant(
-        """
-        'USub', meaning 'Unary Subtraction', operator representing Python '`-`' operator.
-        (AI generated docstring)
-
-        Class `ast.USub` is a subclass of `ast.unaryop` and represents the unary negation
-        operator '`-`' in Python source code. This operator makes the arithmetic
-        negative of its operand. Used within `ast.UnaryOp` as the `op` parameter.
-
-        Returns
-        -------
-        unaryNegativeOperator: ast.USub
-            AST `object` representing the '`-`' unary negation operator for use
-            in `ast.UnaryOp`.
-        """
-))
-
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Attribute'] = Make.Expr(Make.Constant(
-        """
         Attribute access AST `object` representing dot notation in Python code.
         (AI generated docstring)
 
@@ -532,6 +218,25 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Call'] = Make.Expr(Make.
         -------
         functionCall: ast.Call
             AST `object` representing a function call with specified arguments.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['cmpop'] = Make.Expr(Make.Constant(
+        """
+        Abstract ***c***o***mp***arison ***op***erator `object` for use in AST construction.
+        (AI generated docstring)
+
+        Class `ast.cmpop` is the base for all comparison operators in Python's AST.
+        It serves as the abstract parent for specific comparison operators: `ast.Eq`, `ast.NotEq`,
+        `ast.Lt`, `ast.LtE`, `ast.Gt`, `ast.GtE`, `ast.Is`, `ast.IsNot`, `ast.In`, `ast.NotIn`.
+        This factory method makes a generic comparison operator `object` that can be used
+        in the antecedent-action pattern with visitor classes.
+
+        Returns
+        -------
+        comparisonOperator: ast.cmpop
+            Abstract comparison operator `object` that serves as the base `class` for all
+            Python comparison operators in AST structures.
         """
 ))
 
@@ -653,6 +358,47 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['DictComp'] = Make.Expr(M
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Eq'] = Make.Expr(Make.Constant(
+        """
+        'Eq', meaning 'is ***Eq***ual to', is the `object` representation of Python comparison operator '`==`'.
+
+        `class` `ast.Eq` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
+
+        Returns
+        -------
+        equalityOperator:
+            AST `object` representing the '`==`' equality comparison operator for use
+            in `ast.Compare`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['expr'] = Make.Expr(Make.Constant(
+        """
+        Abstract ***expr***ession `object` for base expression operations.
+        (AI generated docstring)
+
+        The `ast.expr` class serves as the abstract base class for all expression
+        objects in Python's AST. Unlike `ast.stmt` which represents statements that
+        perform actions, `ast.expr` represents expressions that evaluate to values
+        and can be used within larger expressions or as parts of statements.
+
+        Expressions vs Statements:
+        - **expr**: Evaluates to a value and can be composed into larger expressions.
+          Examples include literals (`42`, `"hello"`), operations (`x + y`),
+          function calls (`len(data)`), and attribute access (`obj.method`).
+        - **stmt**: Performs an action and does not evaluate to a usable value.
+          Examples include assignments (`x = 5`), control flow (`if`, `for`, `while`),
+          function definitions (`def`), and imports (`import`).
+
+        Returns
+        -------
+        expression: ast.expr
+            Abstract expression `object` that serves as the base class for all
+            Python expressions in AST structures.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['FormattedValue'] = Make.Expr(Make.Constant(
         """
         Formatted value AST `object` for f-string interpolation components.
@@ -725,6 +471,36 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['GeneratorExp'] = Make.Ex
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Gt'] = Make.Expr(Make.Constant(
+        """
+        'Gt', meaning 'Greater than', is the `object` representation of Python operator '`>`'.
+
+        `class` `ast.Gt` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
+
+        Returns
+        -------
+        greaterThanOperator:
+            AST `object` representing the '`>`' greater-than comparison operator for use
+            in `ast.Compare`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['GtE'] = Make.Expr(Make.Constant(
+        """
+        'GtE', meaning 'is Greater than or Equal to', is the `object` representation of Python comparison operator '`>=`'.
+
+        `class` `ast.GtE` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
+
+        Returns
+        -------
+        greaterThanOrEqualOperator:
+            AST `object` representing the '`>=`' greater-than-or-equal comparison operator
+            for use in `ast.Compare`.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['IfExp'] = Make.Expr(Make.Constant(
         """
         Conditional ***expr***ession `object` for inline if-else operations.
@@ -759,6 +535,110 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['IfExp'] = Make.Expr(Make
                 orElse=Make.Name('default_value')
             )
             ```
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['In'] = Make.Expr(Make.Constant(
+        """
+        'In', meaning 'is ***In***cluded in' or 'has membership In', is the `object` representation of Python keyword '`in`'.
+
+        `class` `ast.In` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***. The Python interpreter
+        declares *This* `object` 'is ***In***cluded in' *That* `iterable` if *This* `object` matches a part of *That* `iterable`.
+
+        Returns
+        -------
+        membershipOperator:
+            AST `object` representing the keyword '`in`' membership test operator for use
+            in `ast.Compare`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Invert'] = Make.Expr(Make.Constant(
+        """
+        Bitwise complement operator representing Python '`~`' operator.
+        (AI generated docstring)
+
+        Class `ast.Invert` is a subclass of `ast.unaryop` and represents the bitwise complement
+        or inversion operator '`~`' in Python source code. This operator performs bitwise
+        NOT operation, flipping all bits of its operand. Used within `ast.UnaryOp`
+        as the `op` parameter.
+
+        Returns
+        -------
+        bitwiseComplementOperator: ast.Invert
+            AST `object` representing the '`~`' bitwise complement operator for use
+            in `ast.UnaryOp`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Is'] = Make.Expr(Make.Constant(
+        """
+        'Is', meaning 'Is identical to', is the `object` representation of Python keyword '`is`'.
+
+        `class` `ast.Is` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
+
+        The Python interpreter declares *This* logical `object` 'Is identical to' *That* logical `object` if they use the same physical memory location. Therefore, modifying one `object` will necessarily modify the other `object`.
+
+        What's the difference between equality and identity?
+        - The work of Jane Austen 'is Equal to' the work of Franz Kafka.
+        - The work of Mark Twain 'is Equal to' the work of Samuel Clemens.
+        - And Mark Twain 'Is identical to' Samuel Clemens: because they are the same person.
+
+        Returns
+        -------
+        identityOperator:
+            AST `object` representing the '`is`' identity comparison operator for use in `ast.Compare`.
+
+        Examples
+        --------
+        ```python
+        # Logically equivalent to: `... valueAttributes is None ...`
+        comparisonNode = Make.Compare(
+            left=Make.Name('valueAttributes'),
+            ops=[Make.Is()],
+            comparators=[Make.Constant(None)]
+        )
+        ```
+
+            In the first example, the two statements are logically equal but they cannot be identical.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['IsNot'] = Make.Expr(Make.Constant(
+        """
+        'IsNot', meaning 'Is Not identical to', is the `object` representation of Python keywords '`is not`'.
+
+        `class` `ast.IsNot` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
+
+        The Python interpreter declares *This* logical `object` 'Is Not identical to' *That* logical `object` if they do not use the same physical memory location.
+
+        What's the difference between equality and identity?
+        - The work of Jane Austen 'is Equal to' the work of Franz Kafka.
+        - The work of Mark Twain 'is Equal to' the work of Samuel Clemens.
+        - And Mark Twain 'Is identical to' Samuel Clemens: because they are the same person.
+
+        Python programmers frequently use '`is not None`' because keyword `None` does not have a physical memory location, so `if chicken is not None`, `chicken` must have a physical memory location (and be in the current scope and blah blah blah...).
+
+        Returns
+        -------
+        identityNegationOperator:
+            AST `object` representing the '`is not`' identity comparison operator for use in `ast.Compare`.
+
+        Examples
+        --------
+        ```python
+        # Logically equivalent to: `... chicken is not None ...`
+        comparisonNode = Make.Compare(
+            left=Make.Name('chicken'),
+            ops=[Make.IsNot()],
+            comparators=[Make.Constant(None)]
+        )
+        ```
+
+            In the first example, the two statements are logically equal but they cannot be identical.
         """
 ))
 
@@ -858,6 +738,36 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['ListComp'] = Make.Expr(M
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Lt'] = Make.Expr(Make.Constant(
+        """
+        'Lt', meaning 'is Less than', is the `object` representation of Python comparison operator '`<`'.
+
+        `class` `ast.Lt` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
+
+        Returns
+        -------
+        lessThanOperator:
+            AST `object` representing the '`<`' less-than comparison operator for use
+            in `ast.Compare`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['LtE'] = Make.Expr(Make.Constant(
+        """
+        'LtE', meaning 'is Less than or Equal to', is the `object` representation of Python comparison operator '`<=`'.
+
+        `class` `ast.LtE` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
+
+        Returns
+        -------
+        lessThanOrEqualOperator:
+            AST `object` representing the '`<=`' less-than-or-equal comparison operator
+            for use in `ast.Compare`.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['Name'] = Make.Expr(Make.Constant(
         """
         Name `object` for variable and identifier references.
@@ -906,6 +816,55 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['NamedExpr'] = Make.Expr(
                 comparators=[Make.Constant(10)]
             )
             ```
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Not'] = Make.Expr(Make.Constant(
+        """
+        Logical negation operator representing Python keyword '`not`'.
+        (AI generated docstring)
+
+        Class `ast.Not` is a subclass of `ast.unaryop` and represents the logical negation
+        operator keyword '`not`' in Python source code. This operator returns the boolean
+        inverse of its operand's truthiness. Used within `ast.UnaryOp` as the
+        `op` parameter.
+
+        Returns
+        -------
+        logicalNegationOperator: ast.Not
+            AST `object` representing the keyword '`not`' logical negation operator for use
+            in `ast.UnaryOp`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['NotEq'] = Make.Expr(Make.Constant(
+        """
+        'NotEq' meaning 'is ***Not*** ***Eq***ual to', is the `object` representation of Python comparison operator '`!=`'.
+
+        `class` `ast.NotEq` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
+
+        Returns
+        -------
+        inequalityOperator:
+            AST `object` representing the '`!=`' inequality comparison operator for use
+            in `ast.Compare`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['NotIn'] = Make.Expr(Make.Constant(
+        """
+        'NotIn', meaning 'is Not ***In***cluded in' or 'does Not have membership In', is the `object` representation of Python keywords '`not in`'.
+
+        `class` `ast.NotIn` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator', and
+        only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***. The Python interpreter
+        declares *This* `object` 'is Not ***In***cluded in' *That* `iterable` if *This* `object` does not match a part of *That* `iterable`.
+
+        Returns
+        -------
+        negativeMembershipOperator:
+            AST `object` representing the keywords '`not in`' negative membership test operator
+            for use in `ast.Compare`.
         """
 ))
 
@@ -1033,6 +992,46 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Tuple'] = Make.Expr(Make
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['UAdd'] = Make.Expr(Make.Constant(
+        """
+        'UAdd', meaning 'Unary Addition', operator representing Python '`+`' operator.
+        (AI generated docstring)
+
+        Class `ast.UAdd` is a subclass of `ast.unaryop` and represents the unary positive
+        operator '`+`' in Python source code. This operator explicitly indicates
+        a positive numeric value. Used within `ast.UnaryOp` as the `op` parameter.
+
+        Returns
+        -------
+        unaryPositiveOperator: ast.UAdd
+            AST `object` representing the '`+`' unary positive operator for use
+            in `ast.UnaryOp`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['unaryop'] = Make.Expr(Make.Constant(
+        """
+        Abstract ***un***ary ***op***erator `object` for use in AST construction.
+        (AI generated docstring)
+
+        Class `ast.unaryop` is the base for all unary operators in Python's AST.
+        It serves as the abstract parent for specific unary operators: `ast.Invert`,
+        `ast.Not`, `ast.UAdd`, `ast.USub`. This factory method makes a generic
+        unary operator `object` that can be used in the antecedent-action pattern with visitor classes.
+
+        Unlike `ast.cmpop` which handles binary comparison operations between two operands,
+        `ast.unaryop` represents operators that act on a single operand. Both serve as abstract
+        base classes but for different categories of operations: `ast.cmpop` for comparisons
+        and `ast.unaryop` for unary transformations.
+
+        Returns
+        -------
+        unaryOperator: ast.unaryop
+            Abstract unary operator `object` that serves as the base `class` for all
+            Python unary operators in AST structures.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['UnaryOp'] = Make.Expr(Make.Constant(
         """
         Unary ***op***eration `object` for single-operand operations.
@@ -1048,6 +1047,23 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['UnaryOp'] = Make.Expr(Ma
         Returns:
             unaryOperation: ast.UnaryOp
             AST `object` representing a unary operation on a single expression.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['USub'] = Make.Expr(Make.Constant(
+        """
+        'USub', meaning 'Unary Subtraction', operator representing Python '`-`' operator.
+        (AI generated docstring)
+
+        Class `ast.USub` is a subclass of `ast.unaryop` and represents the unary negation
+        operator '`-`' in Python source code. This operator makes the arithmetic
+        negative of its operand. Used within `ast.UnaryOp` as the `op` parameter.
+
+        Returns
+        -------
+        unaryNegativeOperator: ast.USub
+            AST `object` representing the '`-`' unary negation operator for use
+            in `ast.UnaryOp`.
         """
 ))
 
@@ -1087,28 +1103,3 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['YieldFrom'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['expr'] = Make.Expr(Make.Constant(
-        """
-        Abstract ***expr***ession `object` for base expression operations.
-        (AI generated docstring)
-
-        The `ast.expr` class serves as the abstract base class for all expression
-        objects in Python's AST. Unlike `ast.stmt` which represents statements that
-        perform actions, `ast.expr` represents expressions that evaluate to values
-        and can be used within larger expressions or as parts of statements.
-
-        Expressions vs Statements:
-        - **expr**: Evaluates to a value and can be composed into larger expressions.
-          Examples include literals (`42`, `"hello"`), operations (`x + y`),
-          function calls (`len(data)`), and attribute access (`obj.method`).
-        - **stmt**: Performs an action and does not evaluate to a usable value.
-          Examples include assignments (`x = 5`), control flow (`if`, `for`, `while`),
-          function definitions (`def`), and imports (`import`).
-
-        Returns
-        -------
-        expression: ast.expr
-            Abstract expression `object` that serves as the base class for all
-            Python expressions in AST structures.
-        """
-))
