@@ -31,7 +31,8 @@ FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(dictionaryIdentifiers[
             ]
         , kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
     )
-    , body=[Make.AnnAssign(Make.Name('listExpressions', ast.Store())
+    , body=[docstrings[dictionaryIdentifiers['Make']]['_boolopJoinMethod']
+		, Make.AnnAssign(Make.Name('listExpressions', ast.Store())
                         , annotation=Make.Subscript(Make.Name('list'), slice=Make.Attribute(Make.Name('ast'), 'expr'))
                         , value=Make.Call(Make.Name('list'), listParameters=[Make.Name('expressions')])
                     )
@@ -62,7 +63,8 @@ FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(dictionaryIdentifier
 	, Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'operator')))
 						, Make.arg('expressions', annotation=Make.Subscript(Make.Name('Iterable'), slice=Make.Attribute(Make.Name('ast'), 'expr')))]
 					, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
-	, body=[Make.AnnAssign(Make.Name('listExpressions', ast.Store()), annotation=Make.Subscript(Make.Name('list'), slice=Make.Attribute(Make.Name('ast'), 'expr'))
+	, body=[docstrings[dictionaryIdentifiers['Make']]['_operatorJoinMethod']
+		, Make.AnnAssign(Make.Name('listExpressions', ast.Store()), annotation=Make.Subscript(Make.Name('list'), slice=Make.Attribute(Make.Name('ast'), 'expr'))
 						, value=Make.Call(Make.Name('list'), listParameters=[Make.Name('expressions')]))
 		, Make.If(Make.UnaryOp(ast.Not(), Make.Name('listExpressions'))
 			, body=[Make.Expr(Make.Call(Make.Attribute(Make.Name('listExpressions'), 'append')

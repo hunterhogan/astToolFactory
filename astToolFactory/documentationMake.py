@@ -8,8 +8,6 @@ from astToolkit import Make
 import ast
 
 identifierToolClass: str = 'Make'
-# context (ast.Load()): Are you loading from, storing to, or deleting the identifier? The `context` (also, `ctx`) value is `ast.Load()`, `ast.Store()`, or `ast.Del()`.
-# kind (None): str|None Used for type annotations in limited cases.
 
 for subclass in ast.boolop.__subclasses__():
     docstrings[dictionaryIdentifiers[identifierToolClass]][subclass.__name__] = Make.Expr(Make.Constant("""Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BoolOp` class."""))
@@ -19,16 +17,114 @@ for subclass in ast.operator.__subclasses__():
 
 docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]] = Make.Expr(Make.Constant(
     """
-    All parameters described here are only accessible through a method's `**keywordArguments` parameter.
+    Factory methods for creating properly configured AST nodes with enhanced usability.
+    (AI generated docstring)
 
-    Parameters:
-        col_offset (0): int Position information specifying the column where an AST `object` begins.
-        end_col_offset (None): int|None Position information specifying the column where an AST `object` ends.
-        end_lineno (None): int|None Position information specifying the line number where an AST `object` ends.
-        level (0): int Module import depth level that controls relative vs absolute imports. Default 0 indicates absolute import.
-        lineno: int Position information manually specifying the line number where an AST `object` begins.
-        type_comment (None): str|None "type_comment is an optional string with the type annotation as a comment." or `# type: ignore`.
+    The `Make` class provides 160+ static methods for constructing Python AST nodes with correct
+    attributes and type annotations. This is the primary factory component of the astToolkit
+    package, designed to simplify AST node creation through enhanced parameter naming and
+    composable operations.
+
+    Key features include parameter renaming for better usability while maintaining access to all
+    AST constructor parameters, enhanced functionality such as variadic parameters that create
+    chained structures, and consistent `**keywordArguments` access to position and type information
+    across all methods.
+
+    Common AST attributes accessible through `**keywordArguments`:
+
+        col_offset (0): Position information specifying the column where an AST object begins.
+        end_col_offset (None): Position information specifying the column where an AST object ends.
+        end_lineno (None): Position information specifying the line number where an AST object ends.
+        level (0): Module import depth level that controls relative vs absolute imports. Default 0 indicates absolute import.
+        lineno: Position information manually specifying the line number where an AST object begins.
+        type_comment (None): Optional string with the type annotation as a comment or `# type: ignore`.
+
+    The Make class supports the antecedent-action pattern where factory methods serve as actions
+    combined with predicates from `Be`, `IfThis`, and `ClassIsAndAttribute` classes through visitor
+    classes like `NodeTourist` and `NodeChanger`.
     """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['_boolopJoinMethod'] = Make.Expr(Make.Constant(
+        """
+        Internal implementation for joining expressions with boolean operators.
+        (AI generated docstring)
+
+        This private method provides the core logic for boolean operator joining used by
+        `And.join()` and `Or.join()` methods. It handles edge cases like empty sequences
+        and single expressions while creating properly nested `ast.BoolOp` structures for
+        multiple expressions.
+
+        If you are looking for public join functionality, use the specific boolean operator
+        classes (`Make.And.join()`, `Make.Or.join()`) instead of this internal method.
+
+        Parameters:
+            ast_operator: The boolean operator type (`ast.And` or `ast.Or`) to use for joining.
+            expressions: Sequence of expressions to join with the boolean operator.
+
+        Returns:
+            joinedExpression: Single expression representing the joined boolean operation,
+                or the original expression if only one provided.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['boolopJoinMethod']] = Make.Expr(Make.Constant(
+        """
+        Single `ast.expr` from a sequence of `ast.expr` by forming an `ast.BoolOp` that logically "joins" expressions using the `ast.BoolOp` subclass.
+
+        Like str.join() but for AST expressions.
+
+        Parameters
+        ----------
+        expressions : Sequence[ast.expr]
+            Collection of expressions to join.
+        **keywordArguments : ast._attributes
+
+        Returns
+        -------
+        joinedExpression : ast.expr
+            Single expression representing the joined expressions.
+
+        Examples
+        --------
+        Instead of manually constructing ast.BoolOp structures:
+        ```
+        ast.BoolOp(
+            op=ast.And(),
+            values=[ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')]
+        )
+        ```
+
+        Simply use:
+        ```
+        astToolkit.And.join([ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')])
+        ```
+
+        Both produce the same AST structure but the join() method eliminates the manual construction.
+        Handles single expressions and empty sequences gracefully.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['_operatorJoinMethod'] = Make.Expr(Make.Constant(
+        """
+        Internal implementation for joining expressions with binary operators.
+        (AI generated docstring)
+
+        This private method provides the core logic for binary operator joining used by
+        operator classes like `Add.join()`, `BitOr.join()`, etc. It creates left-associative
+        nested `ast.BinOp` structures by chaining expressions from left to right.
+
+        If you are looking for public join functionality, use the specific operator classes
+        (`Make.Add.join()`, `Make.BitOr.join()`, etc.) instead of this internal method.
+
+        Parameters:
+            ast_operator: The binary operator type (like `ast.Add`, `ast.BitOr`) to use for joining.
+            expressions: Iterable of expressions to join with the binary operator.
+
+        Returns:
+            joinedExpression: Single expression representing the left-associative chained
+                binary operations, or empty string constant if no expressions provided.
+        """
 ))
 
 docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['operatorJoinMethod']] = Make.Expr(Make.Constant(
@@ -72,40 +168,211 @@ docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['op
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['boolopJoinMethod']] = Make.Expr(Make.Constant(
+docstrings[dictionaryIdentifiers[identifierToolClass]]['alias'] = Make.Expr(Make.Constant(
         """
-        Single `ast.expr` from a sequence of `ast.expr` by forming an `ast.BoolOp` that logically "joins" expressions using the `ast.BoolOp` subclass.
+        Import alias AST `object` representing name mapping in import statements.
+        (AI generated docstring)
 
-        Like str.join() but for AST expressions.
+        The `ast.alias` `object` represents name mappings used in `import` and
+        `from ... import` statements. It handles both direct imports (`import math`)
+        and aliased imports (`import numpy as np`).
 
-        Parameters
-        ----------
-        expressions : Sequence[ast.expr]
-            Collection of expressions to join.
-        **keywordArguments : ast._attributes
+        Parameters:
+            name: The actual module, class, or function name being imported.
+            asName (None): Optional alias name to use instead of the original name.
+                This corresponds to `ast.alias.asname`.
 
         Returns
         -------
-        joinedExpression : ast.expr
-            Single expression representing the joined expressions.
+        importAlias: ast.alias
+            AST `object` representing an import name mapping with optional aliasing.
+        """
+))
 
-        Examples
-        --------
-        Instead of manually constructing ast.BoolOp structures:
-        ```
-        ast.BoolOp(
-            op=ast.And(),
-            values=[ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')]
-        )
-        ```
+docstrings[dictionaryIdentifiers[identifierToolClass]]['AnnAssign'] = Make.Expr(Make.Constant(
+        """
+        Annotated assignment AST `object` for type-annotated variable assignments.
+        (AI generated docstring)
 
-        Simply use:
-        ```
-        astToolkit.And.join([ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')])
-        ```
+        The `ast.AnnAssign` `object` represents variable assignments with type annotations,
+        such as `name: int = 42` or `config: dict[str, Any]`. This is the preferred
+        form for annotated assignments in modern Python code.
 
-        Both produce the same AST structure but the join() method eliminates the manual construction.
-        Handles single expressions and empty sequences gracefully.
+        Parameters:
+            target: The assignment target, which must be a simple name, attribute access,
+                or subscript operation that can receive the annotated assignment.
+            annotation: The type annotation expression specifying the variable's expected type.
+            value (None): Optional initial value expression for the annotated variable.
+
+        Returns
+        -------
+        annotatedAssignment: ast.AnnAssign
+            AST `object` representing a type-annotated variable assignment.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['arg'] = Make.Expr(Make.Constant(
+        """
+        Function parameter AST object representing individual arguments (**arg**ument) in function signatures.
+        (AI generated docstring)
+
+        The `ast.arg` object represents a single parameter in function definitions,
+        including positional, keyword-only, and special parameters like `*args` and `**kwargs`.
+        Contains the parameter name and optional type annotation.
+
+        Parameters:
+            Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo: Parameter name as string. This corresponds to `ast.arg.arg`.
+            annotation (None): Optional type annotation expression for the parameter.
+
+        Returns:
+            argumentDefinition: ast.arg
+            AST object representing a single function parameter with optional typing.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['arguments'] = Make.Expr(Make.Constant(
+        """
+        Function signature AST object containing all parameter specifications (**arg**ument**s**).
+        (AI generated docstring)
+
+        The `ast.arguments` object represents the complete parameter specification
+        for function definitions, organizing different parameter types including
+        positional-only, regular, keyword-only, variadic, and default values.
+
+        Parameters:
+            posonlyargs ([]): List of positional-only parameters (before /).
+            list_arg ([]): List of regular positional parameters. This corresponds to `ast.arguments.args`.
+            vararg (None): Single parameter for *args variadic arguments.
+            kwonlyargs ([]): List of keyword-only parameters (after * or *args).
+            kw_defaults ([None]): Default values for keyword-only parameters; None indicates required.
+            kwarg (None): Single parameter for **kwargs keyword arguments.
+            defaults ([]): Default values for regular positional parameters.
+
+        Returns:
+            functionSignature: ast.arguments
+            AST object representing complete function parameter specification.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Assert'] = Make.Expr(Make.Constant(
+        """Create an `ast.Assert` node for assertion statements.
+
+        The `Assert` node represents an `assert` statement that evaluates a test
+        expression and optionally raises `AssertionError` with a message if the
+        test fails. This is primarily used for debugging and testing purposes.
+
+        Parameters
+            test: Expression to evaluate for truthiness
+            msg (None): Optional expression for the assertion error message
+
+        Returns
+            nodeAssert: The constructed assertion node
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['AST'] = Make.Expr(Make.Constant(
+        """
+        Base AST node object representing the abstract syntax tree foundation.
+        (AI generated docstring)
+
+        The `ast.AST` object serves as the base class for all AST node types in Python's
+        abstract syntax tree. This method creates a minimal AST instance, though in practice
+        you will typically use specific node type factories like `Make.Name()`, `Make.Call()`,
+        etc.
+
+        Most users seeking AST node creation should use the specific factory methods for
+        concrete node types rather than this base AST constructor.
+
+        Returns:
+            baseNode: The fundamental AST object from which all other nodes inherit.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Assign'] = Make.Expr(Make.Constant(
+        """
+        Assignment AST `object` for variable assignments without type annotations.
+        (AI generated docstring)
+
+        The `ast.Assign` `object` represents traditional variable assignments like
+        `x = 5`, `a = b = c`, or `items[0] = newValue`. It supports multiple assignment
+        targets and complex assignment patterns.
+
+        Parameters:
+            targets: Sequence of assignment targets that will receive the value.
+                Multiple targets enable chained assignments like `a = b = value`.
+            value: The expression whose result will be assigned to all targets.
+
+        Returns
+        -------
+        assignment: ast.Assign
+            AST `object` representing a variable assignment operation.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['AsyncFor'] = Make.Expr(Make.Constant(
+        """
+        Asynchronous for loop AST `object` for iterating over async iterables.
+        (AI generated docstring)
+
+        The `ast.AsyncFor` `object` represents `async for` loops that iterate over
+        asynchronous iterators and async generators. These loops can only exist
+        within async functions and automatically handle await operations.
+
+        Parameters:
+            target: The loop variable that receives each item from the async iterable.
+            iter: The asynchronous iterable expression being iterated over.
+            body: Sequence of statements executed for each iteration of the async loop.
+            orElse ([]): Optional statements executed when the loop completes normally
+                without encountering a break statement. This corresponds to `ast.AsyncFor.orelse`.
+
+        Returns
+        -------
+        asyncForLoop: ast.AsyncFor
+            AST `object` representing an asynchronous for loop construct.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['AsyncFunctionDef'] = Make.Expr(Make.Constant(
+        """
+        Asynchronous function definition AST object for `async def` declarations.
+        (AI generated docstring)
+
+        The `ast.AsyncFunctionDef` object represents asynchronous function definitions
+        using the `async def` syntax. Supports coroutines, async generators, and
+        other asynchronous operations with await expressions.
+
+        Parameters:
+            name: Function name as string identifier.
+            argumentSpecification (ast.arguments()): Function parameter specification. This corresponds to `ast.AsyncFunctionDef.args`.
+            body ([]): List of statements forming the function body.
+            decorator_list ([]): List of decorator expressions applied to function.
+            returns (None): Optional return type annotation expression.
+            type_params ([]): List of type parameters for generic functions (Python 3.12+).
+
+        Returns:
+            asyncFunction: ast.AsyncFunctionDef
+            AST object representing an asynchronous function definition.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['AsyncWith'] = Make.Expr(Make.Constant(
+        """
+        Asynchronous context manager AST `object` for async resource management.
+        (AI generated docstring)
+
+        The `ast.AsyncWith` `object` represents `async with` statements that manage
+        asynchronous context managers. These ensure proper setup and cleanup of
+        async resources like database connections or file handles.
+
+        Parameters:
+            items: Sequence of context manager items, each specifying an async context
+                manager and optional variable binding for the managed resource.
+            body: Sequence of statements executed within the async context manager scope.
+
+        Returns
+        -------
+        asyncWithStatement: ast.AsyncWith
+            AST `object` representing an asynchronous context manager statement.
         """
 ))
 
@@ -121,22 +388,38 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Attribute'] = Make.Expr(
         Parameters:
             value: The base expression before the first dot, typically an `ast.Name` or another expression.
             attribute: One or more attribute names to chain together with dot notation.
-            context (ast.Load()): The expression context determining how the attribute is used.
+            context (`ast.Load()`): Are you loading from, storing to, or deleting the `ast.Attribute`?
+                Values may be `ast.Load()`, `ast.Store()`, or `ast.Del()`, meaning 'Delete' the `ast.Attribute`.
+                `context` corresponds to `ast.Attribute.ctx`.
 
         Returns
         -------
         attributeAccess: ast.Attribute
             AST `object` representing attribute access with potential chaining.
+        """
+))
 
-        Examples
-        --------
-        ```python
-        # Makes AST equivalent to: `module.function`
-        simpleAttribute = Make.Attribute(Make.Name('module'), 'function')
+docstrings[dictionaryIdentifiers[identifierToolClass]]['AugAssign'] = Make.Expr(Make.Constant(
+        """
+        Augmented assignment AST `object` for compound assignment operations.
+        (AI generated docstring)
 
-        # Makes AST equivalent to: `self.config.database.host`
-        chainedAttribute = Make.Attribute(Make.Name('self'), 'config', 'database', 'host')
-        ```
+        The `ast.AugAssign` `object` represents augmented assignment operators like
+        `+=`, `-=`, `*=`, `/=`, and others that combine an operation with assignment.
+        These provide concise syntax for modifying variables in-place.
+
+        Parameters:
+            target: The assignment target being modified, which must be a name,
+                attribute access, or subscript that supports in-place modification.
+            op: The binary operator defining the augmentation operation, such as
+                `ast.Add()` for `+=` or `ast.Mult()` for `*=`.
+            value: The expression whose result will be combined with the target
+                using the specified operator.
+
+        Returns
+        -------
+        augmentedAssignment: ast.AugAssign
+            AST `object` representing a compound assignment operation.
         """
 ))
 
@@ -180,6 +463,25 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['BinOp'] = Make.Expr(Make
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['boolop'] = Make.Expr(Make.Constant(
+        """
+        Base boolean operator abstract class for logical operations.
+        (AI generated docstring)
+
+        The `ast.boolop` class serves as the abstract base for boolean operators like
+        `ast.And` and `ast.Or`. This method creates a minimal boolop instance, though
+        in practice you will typically use specific boolean operator factories like
+        `Make.And()`, `Make.Or()`, or their join methods.
+
+        Most users seeking boolean operation creation should use the specific operator
+        classes or `Make.BoolOp()` rather than this abstract base constructor.
+
+        Returns:
+            baseBooleanOperator: The fundamental boolean operator object from which
+                concrete operators inherit.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['BoolOp'] = Make.Expr(Make.Constant(
         """
         Boolean operation AST `object` for logical operations with multiple operands.
@@ -197,6 +499,17 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['BoolOp'] = Make.Expr(Mak
         -------
         booleanOperation: ast.BoolOp
             AST `object` representing a boolean operation with multiple operands.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Break'] = Make.Expr(Make.Constant(
+        """Create an `ast.Break` node for break statements.
+
+        The `Break` node represents a `break` statement that terminates the
+        nearest enclosing loop. Can only be used within loop constructs.
+
+        Returns
+            nodeBreak: The constructed break statement node
         """
 ))
 
@@ -218,6 +531,41 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Call'] = Make.Expr(Make.
         -------
         functionCall: ast.Call
             AST `object` representing a function call with specified arguments.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['ClassDef'] = Make.Expr(Make.Constant(
+        """
+        Class definition AST object for `class` declarations with inheritance and metadata.
+        (AI generated docstring)
+
+        The `ast.ClassDef` object represents class definitions including base classes,
+        metaclass specifications, decorators, and the class body. Supports both
+        traditional and modern Python class features.
+
+        Parameters:
+            name: Class name as string identifier.
+            bases ([]): List of base class expressions for inheritance.
+            list_keyword ([]): List of keyword arguments including metaclass specifications. This corresponds to `ast.ClassDef.keywords`.
+            body ([]): List of statements forming the class body.
+            decorator_list ([]): List of decorator expressions applied to class.
+            type_params ([]): List of type parameters for generic classes (Python 3.12+).
+
+        Returns:
+            classDefinition: ast.ClassDef
+            AST object representing a complete class definition with metadata.
+
+        Examples:
+            # Creates AST equivalent to: class Vehicle: pass
+            simpleClass = Make.ClassDef('Vehicle', body=[Make.Pass()])
+
+            # Creates AST equivalent to: class Bicycle(Vehicle, metaclass=ABCMeta): pass
+            inheritedClass = Make.ClassDef(
+                'Bicycle',
+                bases=[Make.Name('Vehicle')],
+                list_keyword=[Make.keyword('metaclass', Make.Name('ABCMeta'))],
+                body=[Make.Pass()]
+            )
         """
 ))
 
@@ -282,6 +630,27 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Compare'] = Make.Expr(Ma
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['comprehension'] = Make.Expr(Make.Constant(
+        """
+        Comprehension clause AST object for `for` clauses in list/set/dict comprehensions.
+        (AI generated docstring)
+
+        The `ast.comprehension` object represents individual `for` clauses within
+        comprehension expressions. Contains the iteration target, source, conditional
+        filters, and async specification for generator expressions.
+
+        Parameters:
+            target: Variable expression receiving each iteration value.
+            iter: Iterable expression being traversed.
+            ifs: List of conditional expressions filtering iteration results.
+            is_async: Integer flag (0 or 1) indicating async comprehension.
+
+        Returns:
+            comprehensionClause: ast.comprehension
+            AST object representing a single for clause in comprehensions.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['Constant'] = Make.Expr(Make.Constant(
         """
         Constant value AST `object` for literal values in Python code.
@@ -299,6 +668,51 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Constant'] = Make.Expr(M
         -------
         constantValue: ast.Constant
             AST `object` representing a literal constant value.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Continue'] = Make.Expr(Make.Constant(
+        """Create an `ast.Continue` node for continue statements.
+
+        The `Continue` node represents a `continue` statement that skips the
+        remainder of the current iteration and continues with the next iteration
+        of the nearest enclosing loop.
+
+        Returns
+            nodeContinue: The constructed continue statement node
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Del'] = Make.Expr(Make.Constant(
+        """
+        Delete context for removing expressions from memory.
+        (AI generated docstring)
+
+        The `ast.Del` context indicates expressions are deletion targets in `del`
+        statements. Note that `ast.Del` is the expression context, not the `del`
+        keyword itself - `ast.Delete` represents the `del` statement.
+
+        Returns:
+            deleteContext: ast.Del
+            AST context object indicating deletion operations on expressions.
+
+        Examples:
+            # Creates AST equivalent to deletion: del bicycle.wheel
+            wheelDeletion = Make.Attribute(Make.Name('bicycle'), 'wheel', Make.Del())
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Delete'] = Make.Expr(Make.Constant(
+        """Create an `ast.Delete` node for deletion statements.
+
+        The `Delete` node represents a `del` statement that removes references
+        to objects. Can delete variables, attributes, subscripts, or slices.
+
+        Parameters
+            targets: List of expressions identifying what to delete
+
+        Returns
+            nodeDelete: The constructed deletion statement node
         """
 ))
 
@@ -373,6 +787,41 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Eq'] = Make.Expr(Make.Co
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['excepthandler'] = Make.Expr(Make.Constant(
+        """
+        Exception handler abstract base class for try-except constructs.
+        (AI generated docstring)
+
+        The `ast.excepthandler` abstract base class represents exception handling
+        clauses in try-except statements. This is the foundation for `ast.ExceptHandler`
+        which implements the actual exception catching logic.
+
+        Returns:
+            exceptionHandler: ast.excepthandler
+            Abstract AST object for exception handling clause classification.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['ExceptHandler'] = Make.Expr(Make.Constant(
+        """
+        Exception handler clause for try-except statements.
+        (AI generated docstring)
+
+        The `ast.ExceptHandler` object represents individual `except` clauses that
+        catch and handle specific exceptions. It defines the exception type to catch,
+        optional variable binding, and statements to execute when matched.
+
+        Parameters:
+            type (None): Exception type expression to catch; None catches all exceptions.
+            name (None): Variable name string to bind caught exception; None for no binding.
+            body ([]): List of statements to execute when exception is caught.
+
+        Returns:
+            exceptionHandler: ast.ExceptHandler
+            AST object representing an except clause in try-except statements.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['expr'] = Make.Expr(Make.Constant(
         """
         Abstract ***expr***ession `object` for base expression operations.
@@ -399,6 +848,74 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['expr'] = Make.Expr(Make.
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Expr'] = Make.Expr(Make.Constant(
+        """Create an `ast.Expr` node for expression statements.
+
+        The `Expr` node represents a statement that consists of a single expression
+        whose value is discarded. This is used for expressions evaluated for their
+        side effects rather than their return value.
+
+        Parameters
+            value: Expression to evaluate as a statement
+
+        Returns
+            nodeExpr: The constructed expression statement node
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['expr_context'] = Make.Expr(Make.Constant(
+        """
+        Expression context abstract base class for expression usage patterns.
+        (AI generated docstring)
+
+        The `ast.expr_context` abstract base class represents how expressions are used
+        in code: whether they load values, store values, or delete them. This is the
+        foundation for `ast.Load`, `ast.Store`, and `ast.Del` contexts.
+
+        Returns:
+            expressionContext: ast.expr_context
+            Abstract AST context object for expression usage classification.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Expression'] = Make.Expr(Make.Constant(
+        """Create an `ast.Expression` node for expression-only modules.
+
+        The `Expression` node represents a module that contains only a single
+        expression. This is used in contexts where only an expression is expected,
+        such as with `eval()` or interactive mode single expressions.
+
+        Parameters
+            body: The single expression that forms the module body
+
+        Returns
+            nodeExpression: The constructed expression module node
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['For'] = Make.Expr(Make.Constant(
+        """
+        For loop AST `object` for iterating over iterable expressions.
+        (AI generated docstring)
+
+        The `ast.For` `object` represents traditional `for` loops that iterate over
+        sequences, generators, or any iterable object. It supports optional else
+        clauses that execute when the loop completes normally.
+
+        Parameters:
+            target: The loop variable that receives each item from the iterable expression.
+            iter: The iterable expression being iterated over, such as a list, range, or generator.
+            body: Sequence of statements executed for each iteration of the loop.
+            orElse ([]): Optional statements executed when the loop completes normally
+                without encountering a break statement. This corresponds to `ast.For.orelse`.
+
+        Returns
+        -------
+        forLoop: ast.For
+            AST `object` representing a for loop iteration construct.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['FormattedValue'] = Make.Expr(Make.Constant(
         """
         Formatted value AST `object` for f-string interpolation components.
@@ -417,23 +934,60 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['FormattedValue'] = Make.
         -------
         formattedValue: ast.FormattedValue
             AST `object` representing a formatted value within an f-string expression.
+        """
+))
 
-        Examples
-        --------
-        ```python
-        # Makes component for f-string: f"Value: {variable}"
-        simpleFormatted = Make.FormattedValue(
-            value=Make.Name('variable'),
-            conversion=0
-        )
+docstrings[dictionaryIdentifiers[identifierToolClass]]['FunctionDef'] = Make.Expr(Make.Constant(
+        """
+        Function definition AST object for standard `def` declarations with typing support.
+        (AI generated docstring)
 
-        # Makes component for f-string: f"Debug: {obj!r:.2f}"
-        complexFormatted = Make.FormattedValue(
-            value=Make.Name('obj'),
-            conversion=114,  # 'r' for repr()
-            format_spec=Make.Constant('.2f')
-        )
-        ```
+        The `ast.FunctionDef` object represents standard function definitions including
+        parameters, return annotations, decorators, and function body. Supports modern
+        Python typing features and generic type parameters.
+
+        Parameters:
+            name: Function name as string identifier.
+            argumentSpecification (ast.arguments()): Function parameter specification. This corresponds to `ast.FunctionDef.args`.
+            body ([]): List of statements forming the function body.
+            decorator_list ([]): List of decorator expressions applied to function.
+            returns (None): Optional return type annotation expression.
+            type_params ([]): List of type parameters for generic functions (Python 3.12+).
+
+        Returns:
+            functionDefinition: ast.FunctionDef
+            AST object representing a complete function definition with metadata.
+
+        Examples:
+            # Creates AST equivalent to: def cook(): pass
+            simpleFunction = Make.FunctionDef('cook', body=[Make.Pass()])
+
+            # Creates AST equivalent to: def bake(recipe: str, temperature: int = 350) -> bool: return True
+            typedFunction = Make.FunctionDef(
+                'bake',
+                Make.arguments(
+                    list_arg=[Make.arg('recipe', Make.Name('str')), Make.arg('temperature', Make.Name('int'))],
+                    defaults=[Make.Constant(350)]
+                ),
+                [Make.Return(Make.Constant(True))],
+                returns=Make.Name('bool')
+            )
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['FunctionType'] = Make.Expr(Make.Constant(
+        """Create an `ast.FunctionType` node for function type annotations.
+
+        The `FunctionType` node represents function type annotations of the form
+        `(arg_types) -> return_type`. This is used in type annotations and
+        variable annotations for callable types.
+
+        Parameters
+            argtypes: List of expressions representing argument types
+            returns: Expression representing the return type
+
+        Returns
+            nodeFunctionType: The constructed function type annotation node
         """
 ))
 
@@ -471,6 +1025,21 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['GeneratorExp'] = Make.Ex
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Global'] = Make.Expr(Make.Constant(
+        """Create an `ast.Global` node for global declarations.
+
+        The `Global` node represents a `global` statement that declares variables
+        as referring to global scope rather than local scope. This affects variable
+        lookup and assignment within the current function.
+
+        Parameters
+            names: List of variable names to declare as global
+
+        Returns
+            nodeGlobal: The constructed global declaration node
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['Gt'] = Make.Expr(Make.Constant(
         """
         'Gt', meaning 'Greater than', is the `object` representation of Python operator '`>`'.
@@ -498,6 +1067,60 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['GtE'] = Make.Expr(Make.C
         greaterThanOrEqualOperator:
             AST `object` representing the '`>=`' greater-than-or-equal comparison operator
             for use in `ast.Compare`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['If'] = Make.Expr(Make.Constant(
+        """
+        Conditional statement AST `object` for branching execution paths.
+        (AI generated docstring)
+
+        The `ast.If` `object` represents `if` statements that conditionally execute
+        code blocks based on boolean test expressions. It supports optional else
+        clauses for alternative execution paths.
+
+        Parameters:
+            test: The boolean expression that determines which branch to execute.
+            body: Sequence of statements executed when the test expression evaluates to True.
+            orElse ([]): Optional statements executed when the test expression evaluates
+                to False. This corresponds to `ast.If.orelse`.
+
+        Returns
+        -------
+        conditionalStatement: ast.If
+            AST `object` representing a conditional branching statement.
+
+        Examples
+        --------
+        ```python
+        # Creates AST for: if userLoggedIn:
+        #                     showDashboard()
+        simpleIf = Make.If(
+            Make.Name('userLoggedIn'),
+            [Make.Expr(Make.Call(Make.Name('showDashboard')))]
+        )
+
+        # Creates AST for: if temperature > 100:
+        #                     activateCooling()
+        #                 else:
+        #                     maintainTemperature()
+        ifElse = Make.If(
+            Make.Compare(Make.Name('temperature'), [Make.Gt()], [Make.Constant(100)]),
+            [Make.Expr(Make.Call(Make.Name('activateCooling')))],
+            [Make.Expr(Make.Call(Make.Name('maintainTemperature')))]
+        )
+
+        # Creates AST for nested if-elif-else chains
+        ifElifElse = Make.If(
+            Make.Compare(Make.Name('score'), [Make.GtE()], [Make.Constant(90)]),
+            [Make.Assign([Make.Name('grade')], Make.Constant('A'))],
+            [Make.If(
+                Make.Compare(Make.Name('score'), [Make.GtE()], [Make.Constant(80)]),
+                [Make.Assign([Make.Name('grade')], Make.Constant('B'))],
+                [Make.Assign([Make.Name('grade')], Make.Constant('C'))]
+            )]
+        )
+        ```
         """
 ))
 
@@ -538,6 +1161,68 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['IfExp'] = Make.Expr(Make
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Import'] = Make.Expr(Make.Constant(
+        """
+        Import statement AST `object` for absolute module imports.
+        (AI generated docstring)
+
+        The `ast.Import` `object` represents `import` statements that bring modules
+        into the current namespace. It supports optional aliasing to use alternative
+        names for imported modules.
+
+        Parameters:
+            dotModule: The module name using dot notation for nested modules, such as
+                'os.path' or 'collections.abc'. This corresponds to `ast.alias.name`.
+            asName (None): Optional alias name to use instead of the original module name.
+                This corresponds to `ast.alias.asname`.
+
+        Returns
+        -------
+        importStatement: ast.Import
+            AST `object` representing an absolute module import statement.
+
+        Examples
+        --------
+        ```python
+        # Creates AST for: import os
+        simpleImport = Make.Import('os')
+
+        # Creates AST for: import numpy as np
+        aliasedImport = Make.Import('numpy', 'np')
+
+        # Creates AST for: import collections.abc
+        nestedImport = Make.Import('collections.abc')
+
+        # Creates AST for: import xml.etree.ElementTree as ET
+        nestedAliasedImport = Make.Import('xml.etree.ElementTree', 'ET')
+        ```
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['ImportFrom'] = Make.Expr(Make.Constant(
+        """
+        From-import statement AST `object` for selective module imports.
+        (AI generated docstring)
+
+        The `ast.ImportFrom` `object` represents `from ... import` statements that
+        selectively import specific names from modules. It supports relative imports
+        and multiple import aliases.
+
+        Parameters:
+            dotModule: The source module name using dot notation, or None for relative
+                imports that rely solely on the level parameter.
+            list_alias: List of alias objects specifying which names to import and
+                their optional aliases. This corresponds to `ast.ImportFrom.names`.
+            level (0): Import level controlling relative vs absolute imports. Zero indicates
+                absolute import, positive values indicate relative import depth.
+
+        Returns
+        -------
+        fromImportStatement: ast.ImportFrom
+            AST `object` representing a selective module import statement.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['In'] = Make.Expr(Make.Constant(
         """
         'In', meaning 'is ***In***cluded in' or 'has membership In', is the `object` representation of Python keyword '`in`'.
@@ -551,6 +1236,21 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['In'] = Make.Expr(Make.Co
         membershipOperator:
             AST `object` representing the keyword '`in`' membership test operator for use
             in `ast.Compare`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Interactive'] = Make.Expr(Make.Constant(
+        """Create an `ast.Interactive` node for interactive mode modules.
+
+        The `Interactive` node represents a module intended for interactive
+        execution, such as in the Python REPL. Unlike regular modules, interactive
+        modules can contain multiple statements that are executed sequentially.
+
+        Parameters
+            body: List of statements forming the interactive module body
+
+        Returns
+            nodeInteractive: The constructed interactive module node
         """
 ))
 
@@ -658,26 +1358,32 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['JoinedStr'] = Make.Expr(
         -------
         joinedString: ast.JoinedStr
             AST `object` representing an f-string literal with interpolated values.
+        """
+))
 
-        Examples
-        --------
-        ```python
-        # Creates AST equivalent to: f"Hello, {name}!"
-        greeting = Make.JoinedStr([
-            Make.Constant("Hello, "),
-            Make.FormattedValue(Make.Name('name'), 0),
-            Make.Constant("!")
-        ])
+docstrings[dictionaryIdentifiers[identifierToolClass]]['keyword'] = Make.Expr(Make.Constant(
+        """
+        Keyword argument AST object for named parameters in function calls.
+        (AI generated docstring)
 
-        # Creates AST equivalent to: f"Result: {value:.2f} ({status})"
-        report = Make.JoinedStr([
-            Make.Constant("Result: "),
-            Make.FormattedValue(Make.Name('value'), 0, Make.Constant('.2f')),
-            Make.Constant(" ("),
-            Make.FormattedValue(Make.Name('status'), 0),
-            Make.Constant(")")
-        ])
-        ```
+        The `ast.keyword` object represents keyword arguments passed to function calls
+        or class constructors. Contains the parameter name and corresponding value
+        expression, including support for **kwargs unpacking.
+
+        Parameters:
+            Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo: Parameter name string; None for **kwargs unpacking. This corresponds to `ast.keyword.arg`.
+            value: Expression providing the argument value.
+
+        Returns:
+            keywordArgument: ast.keyword
+            AST object representing a named argument in function calls.
+
+        Examples:
+            # Creates AST equivalent to: temperature=350
+            namedArgument = Make.keyword('temperature', Make.Constant(350))
+
+            # Creates AST equivalent to: **settings (kwargs unpacking)
+            unpackedArguments = Make.keyword(None, Make.Name('settings'))
         """
 ))
 
@@ -738,6 +1444,21 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['ListComp'] = Make.Expr(M
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Load'] = Make.Expr(Make.Constant(
+        """
+        Load context for reading expression values.
+        (AI generated docstring)
+
+        The `ast.Load` context indicates expressions are being read or evaluated
+        to retrieve their values. This is the default context for most expressions
+        like `bicycle.wheel` when accessing the wheel attribute value.
+
+        Returns:
+            loadContext: ast.Load
+            AST context object indicating value retrieval operations.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['Lt'] = Make.Expr(Make.Constant(
         """
         'Lt', meaning 'is Less than', is the `object` representation of Python comparison operator '`<`'.
@@ -765,6 +1486,257 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['LtE'] = Make.Expr(Make.C
         lessThanOrEqualOperator:
             AST `object` representing the '`<=`' less-than-or-equal comparison operator
             for use in `ast.Compare`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Match'] = Make.Expr(Make.Constant(
+        """
+        Match statement AST object for pattern matching with multiple cases.
+        (AI generated docstring)
+
+        The `ast.Match` object represents match statements that perform pattern matching
+        against a subject expression. Contains the value being matched and a list of
+        case clauses with their patterns and corresponding actions.
+
+        Parameters:
+            subject: Expression being matched against the case patterns.
+            cases ([]): List of match_case objects defining pattern-action pairs.
+
+        Returns:
+            matchStatement: ast.Match
+            AST object representing a complete pattern matching statement.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['match_case'] = Make.Expr(Make.Constant(
+        """
+        Match case clause AST object for individual cases in `match` statements (**match** **case**).
+        (AI generated docstring)
+
+        The `ast.match_case` object represents individual case clauses within match
+        statements. Contains the pattern to match, optional guard condition, and
+        statements to execute when the pattern matches successfully.
+
+        Parameters:
+            pattern: Pattern expression defining what values match this case.
+            guard (None): Optional conditional expression for additional filtering.
+            body ([]): List of statements to execute when pattern matches.
+
+        Returns:
+            matchCase: ast.match_case
+            AST object representing a single case clause in match statements.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchAs'] = Make.Expr(Make.Constant(
+        """Create an `ast.MatchAs` node representing a capture pattern or wildcard.
+
+        (AI generated docstring)
+
+        The `ast.MatchAs` node represents match patterns that capture values or
+        serve as wildcards. This includes bare name patterns like `bicycle` that
+        capture the matched value, "as" patterns like `Point(x, y) as location`
+        that match a pattern and capture the result, and the wildcard pattern `_`.
+
+        Parameters:
+            pattern: Optional pattern to match against. When `None`, creates a
+                capture pattern (bare name) if `name` is provided, or wildcard
+                if both are `None`.
+            name: Optional identifier to bind the matched value. When `None` and
+                pattern is also `None`, creates the wildcard pattern.
+
+        Returns:
+            matchAsNode: An `ast.MatchAs` node with the specified pattern and name.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchClass'] = Make.Expr(Make.Constant(
+        """Create an `ast.MatchClass` node for matching class instances.
+
+        (AI generated docstring)
+
+        The `ast.MatchClass` node represents patterns that match instances of a
+        specific class, checking both the class type and extracting values from
+        the instance's attributes. This enables structural pattern matching
+        against objects.
+
+        Parameters:
+            cls: Expression identifying the class to match against, typically a
+                `Make.Name` or `Make.Attribute` node.
+            patterns ([]): Sequence of pattern nodes for positional matching
+                against class-defined attributes.
+            kwd_attrs ([]): List of attribute names for keyword-style matching.
+                This corresponds to `ast.MatchClass.kwd_attrs`.
+            kwd_patterns ([]): Sequence of pattern nodes corresponding to the
+                keyword attributes. This corresponds to `ast.MatchClass.kwd_patterns`.
+
+        Returns:
+            matchClassNode: An `ast.MatchClass` node configured for the specified
+                class and patterns.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchMapping'] = Make.Expr(Make.Constant(
+        """Create an `ast.MatchMapping` node for matching dictionary-like objects.
+
+        (AI generated docstring)
+
+        The `ast.MatchMapping` node represents patterns that match mapping objects
+        like dictionaries, checking for specific keys and extracting their values.
+        The pattern can also capture remaining unmapped keys.
+
+        Parameters:
+            keys ([]): Sequence of expression nodes representing the keys to match.
+                Each key expression is evaluated and must be present in the mapping.
+            patterns ([]): Sequence of pattern nodes corresponding to the values
+                associated with each key.
+            rest: Optional identifier name to capture remaining mapping elements
+                not matched by the specified keys.
+
+        Returns:
+            matchMappingNode: An `ast.MatchMapping` node for the specified key-value
+                patterns and optional rest capture.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchOr'] = Make.Expr(Make.Constant(
+        """Create an `ast.MatchOr` node for alternative pattern matching.
+
+        (AI generated docstring)
+
+        The `ast.MatchOr` node represents or-patterns that match if any of the
+        alternative subpatterns succeed. The pattern tries each alternative in
+        sequence until one matches or all fail.
+
+        Parameters:
+            patterns ([]): Sequence of alternative pattern nodes. The match
+                succeeds if any subpattern matches the subject.
+
+        Returns:
+            matchOrNode: An `ast.MatchOr` node containing the alternative patterns.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchSequence'] = Make.Expr(Make.Constant(
+        """Create an `ast.MatchSequence` node for matching sequences.
+
+        (AI generated docstring)
+
+        The `ast.MatchSequence` node represents patterns that match sequence objects
+        like lists and tuples, checking both length and element patterns. Supports
+        both fixed-length and variable-length sequence matching.
+
+        Parameters:
+            patterns ([]): Sequence of pattern nodes to match against sequence
+                elements. If any pattern is `MatchStar`, enables variable-length
+                matching; otherwise requires exact length match.
+
+        Returns:
+            matchSequenceNode: An `ast.MatchSequence` node for the specified element
+                patterns.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchSingleton'] = Make.Expr(Make.Constant(
+        """Create an `ast.MatchSingleton` node for matching singleton values.
+
+        (AI generated docstring)
+
+        The `ast.MatchSingleton` node represents patterns that match singleton
+        constants by identity rather than equality. This pattern succeeds only
+        if the match subject is the exact same object as the specified constant.
+
+        Parameters:
+            value: The singleton constant to match against. Must be `None`, `True`,
+                or `False`. Matching uses identity comparison (`is`) rather than
+                equality comparison (`==`).
+
+        Returns:
+            matchSingletonNode: An `ast.MatchSingleton` node for the specified
+                singleton value.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchStar'] = Make.Expr(Make.Constant(
+        """Create an `ast.MatchStar` node for capturing sequence remainder.
+
+        (AI generated docstring)
+
+        The `ast.MatchStar` node represents star patterns that capture remaining
+        elements in variable-length sequence patterns. This enables flexible
+        sequence matching where some elements are specifically matched and others
+        are collected.
+
+        Parameters:
+            name: Optional identifier to bind the remaining sequence elements.
+                When `None`, the remaining elements are matched but not captured.
+
+        Returns:
+            matchStarNode: An `ast.MatchStar` node with the specified capture name.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchValue'] = Make.Expr(Make.Constant(
+        """Create an `ast.MatchValue` node for matching literal values.
+
+        (AI generated docstring)
+
+        The `ast.MatchValue` node represents patterns that match by equality
+        comparison against a literal value or expression. The pattern succeeds
+        if the match subject equals the evaluated value expression.
+
+        Parameters:
+            value: Expression node representing the value to match against.
+                Typically a constant, name, or attribute access. The expression
+                is evaluated and compared using equality (`==`).
+
+        Returns:
+            matchValueNode: An `ast.MatchValue` node for the specified value
+                expression.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['mod'] = Make.Expr(Make.Constant(
+        """Create an appropriate `ast.mod` node based on the body content.
+
+        The `mod` method creates the appropriate module type node based on the
+        provided body. This is a convenience method that determines whether to
+        create a `Module`, `Expression`, or `Interactive` node.
+
+        Parameters
+            body: Either a list of statements or a single expression
+
+        Returns
+            nodeMod: The constructed module node of appropriate type
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Module'] = Make.Expr(Make.Constant(
+        """
+        Module AST object representing complete Python modules with statements and type ignores.
+        (AI generated docstring)
+
+        The `ast.Module` object represents entire Python modules as parsed from source
+        files. Contains all top-level statements and tracks type ignore comments for
+        static analysis tools and type checkers.
+
+        Parameters:
+            body: List of statements forming the module content.
+            type_ignores ([]): List of TypeIgnore objects for `# type: ignore` comments.
+
+        Returns:
+            moduleDefinition: ast.Module
+            AST object representing a complete Python module structure.
+
+        Examples:
+            # Creates AST equivalent to: x = 42
+            simpleModule = Make.Module([Make.Assign([Make.Name('x')], Make.Constant(42))])
+
+            # Creates AST equivalent to module with function and assignment
+            moduleWithFunction = Make.Module([
+                Make.FunctionDef('calculate', body=[Make.Return(Make.Constant(100))]),
+                Make.Assign([Make.Name('result')], Make.Call(Make.Name('calculate'), []))
+            ])
         """
 ))
 
@@ -819,6 +1791,21 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['NamedExpr'] = Make.Expr(
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Nonlocal'] = Make.Expr(Make.Constant(
+        """Create an `ast.Nonlocal` node for nonlocal declarations.
+
+        The `Nonlocal` node represents a `nonlocal` statement that declares
+        variables as referring to the nearest enclosing scope that is not global.
+        This is used in nested functions to modify variables from outer scopes.
+
+        Parameters
+            names: List of variable names to declare as nonlocal
+
+        Returns
+            nodeNonlocal: The constructed nonlocal declaration node
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['Not'] = Make.Expr(Make.Constant(
         """
         Logical negation operator representing Python keyword '`not`'.
@@ -865,6 +1852,101 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['NotIn'] = Make.Expr(Make
         negativeMembershipOperator:
             AST `object` representing the keywords '`not in`' negative membership test operator
             for use in `ast.Compare`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['operator'] = Make.Expr(Make.Constant(
+        """Create an `ast.operator` node for arithmetic and bitwise operations.
+
+        The `operator` method creates operator nodes used in binary operations,
+        unary operations, and comparison operations. These represent the specific
+        operation to be performed.
+
+        Parameters
+            op_type: The operator class to instantiate
+
+        Returns
+            nodeOperator: The constructed operator node
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['ParamSpec'] = Make.Expr(Make.Constant(
+        """
+        Parameter specification type parameter for generic callable types (**Param**eter **Spec**ification).
+        (AI generated docstring)
+
+        The `ast.ParamSpec` object represents parameter specification type parameters
+        used in generic callable types. Captures both positional and keyword argument
+        signatures for type-safe function composition and higher-order functions.
+
+        Parameters:
+            name: Type parameter name as string identifier.
+            default_value (None): Optional default type expression (Python 3.13+).
+
+        Returns:
+            parameterSpecification: ast.ParamSpec
+            AST object representing a parameter specification type parameter.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Pass'] = Make.Expr(Make.Constant(
+        """Create an `ast.Pass` node for pass statements.
+
+        The `Pass` node represents a `pass` statement, which is a null operation
+        that does nothing when executed. It serves as syntactic placeholder where
+        a statement is required but no action is needed.
+
+        Returns
+            nodePass: The constructed pass statement node
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['pattern'] = Make.Expr(Make.Constant(
+        """Create a base `ast.pattern` node.
+
+        (AI generated docstring)
+
+        Creates a generic `ast.pattern` node that serves as the abstract base
+        for all pattern types in match statements. This method is typically
+        used for creating pattern node instances programmatically when the
+        specific pattern type is determined at runtime.
+
+        Returns:
+            patternNode: A base `ast.pattern` node with the specified attributes.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Raise'] = Make.Expr(Make.Constant(
+        """Create an `ast.Raise` node for raise statements.
+
+        The `Raise` node represents a `raise` statement that raises an exception.
+        Can re-raise the current exception, raise a new exception, or raise with
+        an explicit cause chain.
+
+        Parameters
+            exc (None): Optional expression for the exception to raise
+            cause (None): Optional expression for the exception cause
+
+        Returns
+            nodeRaise: The constructed raise statement node
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Return'] = Make.Expr(Make.Constant(
+        """
+        Return statement AST object for function value returns and early exits.
+        (AI generated docstring)
+
+        The `ast.Return` object represents return statements that exit functions and
+        optionally provide return values. Used for both value-returning functions
+        and procedures that return None implicitly or explicitly.
+
+        Parameters:
+            value (None): Optional expression providing the return value; None for empty return.
+
+        Returns:
+            returnStatement: ast.Return
+            AST object representing a function return with optional value.
         """
 ))
 
@@ -953,6 +2035,41 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Starred'] = Make.Expr(Ma
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['stmt'] = Make.Expr(Make.Constant(
+        """Create a statement node of the specified type.
+
+        The `stmt` method provides a generic interface for creating any statement
+        node type. This is a convenience method that delegates to the appropriate
+        specific constructor based on the statement type.
+
+        Parameters
+            stmt_type: The statement class to instantiate
+            **kwargs: Keyword arguments specific to the statement type
+
+        Returns
+            nodeStmt: The constructed statement node
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Store'] = Make.Expr(Make.Constant(
+        """
+        Store context for assigning values to expressions.
+        (AI generated docstring)
+
+        The `ast.Store` context indicates expressions are assignment targets
+        receiving new values. Used in assignments, loop targets, and function
+        parameters where expressions store rather than load values.
+
+        Returns:
+            storeContext: ast.Store
+            AST context object indicating value assignment operations.
+
+        Examples:
+            # Creates AST equivalent to assignment: bicycle.wheel = newWheel
+            wheelAssignment = Make.Attribute(Make.Name('bicycle'), 'wheel', Make.Store())
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['Subscript'] = Make.Expr(Make.Constant(
         """
         Subscript `object` for indexing and slicing operations.
@@ -973,6 +2090,56 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Subscript'] = Make.Expr(
         """
 ))
 
+docstrings[dictionaryIdentifiers[identifierToolClass]]['Try'] = Make.Expr(Make.Constant(
+        """
+        Try-except statement AST `object` for exception handling and resource cleanup.
+        (AI generated docstring)
+
+        The `ast.Try` `object` represents `try-except` statements that handle exceptions
+        and provide cleanup mechanisms. It supports multiple exception handlers, optional
+        else clauses, and finally blocks for guaranteed cleanup.
+
+        Parameters:
+            body: Sequence of statements in the try block that may raise exceptions.
+            handlers: List of exception handler objects that catch and process specific
+                exception types or patterns.
+            orElse ([]): Optional statements executed when the try block completes without
+                raising exceptions. This corresponds to `ast.Try.orelse`.
+            finalbody ([]): Optional statements always executed for cleanup, regardless
+                of whether exceptions occurred. This corresponds to `ast.Try.finalbody`.
+
+        Returns
+        -------
+        tryStatement: ast.Try
+            AST `object` representing an exception handling statement with optional cleanup.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['TryStar'] = Make.Expr(Make.Constant(
+        """
+        Try-except* statement AST `object` for exception group handling.
+        (AI generated docstring)
+
+        The `ast.TryStar` `object` represents `try-except*` statements introduced in
+        Python 3.11 for handling exception groups. It enables catching and processing
+        multiple related exceptions that occur simultaneously.
+
+        Parameters:
+            body: Sequence of statements in the try block that may raise exception groups.
+            handlers: List of exception handler objects that catch and process specific
+                exception types within exception groups.
+            orElse ([]): Optional statements executed when the try block completes without
+                raising exceptions. This corresponds to `ast.TryStar.orelse`.
+            finalbody ([]): Optional statements always executed for cleanup, regardless
+                of whether exception groups occurred. This corresponds to `ast.TryStar.finalbody`.
+
+        Returns
+        -------
+        tryStarStatement: ast.TryStar
+            AST `object` representing an exception group handling statement with optional cleanup.
+        """
+))
+
 docstrings[dictionaryIdentifiers[identifierToolClass]]['Tuple'] = Make.Expr(Make.Constant(
         """
         Tuple literal `object` for ordered immutable collections.
@@ -989,6 +2156,122 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Tuple'] = Make.Expr(Make
         Returns:
             tupleLiteral: ast.Tuple
             AST `object` representing a tuple literal with specified elements.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['type_ignore'] = Make.Expr(Make.Constant(
+        """Create an `ast.type_ignore` node for type checker ignore comments.
+
+        The `type_ignore` node represents type checker ignore directives that
+        suppress type checking warnings for specific lines. This is used with
+        comments like `# type: ignore`.
+
+        Parameters
+            lineno: Line number where the ignore directive applies
+            tag: Tag identifying the specific type ignore directive
+
+        Returns
+            nodeTypeIgnore: The constructed type ignore node
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['type_param'] = Make.Expr(Make.Constant(
+        """
+        Abstract type parameter base for generic type constructs (**type** **param**eter).
+        (AI generated docstring)
+
+        The `ast.type_param` object serves as the abstract base for type parameters
+        including TypeVar, ParamSpec, and TypeVarTuple. Provides common functionality
+        for generic type definitions in classes, functions, and type aliases.
+
+        Returns:
+            typeParameter: ast.type_param
+            Abstract AST object representing the base of type parameter hierarchy.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeAlias'] = Make.Expr(Make.Constant(
+        """
+        Type alias definition AST object for `type` statement declarations.
+        (AI generated docstring)
+
+        The `ast.TypeAlias` object represents type alias definitions using the `type`
+        statement syntax. Associates a name with a type expression, supporting
+        generic type parameters for flexible type definitions.
+
+        Parameters:
+            name: Name expression (typically ast.Name) for the alias identifier.
+            type_params ([]): List of type parameters for generic aliases.
+            value: Type expression defining what the alias represents.
+
+        Returns:
+            typeAliasDefinition: ast.TypeAlias
+            AST object representing a complete type alias declaration.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeIgnore'] = Make.Expr(Make.Constant(
+        """
+        Type ignore comment AST object for `# type: ignore` directives.
+        (AI generated docstring)
+
+        The `ast.TypeIgnore` object represents `# type: ignore` comments that
+        instruct static type checkers to skip type analysis for specific lines.
+        Includes optional tags for categorizing different types of ignores.
+
+        Parameters:
+            lineno: Line number where the ignore comment appears.
+            tag: Optional string tag for categorizing the ignore (e.g., '[assignment]').
+
+        Returns:
+            typeIgnoreDirective: ast.TypeIgnore
+            AST object representing a type checker ignore comment.
+
+        Examples:
+            # Creates AST equivalent to: # type: ignore (on line 42)
+            simpleIgnore = Make.TypeIgnore(42, '')
+
+            # Creates AST equivalent to: # type: ignore[assignment] (on line 15)
+            taggedIgnore = Make.TypeIgnore(15, '[assignment]')
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeVar'] = Make.Expr(Make.Constant(
+        """
+        Type variable parameter for generic types with optional bounds and defaults (**Type** **Var**iable).
+        (AI generated docstring)
+
+        The `ast.TypeVar` object represents type variable parameters used in generic
+        classes, functions, and type aliases. Supports type bounds, constraints,
+        and default values for flexible generic programming.
+
+        Parameters:
+            name: Type variable name as string identifier.
+            bound (None): Optional type expression constraining allowed types.
+            default_value (None): Optional default type expression (Python 3.13+).
+
+        Returns:
+            typeVariable: ast.TypeVar
+            AST object representing a type variable with optional constraints.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeVarTuple'] = Make.Expr(Make.Constant(
+        """
+        Type variable tuple for variadic generic types (**Type** **Var**iable **Tuple**).
+        (AI generated docstring)
+
+        The `ast.TypeVarTuple` object represents type variable tuples used for
+        variadic generic types that accept variable numbers of type arguments.
+        Enables generic types that work with arbitrary-length type sequences.
+
+        Parameters:
+            name: Type variable tuple name as string identifier.
+            default_value (None): Optional default type tuple expression (Python 3.13+).
+
+        Returns:
+            typeVariableTuple: ast.TypeVarTuple
+            AST object representing a variadic type variable.
         """
 ))
 
@@ -1064,6 +2347,68 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['USub'] = Make.Expr(Make.
         unaryNegativeOperator: ast.USub
             AST `object` representing the '`-`' unary negation operator for use
             in `ast.UnaryOp`.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['While'] = Make.Expr(Make.Constant(
+        """
+        While loop AST `object` for condition-based iteration.
+        (AI generated docstring)
+
+        The `ast.While` `object` represents `while` loops that repeatedly execute
+        a block of statements as long as a test condition remains True. It supports
+        optional else clauses that execute when the loop exits normally.
+
+        Parameters:
+            test: The boolean expression evaluated before each iteration to determine
+                whether the loop should continue executing.
+            body: Sequence of statements executed repeatedly while the test condition is True.
+            orElse ([]): Optional statements executed when the loop exits normally
+                without encountering a break statement. This corresponds to `ast.While.orelse`.
+
+        Returns
+        -------
+        whileLoop: ast.While
+            AST `object` representing a condition-based iteration statement.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['With'] = Make.Expr(Make.Constant(
+        """
+        Context manager statement AST `object` for resource management and cleanup.
+        (AI generated docstring)
+
+        The `ast.With` `object` represents `with` statements that manage resources
+        using context managers. These ensure proper setup and cleanup of resources
+        like files, database connections, or locks.
+
+        Parameters:
+            items: Sequence of context manager items, each specifying a context manager
+                expression and optional variable binding for the managed resource.
+            body: Sequence of statements executed within the context manager scope.
+
+        Returns:
+            withStatement: ast.With
+            AST `object` representing a context manager statement for resource management.
+        """
+))
+
+docstrings[dictionaryIdentifiers[identifierToolClass]]['withitem'] = Make.Expr(Make.Constant(
+        """
+        Context manager item AST object for individual items in `with` statements.
+        (AI generated docstring)
+
+        The `ast.withitem` object represents individual context manager specifications
+        within `with` statements. Contains the context expression and optional variable
+        binding for the context manager's return value.
+
+        Parameters:
+            context_expr: Expression providing the context manager object.
+            optional_vars (None): Optional variable expression for `as` binding.
+
+        Returns:
+            contextItem: ast.withitem
+            AST object representing a single context manager in with statements.
         """
 ))
 
