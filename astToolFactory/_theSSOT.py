@@ -82,3 +82,19 @@ isort_codeConfiguration: dict[str, int | str | list[str]] = {
 }
 
 settingsPackageToManufacture.isort_codeConfiguration = isort_codeConfiguration # pyright: ignore[reportAttributeAccessIssue]
+dictionary_astSuperClasses: dict[str, str] = {
+	'AST': '木',
+	'boolop': '布尔符',
+	'cmpop': '比符',
+	'Constant': '常',
+	'excepthandler': '拦',
+	'expr_context': '工位',
+	'expr': '工',
+	'mod': '本',
+	'operator': '二符',
+	'pattern': '俪',
+	'stmt': '口',
+	'type_ignore': '忽',
+	'type_param': '形',
+	'unaryop': '一符',
+}

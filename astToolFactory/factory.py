@@ -4,7 +4,6 @@ from astToolFactory import (
 	getElementsTypeAlias, keywordArgumentsIdentifier, keywordKeywordArguments4Call, listPylanceErrors,
 	pythonMinimumVersionMinor, settingsPackageToManufacture,
 )
-from astToolFactory.datacenter import DictionaryToolBe
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factory_annex import (
 	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
@@ -45,18 +44,6 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
 		pythonSource = "# pyright: reportReturnType=false\n" + pythonSource
 	if 'Grab' in moduleIdentifier:
-		listTypeIgnore: list[ast.TypeIgnore] = []
-		tag = '[reportArgumentType, reportAttributeAccessIssue]'
-		for attribute in listPylanceErrors:
-			for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
-				if 'node.'+attribute in line:
-					listTypeIgnore.append(ast.TypeIgnore(splitlinesNumber+1, tag))
-					# get the first occurrence of the match in the source code
-					break
-		astModule = ast.parse(pythonSource)
-		astModule.type_ignores.extend(listTypeIgnore)
-		pythonSource = ast.unparse(astModule)
-		pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
 	if 'Make' in moduleIdentifier:
 		listTypeIgnore: list[ast.TypeIgnore] = []
@@ -157,20 +144,14 @@ def makeTool_dump() -> None:
 	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsPackageToManufacture.identifierPackage)
 
 def makeToolBe(identifierToolClass: str) -> None:
-	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers['Be']][dictionaryIdentifiers['Be']]]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
 
-	listDictionaryToolElements: list[DictionaryToolBe] = getElementsBe()
-
-	for dictionaryToolElements in listDictionaryToolElements:
-		ClassDefIdentifier: str = dictionaryToolElements['ClassDefIdentifier']
-		classAs_astAttribute: ast.expr = eval(dictionaryToolElements['classAs_astAttribute'])
-		versionMinorMinimumClass: int = dictionaryToolElements['versionMinorMinimumClass']
-
+	for ClassDefIdentifier, classAs_astAttribute, versionMinorMinimumClass in getElementsBe(identifierToolClass):
 		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Name('ast.AST'))])
-			, body=[Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), classAs_astAttribute]))]
+			, body=[Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), eval(classAs_astAttribute)]))]
 			, decorator_list=[astName_staticmethod]
-			, returns=Make.Subscript(Make.Name('TypeIs'), slice=classAs_astAttribute))
+			, returns=Make.Subscript(Make.Name('TypeIs'), slice=eval(classAs_astAttribute)))
 
 		if versionMinorMinimumClass > pythonMinimumVersionMinor:
 			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
@@ -190,10 +171,10 @@ def makeToolBe(identifierToolClass: str) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
-	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers['ClassIsAndAttribute']][dictionaryIdentifiers['ClassIsAndAttribute']]]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
 	list_match_case: list[ast.match_case] = []
 
-	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsClassIsAndAttribute():
+	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsClassIsAndAttribute(identifierToolClass):
 		# Construct the parameters for `Make.FunctionDef`.
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 		decorator_list: list[ast.expr] = [astName_staticmethod]
@@ -273,10 +254,10 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def makeToolDOT(identifierToolClass: str) -> None:
-	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers['DOT']][dictionaryIdentifiers['DOT']]]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
 	list_match_case: list[ast.match_case] = []
 
-	for identifierTypeOfNode, overloadDefinition, _canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsDOT():
+	for identifierTypeOfNode, overloadDefinition, _canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsDOT(identifierToolClass):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		decorator_list: list[ast.expr] = [astName_staticmethod]
@@ -326,10 +307,10 @@ def makeToolDOT(identifierToolClass: str) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def makeToolGrab(identifierToolClass: str) -> None:
-	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers['Grab']][dictionaryIdentifiers['Grab']], FunctionDefGrab_andDoAllOf]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]], FunctionDefGrab_andDoAllOf]
 	list_match_case: list[ast.match_case] = []
 
-	for identifierTypeOfNode, list_ast_expr, attribute, useMatchCase, versionMinorMinimum in getElementsGrab():
+	for identifierTypeOfNode, list_ast_expr, attribute, useMatchCase, versionMinorMinimum in getElementsGrab(identifierToolClass):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), eval(ast_expr)])) for ast_expr in list_ast_expr]))
@@ -338,8 +319,14 @@ def makeToolGrab(identifierToolClass: str) -> None:
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('action', annotation=annotation)])
 			, body=[Make.FunctionDef('workhorse'
 						, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=astNameTypeOfNode)])
-						, body=[Make.Assign([Make.Attribute(Make.Name('node'), attribute, context=ast.Store())], value=Make.Call(Make.Name('action'), [Make.Attribute(Make.Name('node'), attribute)]))
-								, Make.Return(Make.Name('node'))
+						, body=[Make.Expr(
+								Make.Call(Make.Name('setattr'), listParameters=[Make.Name('node'), Make.Constant(f"{attribute}")
+									, Make.Call(Make.Name('action')
+										, listParameters=[Make.Call(Make.Name('getattr'), listParameters=[Make.Name('node'), Make.Constant(f"{attribute}")])])
+										]
+									)
+								)
+							, Make.Return(Make.Name('node'))
 						]
 						, returns=astNameTypeOfNode)
 					, Make.Return(Make.Name('workhorse'))
@@ -369,7 +356,7 @@ def makeToolGrab(identifierToolClass: str) -> None:
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom('astToolkit', [Make.alias('*')])
 		, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
-		, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('Literal')])
+		, Make.ImportFrom('typing', [Make.alias('Any')])
 		, Make.Import('ast')
 		, Make.Import('sys')
 		, Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]),
@@ -395,7 +382,7 @@ def makeToolMake(identifierToolClass: str) -> None:
 
 	list_match_case: list[ast.match_case] = []
 	# The order of the tuple elements is the order in which they are used in the flow of the code.
-	for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, useMatchCase, versionMinorMinimum in getElementsMake():
+	for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, useMatchCase, versionMinorMinimum in getElementsMake(identifierToolClass):
 		# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
 		if ClassDefIdentifier in listBoolOpIdentifiers:
 			list4ClassDefBody.append(Make.ClassDef(ClassDefIdentifier

@@ -13,59 +13,7 @@ ImaDocstring: str = """This file is generated automatically, so changes to this 
 docstringWarning = Make.Expr(Make.Constant(ImaDocstring))
 del ImaDocstring
 
-ImaDocstring: str = (
-    """Type guard functions for safe AST node identification and type narrowing.
-    (AI generated docstring)
-
-    Provides static methods that perform runtime type checking for all AST node types
-    while enabling compile-time type narrowing through `TypeIs` annotations. Forms
-    the foundation of type-safe AST analysis and transformation throughout the toolkit.
-
-    Each method takes an `ast.AST` node and returns a `TypeIs` that confirms both
-    runtime type safety and enables static type checkers to narrow the node type in
-    conditional contexts. This eliminates the need for unsafe casting while providing
-    comprehensive coverage of Python's AST node hierarchy.
-
-    Methods correspond directly to Python AST node types, following the naming convention
-    of the AST classes themselves. Coverage includes expression nodes (`Add`, `Call`,
-    `Name`), statement nodes (`Assign`, `FunctionDef`, `Return`), operator nodes
-    (`And`, `Or`, `Not`), and structural nodes (`Module`, `arguments`, `keyword`).
-
-    The class serves as the primary type-checking component in the antecedent-action
-    pattern, where predicates identify target nodes and actions specify operations.
-    Type guards from this class are commonly used as building blocks in `IfThis`
-    predicates and directly as `findThis` parameters in visitor classes.
-
-    Parameters:
-
-        node: AST node to test for specific type membership
-
-    Returns:
-
-        typeIs: `TypeIs` enabling both runtime validation and static type narrowing
-
-    Examples:
-
-        Type-safe node processing with automatic type narrowing:
-
-            if Be.FunctionDef(node):
-                functionName = node.name  # Type-safe access to name attribute
-                parameterCount = len(node.args.args)
-
-        Building complex predicates for visitor patterns:
-
-            NodeTourist(Be.Return, Then.extractIt(DOT.value)).visit(functionNode)
-
-        Combining type guards in conditional logic:
-
-            if Be.Call(node) and Be.Name(node.func):
-                callableName = node.func.id  # Type-safe access to function name
-    """
-)
-docstrings[dictionaryIdentifiers['Be']][dictionaryIdentifiers['Be']] = Make.Expr(Make.Constant(ImaDocstring))
-del ImaDocstring
-
-ImaDocstring: str = (
+docstrings[dictionaryIdentifiers['DOT']][dictionaryIdentifiers['DOT']] = Make.Expr(Make.Constant(
     """
     Access attributes and sub-nodes of AST elements via consistent accessor methods.
 
@@ -76,11 +24,9 @@ ImaDocstring: str = (
     DOT is designed for safe, read-only access to node properties, unlike the grab class which is designed for modifying
     node attributes.
     """
-)
-docstrings[dictionaryIdentifiers['DOT']][dictionaryIdentifiers['DOT']] = Make.Expr(Make.Constant(ImaDocstring))
-del ImaDocstring
+))
 
-ImaDocstring: str = (
+docstrings[dictionaryIdentifiers['ClassIsAndAttribute']][dictionaryIdentifiers['ClassIsAndAttribute']] = Make.Expr(Make.Constant(
     """
     Create functions that verify AST nodes by type and attribute conditions.
 
@@ -94,11 +40,9 @@ ImaDocstring: str = (
 
     This enables complex filtering and targeting of AST nodes based on both their type and attribute contents.
     """
-)
-docstrings[dictionaryIdentifiers['ClassIsAndAttribute']][dictionaryIdentifiers['ClassIsAndAttribute']] = Make.Expr(Make.Constant(ImaDocstring))
-del ImaDocstring
+))
 
-ImaDocstring: str = (
+docstrings[dictionaryIdentifiers['Grab']][dictionaryIdentifiers['Grab']] = Make.Expr(Make.Constant(
     """
     Modify specific attributes of AST nodes while preserving the node structure.
 
@@ -109,8 +53,10 @@ ImaDocstring: str = (
     Each method returns a function that takes a node, applies a transformation to a specific attribute of that node, and
     returns the modified node. This enables fine-grained control when transforming AST structures.
     """
-)
-docstrings[dictionaryIdentifiers['Grab']][dictionaryIdentifiers['Grab']] = Make.Expr(Make.Constant(ImaDocstring))
-del ImaDocstring
+))
 
-import documentationMake  # noqa: E402
+def getMoreDocstrings():
+    import astToolFactory.documentationBe
+    import astToolFactory.documentationMake
+
+getMoreDocstrings()
