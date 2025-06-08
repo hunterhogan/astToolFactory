@@ -38,19 +38,6 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	if '_astTypes' in moduleIdentifier:
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
 	if 'ClassIsAndAttribute' in moduleIdentifier:
-		# listTypeIgnore: list[ast.TypeIgnore] = []
-		# tag = '[reportArgumentType]'
-		# for attribute in listPyrightErrors:
-		# 	for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
-		# 		if 'node.'+attribute in line:
-		# 			listTypeIgnore.append(ast.TypeIgnore(splitlinesNumber+1, tag))
-		# 			# get the first occurrence of the match in the source code
-		# 			break
-		# astModule = ast.parse(pythonSource)
-		# astModule.type_ignores.extend(listTypeIgnore)
-		# pythonSource = ast.unparse(astModule)
-		# pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
-		pythonSource = "# pyright: reportArgumentType=false\n" + pythonSource
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
 	if 'DOT' in moduleIdentifier:
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
@@ -190,6 +177,7 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 		workhorse_returnsAnnotation: ast.expr = Make.BitOr.join([Make.Subscript(Make.Name('TypeIs'), slice=astNameTypeOfNode), Make.Name('bool')])
 
 		if overloadDefinition:
+			continue
 			decorator_list.append(astName_overload)
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
@@ -216,7 +204,16 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 
 		returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), workhorse_returnsAnnotation]))
 
-		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')])) for ast_expr in list_ast_expr]))
+		# annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')])) for ast_expr in list_ast_expr]))
+		annotation: ast.expr = (
+			Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List(
+				[
+			Make.BitOr.join([
+					eval(ast_expr)
+				for ast_expr in list_ast_expr])
+				]
+				), Make.Name('bool')]))
+		)
 
 		# Create the overload or implementation of the function.
 		ast_stmt: ast.stmt = Make.FunctionDef(attribute + 'Is'

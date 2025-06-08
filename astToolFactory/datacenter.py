@@ -76,17 +76,17 @@ def getElementsBe(identifierToolClass: str, includeDeprecated: bool = False, ver
 
 def getElementsClassIsAndAttribute(identifierToolClass: str, includeDeprecated: bool = False, versionMinorMaximum: int | None = None) -> list[tuple[str, bool, str | bool, str, list[str], int, int]]:
 	listColumnsHARDCODED: list[str] = [
-		'attribute',
-		'TypeAlias_hasDOTSubcategory',
-		'versionMinorMinimumAttribute',
-		'typeSansNone_ast_expr',
-		'typeSansNone',
-		'TypeAlias_hasDOTIdentifier',
-		'canBeNone',
-		]
+	# 	'attribute',
+	# 	'TypeAlias_hasDOTSubcategory',
+	# 	'versionMinorMinimumAttribute',
+	# 	'typeSansNone_ast_expr',
+	# 	'typeSansNone',
+	# 	'TypeAlias_hasDOTIdentifier',
+	# 	'canBeNone',
+	# 	]
 
-	if identifierToolClass == dictionaryIdentifiers['DOT']:
-		listColumnsHARDCODED: list[str] = [
+	# if identifierToolClass == dictionaryIdentifiers['DOT']:
+	# 	listColumnsHARDCODED: list[str] = [
 		'attribute',
 		'TypeAlias_hasDOTSubcategory',
 		'versionMinorMinimumAttribute',
