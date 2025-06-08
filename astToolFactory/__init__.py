@@ -2,7 +2,7 @@ from astToolFactory._theSSOT import (
 	dictionary_astSuperClasses as dictionary_astSuperClasses,
 	dictionaryIdentifiers as dictionaryIdentifiers,
 	keywordArgumentsIdentifier as keywordArgumentsIdentifier,
-	listPylanceErrors as listPylanceErrors,
+	listPyrightErrors as listPyrightErrors,
 	pathFilenameDataframeAST as pathFilenameDataframeAST,
 	pythonMinimumVersionMinor as pythonMinimumVersionMinor,
 	settingsPackage as settingsPackage,

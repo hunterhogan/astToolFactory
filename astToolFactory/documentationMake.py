@@ -32,7 +32,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[ide
 
     Common AST attributes accessible through `**keywordArguments`:
 
-        col_offset (0): Position information specifying the column where an AST object begins.
+        col_offset: Position information specifying the column where an AST object begins.
         end_col_offset (None): Position information specifying the column where an AST object ends.
         end_lineno (None): Position information specifying the line number where an AST object ends.
         level (0): Module import depth level that controls relative vs absolute imports. Default 0 indicates absolute import.
@@ -69,40 +69,40 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['_boolopJoinMethod'] = Ma
 ))
 
 docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['boolopJoinMethod']] = Make.Expr(Make.Constant(
-        """
-        Single `ast.expr` from a sequence of `ast.expr` by forming an `ast.BoolOp` that logically "joins" expressions using the `ast.BoolOp` subclass.
+            """
+            Single `ast.expr` from a sequence of `ast.expr` by forming an `ast.BoolOp` that logically "joins" expressions using the `ast.BoolOp` subclass.
 
-        Like str.join() but for AST expressions.
+            Like str.join() but for AST expressions.
 
-        Parameters
-        ----------
-        expressions : Sequence[ast.expr]
-            Collection of expressions to join.
-        **keywordArguments : ast._attributes
+            Parameters
+            ----------
+            expressions : Sequence[ast.expr]
+                Collection of expressions to join.
+            **keywordArguments : ast._attributes
 
-        Returns
-        -------
-        joinedExpression : ast.expr
-            Single expression representing the joined expressions.
+            Returns
+            -------
+            joinedExpression : ast.expr
+                Single expression representing the joined expressions.
 
-        Examples
-        --------
-        Instead of manually constructing ast.BoolOp structures:
-        ```
-        ast.BoolOp(
-            op=ast.And(),
-            values=[ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')]
-        )
-        ```
+            Examples
+            --------
+            Instead of manually constructing ast.BoolOp structures:
+            ```
+            ast.BoolOp(
+                op=ast.And(),
+                values=[ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')]
+            )
+            ```
 
-        Simply use:
-        ```
-        astToolkit.And.join([ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')])
-        ```
+            Simply use:
+            ```
+            astToolkit.And.join([ast.Name('Lions'), ast.Name('tigers'), ast.Name('bears')])
+            ```
 
-        Both produce the same AST structure but the join() method eliminates the manual construction.
-        Handles single expressions and empty sequences gracefully.
-        """
+            Both produce the same AST structure but the join() method eliminates the manual construction.
+            Handles single expressions and empty sequences gracefully.
+            """
 ))
 
 docstrings[dictionaryIdentifiers[identifierToolClass]]['_operatorJoinMethod'] = Make.Expr(Make.Constant(
@@ -128,44 +128,44 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['_operatorJoinMethod'] = 
 ))
 
 docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['operatorJoinMethod']] = Make.Expr(Make.Constant(
-        """
-        Single `ast.expr` from a collection of `ast.expr` by forming nested `ast.BinOp` that are logically "joined" using the `ast.operator` subclass.
+            """
+            Single `ast.expr` from a collection of `ast.expr` by forming nested `ast.BinOp` that are logically "joined" using the `ast.operator` subclass.
 
-        Like str.join() but for AST expressions.
+            Like str.join() but for AST expressions.
 
-        Parameters
-        ----------
-        expressions : Iterable[ast.expr]
-            Collection of expressions to join.
-        **keywordArguments : ast._attributes
+            Parameters
+            ----------
+            expressions : Iterable[ast.expr]
+                Collection of expressions to join.
+            **keywordArguments : ast._attributes
 
-        Returns
-        -------
-        joinedExpression : ast.expr
-            Single expression representing the joined expressions.
+            Returns
+            -------
+            joinedExpression : ast.expr
+                Single expression representing the joined expressions.
 
-        Examples
-        --------
-        Instead of manually constructing nested ast.BinOp structures:
-        ```
-        ast.BinOp(
-            left=ast.BinOp(
-                left=ast.Name('Crosby')
+            Examples
+            --------
+            Instead of manually constructing nested ast.BinOp structures:
+            ```
+            ast.BinOp(
+                left=ast.BinOp(
+                    left=ast.Name('Crosby')
+                    , op=ast.BitOr()
+                    , right=ast.Name('Stills'))
                 , op=ast.BitOr()
-                , right=ast.Name('Stills'))
-            , op=ast.BitOr()
-            , right=ast.Name('Nash')
-        )
-        ```
+                , right=ast.Name('Nash')
+            )
+            ```
 
-        Simply use:
-        ```
-        astToolkit.BitOr().join([ast.Name('Crosby'), ast.Name('Stills'), ast.Name('Nash')])
-        ```
+            Simply use:
+            ```
+            astToolkit.BitOr().join([ast.Name('Crosby'), ast.Name('Stills'), ast.Name('Nash')])
+            ```
 
-        Both produce the same AST structure but the join() method eliminates the manual nesting.
-        Handles single expressions and empty iterables gracefully.
-        """
+            Both produce the same AST structure but the join() method eliminates the manual nesting.
+            Handles single expressions and empty iterables gracefully.
+            """
 ))
 
 docstrings[dictionaryIdentifiers[identifierToolClass]]['alias'] = Make.Expr(Make.Constant(

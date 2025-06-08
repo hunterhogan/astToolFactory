@@ -1,7 +1,7 @@
 from astToolFactory import (
 	astName_overload, astName_staticmethod, astName_typing_TypeAlias, dictionaryIdentifiers,
 	getElementsBe, getElementsClassIsAndAttribute, getElementsDOT, getElementsGrab, getElementsMake,
-	getElementsTypeAlias, keywordArgumentsIdentifier, keywordKeywordArguments4Call, listPylanceErrors,
+	getElementsTypeAlias, keywordArgumentsIdentifier, keywordKeywordArguments4Call, listPyrightErrors,
 	pythonMinimumVersionMinor, settingsPackageToManufacture,
 )
 from astToolFactory.documentation import docstrings, docstringWarning
@@ -38,14 +38,29 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	if '_astTypes' in moduleIdentifier:
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
 	if 'ClassIsAndAttribute' in moduleIdentifier:
+		# listTypeIgnore: list[ast.TypeIgnore] = []
+		# tag = '[reportArgumentType]'
+		# for attribute in listPyrightErrors:
+		# 	for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
+		# 		if 'node.'+attribute in line:
+		# 			listTypeIgnore.append(ast.TypeIgnore(splitlinesNumber+1, tag))
+		# 			# get the first occurrence of the match in the source code
+		# 			break
+		# astModule = ast.parse(pythonSource)
+		# astModule.type_ignores.extend(listTypeIgnore)
+		# pythonSource = ast.unparse(astModule)
+		# pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
 		pythonSource = "# pyright: reportArgumentType=false\n" + pythonSource
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
 	if 'DOT' in moduleIdentifier:
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
-		pythonSource = "# pyright: reportReturnType=false\n" + pythonSource
 	if 'Grab' in moduleIdentifier:
 		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
 	if 'Make' in moduleIdentifier:
+
+		# type ignore only works on hasDOTtype_comment
+		# TODO update docs
+
 		listTypeIgnore: list[ast.TypeIgnore] = []
 		lineno: int = 0
 		for attribute, tag in [('keyword', '[reportInconsistentOverload]'), ('MatchClass', '[reportSelfClsParameterName]'), ('TypeAlias', '[reportInconsistentOverload]')]:
@@ -54,13 +69,6 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 					# get the last occurrence of the match in the source code
 					lineno = splitlinesNumber + 1
 			listTypeIgnore.append(ast.TypeIgnore(lineno, tag))
-		tag = '[reportRedeclaration]'
-		for attribute in ['ParamSpec', 'TypeVar', 'TypeVarTuple']:
-			for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
-				if 'def ' + attribute in line:
-					listTypeIgnore.append(ast.TypeIgnore(splitlinesNumber+1, tag))
-					# get the first occurrence of the match in the source code
-					break
 		astModule = ast.parse(pythonSource)
 		astModule.type_ignores.extend(listTypeIgnore)
 		pythonSource = ast.unparse(astModule)
@@ -146,17 +154,17 @@ def makeTool_dump() -> None:
 def makeToolBe(identifierToolClass: str) -> None:
 	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
 
-	for ClassDefIdentifier, classAs_astAttribute, versionMinorMinimumClass in getElementsBe(identifierToolClass):
+	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute in getElementsBe(identifierToolClass):
 		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Name('ast.AST'))])
 			, body=[Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), eval(classAs_astAttribute)]))]
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name('TypeIs'), slice=eval(classAs_astAttribute)))
 
-		if versionMinorMinimumClass > pythonMinimumVersionMinor:
+		if versionMinorMinimum > pythonMinimumVersionMinor:
 			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
-						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(versionMinorMinimumClass)])])
+						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
 					, body=[ast_stmt]
 				)
 
@@ -488,5 +496,5 @@ if __name__ == "__main__":
 	makeToolDOT(dictionaryIdentifiers['DOT'])
 	makeToolGrab(dictionaryIdentifiers['Grab'])
 	makeToolMake(dictionaryIdentifiers['Make'])
-	# makeTool_dump()
+	makeTool_dump()
 	write_theSSOT()
