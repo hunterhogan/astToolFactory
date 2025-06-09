@@ -37,6 +37,9 @@ class GuardIfThen(TypedDict):
 	test: ast.expr
 	body: list[ast.stmt]
 dictionaryGuardVersion: dict[int, GuardIfThen] = {}
+ast_stmt: ast.stmt | None = None
+guardVersion: int = 0
+versionMinorMinimum: int = 0
 
 def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	ast.fix_missing_locations(astModule)
@@ -77,42 +80,47 @@ def writeClass(classIdentifier: str, list4ClassDefBody: list[ast.stmt], list4Mod
 			)
 		, moduleIdentifier)
 
+def _makeGuardVersion() -> None:
+	global ast_stmt, guardVersion, versionMinorMinimum
+	orElse: ast.stmt | None = None
+	if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
+		test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+		assert ast_stmt is not None, "Programming by brinkmanship!"
+		body: list[ast.stmt] = [ast_stmt]
+		dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
+	else:
+		orElse = ast_stmt
+
+	if guardVersion > 1:
+		ast_stmt = None
+	else:
+		for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
+			orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
+		assert orElse is not None, "Programming by brinkmanship!"
+		ast_stmt = orElse
+		dictionaryGuardVersion.clear()
+
 def make_astTypes() -> None:
+	global ast_stmt, guardVersion, versionMinorMinimum
 	list4ModuleBody: list[ast.stmt] = []
 	ledgerOfImports = LedgerOfImports(
 		Make.Module([
-			Make.ImportFrom('types', [Make.alias('EllipsisType'), Make.alias('NotImplementedType')])
+			Make.ImportFrom('types', [Make.alias('EllipsisType')])
 			, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('TypeAlias', 'typing_TypeAlias'), Make.alias('TypedDict'), Make.alias('TypeVar', 'typing_TypeVar')])
 			, Make.Import('ast')
 			, Make.Import('sys')
 		])
 	)
 
-
 	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias():
 		astNameTypeAlias: ast.Name = Make.Name(identifierTypeAlias, ast.Store())
 		TypeAlias_value: ast.expr = Make.BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in list4TypeAlias_value])
-		ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, value=TypeAlias_value)
+		ast_stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, value=TypeAlias_value)
 
 		if guardVersion:
-			orElse: ast.stmt | None = None
-			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
-				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-				body: list[ast.stmt] = [ast_stmt]
-				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
-			else:
-				orElse = ast_stmt
-
-			if guardVersion > 1:
-				continue
-			else:
-				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
-					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
-				assert orElse is not None, "Programming by brinkmanship!"
-				ast_stmt = orElse
-				dictionaryGuardVersion.clear()
-
-		list4ModuleBody.append(ast_stmt)
+			_makeGuardVersion()
+		if ast_stmt is not None: # pyright: ignore[reportUnnecessaryComparison]
+			list4ModuleBody.append(ast_stmt)
 
 	astModule: ast.Module = Make.Module(
 		body=[
@@ -169,8 +177,8 @@ def makeToolBe(identifierToolClass: str) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
+	global ast_stmt, guardVersion, versionMinorMinimum
 	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
-
 
 	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsClassIsAndAttribute(identifierToolClass):
 		# Construct the parameters for `Make.FunctionDef`.
@@ -219,7 +227,7 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 		)
 
 		# Create the overload or implementation of the function.
-		ast_stmt: ast.stmt = Make.FunctionDef(attribute + 'Is'
+		ast_stmt = Make.FunctionDef(attribute + 'Is'
 				, argumentSpecification=Make.arguments(list_arg=[
 					Make.arg('astClass', annotation=Make.Subscript(Make.Name('type'), astNameTypeOfNode)),
 					Make.arg('attributeCondition', annotation=annotation)
@@ -230,24 +238,9 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 			)
 
 		if guardVersion:
-			orElse: ast.stmt | None = None
-			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
-				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-				body: list[ast.stmt] = [ast_stmt]
-				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
-			else:
-				orElse = ast_stmt
-
-			if guardVersion > 1:
-				continue
-			else:
-				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
-					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
-				assert orElse is not None, "Programming by brinkmanship!"
-				ast_stmt = orElse
-				dictionaryGuardVersion.clear()
-
-		list4ClassDefBody.append(ast_stmt)
+			_makeGuardVersion()
+		if ast_stmt is not None: # pyright: ignore[reportUnnecessaryComparison]
+			list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom('astToolkit', [Make.alias('*')])
@@ -264,6 +257,7 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def makeToolDOT(identifierToolClass: str) -> None:
+	global ast_stmt, guardVersion, versionMinorMinimum
 	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
 
 	for identifierTypeOfNode, overloadDefinition, _canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass):
@@ -278,31 +272,17 @@ def makeToolDOT(identifierToolClass: str) -> None:
 
 		returns: ast.expr = Make.BitOr.join([eval(ast_expr) for ast_expr in list_ast_expr])
 
-		ast_stmt: ast.stmt = Make.FunctionDef(attribute
+		ast_stmt = Make.FunctionDef(attribute
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=astNameTypeOfNode)])
 			, body=body
 			, decorator_list=decorator_list
 			, returns=returns
 		)
+
 		if guardVersion:
-			orElse: ast.stmt | None = None
-			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
-				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-				body: list[ast.stmt] = [ast_stmt]
-				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
-			else:
-				orElse = ast_stmt
-
-			if guardVersion > 1:
-				continue
-			else:
-				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
-					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
-				assert orElse is not None, "Programming by brinkmanship!"
-				ast_stmt = orElse
-				dictionaryGuardVersion.clear()
-
-		list4ClassDefBody.append(ast_stmt)
+			_makeGuardVersion()
+		if ast_stmt is not None: # pyright: ignore[reportUnnecessaryComparison]
+			list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom('astToolkit', [Make.alias('*')])
@@ -318,15 +298,15 @@ def makeToolDOT(identifierToolClass: str) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def makeToolGrab(identifierToolClass: str) -> None:
+	global ast_stmt, guardVersion, versionMinorMinimum
 	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]], FunctionDefGrab_andDoAllOf]
-
 
 	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(identifierToolClass):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), eval(ast_expr)])) for ast_expr in list_ast_expr]))
 
-		ast_stmt: ast.stmt = Make.FunctionDef(attribute + 'Attribute'
+		ast_stmt = Make.FunctionDef(attribute + 'Attribute'
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('action', annotation=annotation)])
 			, body=[Make.FunctionDef('workhorse'
 						, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=astNameTypeOfNode)])
@@ -346,24 +326,9 @@ def makeToolGrab(identifierToolClass: str) -> None:
 			, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([astNameTypeOfNode]), astNameTypeOfNode])))
 
 		if guardVersion:
-			orElse: ast.stmt | None = None
-			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
-				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-				body: list[ast.stmt] = [ast_stmt]
-				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
-			else:
-				orElse = ast_stmt
-
-			if guardVersion > 1:
-				continue
-			else:
-				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
-					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
-				assert orElse is not None, "Programming by brinkmanship!"
-				ast_stmt = orElse
-				dictionaryGuardVersion.clear()
-
-		list4ClassDefBody.append(ast_stmt)
+			_makeGuardVersion()
+		if ast_stmt is not None: # pyright: ignore[reportUnnecessaryComparison]
+			list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom('astToolkit', [Make.alias('*')])
@@ -379,6 +344,7 @@ def makeToolGrab(identifierToolClass: str) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def makeToolMake(identifierToolClass: str) -> None:
+	global ast_stmt, guardVersion, versionMinorMinimum
 	ledgerOfImports: LedgerOfImports = LedgerOfImports()
 	ledgerOfImports.addImportFrom_asStr('astToolkit', 'ConstantValueType')
 	list4ClassDefBody: list[ast.stmt] = [docstrings[identifierToolClass][identifierToolClass]]
@@ -391,7 +357,6 @@ def makeToolMake(identifierToolClass: str) -> None:
 
 	listBoolOpIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.boolop.__subclasses__()])
 	listOperatorIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.operator.__subclasses__()])
-
 
 	# The order of the tuple elements is the order in which they are used in the flow of the code.
 	for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, guardVersion, versionMinorMinimum in getElementsMake(identifierToolClass):
@@ -459,24 +424,9 @@ def makeToolMake(identifierToolClass: str) -> None:
 			, returns=classAs_astAttribute)
 
 		if guardVersion:
-			orElse: ast.stmt | None = None
-			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
-				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-				body: list[ast.stmt] = [ast_stmt]
-				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
-			else:
-				orElse = ast_stmt
-
-			if guardVersion > 1:
-				continue
-			else:
-				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
-					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
-				assert orElse is not None, "Programming by brinkmanship!"
-				ast_stmt = orElse
-				dictionaryGuardVersion.clear()
-
-		list4ClassDefBody.append(ast_stmt)
+			_makeGuardVersion()
+		if ast_stmt is not None: # pyright: ignore[reportUnnecessaryComparison]
+			list4ClassDefBody.append(ast_stmt)
 
 	# Module-level operations ===============
 	ledgerOfImports.walkThis(Make.Module([
