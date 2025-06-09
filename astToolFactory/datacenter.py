@@ -1,9 +1,6 @@
 """API for data. The rest of the package should be ignorant of the specifics of the data source.
 This module provides a set of functions to interact with the data source, allowing for easy retrieval and manipulation of data."""
-from astToolFactory import (
-	dictionary_astSuperClasses, dictionaryIdentifiers, pathFilenameDataframeAST,
-	pythonMinimumVersionMinor, versionMinor_astMinimumSupported,
-)
+from astToolFactory import dictionary_astSuperClasses, settingsPackageToManufacture, versionMinor_astMinimumSupported
 from astToolkit import Be, DOT, dump, Make, NodeTourist, Then
 from collections.abc import Sequence
 from typing import cast
@@ -40,7 +37,7 @@ def _sortCaseInsensitive(dataframe: pandas.DataFrame, columnsPriority: Sequence[
 	return dataframe.loc[indicesSorted]
 
 def getDataframe(includeDeprecated: bool, versionMinorMaximum: int | None, modifyVersionMinorMinimum: bool = True, *indices: str) -> pandas.DataFrame:
-	dataframe: pandas.DataFrame = pandas.read_pickle(pathFilenameDataframeAST)
+	dataframe: pandas.DataFrame = pandas.read_pickle(settingsPackageToManufacture.pathFilenameDataframeAST)
 
 	if not includeDeprecated:
 		dataframe = dataframe[~dataframe['deprecated']]
@@ -50,7 +47,7 @@ def getDataframe(includeDeprecated: bool, versionMinorMaximum: int | None, modif
 
 	if modifyVersionMinorMinimum:
 		columnsVersion: list[str] = ['versionMinorMinimumAttribute', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args']
-		dataframe[columnsVersion] = dataframe[columnsVersion].where(dataframe[columnsVersion] > pythonMinimumVersionMinor, -1) # pyright: ignore[reportArgumentType]
+		dataframe[columnsVersion] = dataframe[columnsVersion].where(dataframe[columnsVersion] > settingsPackageToManufacture.pythonMinimumVersionMinor, -1) # pyright: ignore[reportArgumentType]
 	if indices:
 		dataframe = dataframe.set_index(list(indices))
 
@@ -187,7 +184,7 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, includeDeprecated: 
 	dataframe.drop(columns=['type_ast_expr', 'type',], inplace=True)
 	dataframe['useMatchCase'] = numpy.where(
 		((versionsTotal := dataframe.groupby('identifierTypeOfNode')['versionMinorMinimumAttribute'].transform('nunique')) == 1)
-		& (dataframe.groupby('identifierTypeOfNode')['versionMinorMinimumAttribute'].transform('max') <= pythonMinimumVersionMinor),
+		& (dataframe.groupby('identifierTypeOfNode')['versionMinorMinimumAttribute'].transform('max') <= settingsPackageToManufacture.pythonMinimumVersionMinor),
 		0,
 		numpy.maximum(1, versionsTotal - dataframe.groupby('identifierTypeOfNode')['versionMinorMinimumAttribute'].rank(method='first', ascending=False).astype(int) + 1)
 	)
@@ -235,7 +232,7 @@ def getElementsGrab(identifierToolClass: str, includeDeprecated: bool = False, v
 	dataframe['list_ast_expr'] = dataframe.apply(makeColumn_list_ast_expr, axis=1)
 	dataframe['useMatchCase'] = numpy.where(
 		((versionsTotal := dataframe.groupby('attribute')['versionMinorMinimumAttribute'].transform('nunique')) == 1)
-		& (dataframe.groupby('attribute')['versionMinorMinimumAttribute'].transform('max') <= pythonMinimumVersionMinor),
+		& (dataframe.groupby('attribute')['versionMinorMinimumAttribute'].transform('max') <= settingsPackageToManufacture.pythonMinimumVersionMinor),
 		0,
 		numpy.maximum(1, versionsTotal - dataframe.groupby('attribute')['versionMinorMinimumAttribute'].rank(method='first', ascending=False).astype(int) + 1)
 	)
@@ -277,12 +274,12 @@ def getElementsMake(identifierToolClass: str, includeDeprecated: bool = False, v
 	# And as a guard for Python versions below the minimum.
 	dataframe['useMatchCase'] = numpy.where(
 		((versionsTotal := dataframe.groupby('ClassDefIdentifier')['versionMinorMinimum_match_args'].transform('nunique')) == 1)
-		& (dataframe.groupby('ClassDefIdentifier')['versionMinorMinimum_match_args'].transform('max') <= pythonMinimumVersionMinor),
+		& (dataframe.groupby('ClassDefIdentifier')['versionMinorMinimum_match_args'].transform('max') <= settingsPackageToManufacture.pythonMinimumVersionMinor),
 		0,
 		numpy.maximum(1, versionsTotal - dataframe.groupby('ClassDefIdentifier')['versionMinorMinimum_match_args'].rank(method='first', ascending=False).astype(int) + 1)
 	)
 
-	# Create overloadDefinition flag - False until new logic added
+	# TODO Create overloadDefinition flag - False until new logic added
 	dataframe['overloadDefinition'] = False
 
 	dataframe = dataframe[elementsTarget]
@@ -358,7 +355,7 @@ def getElementsTypeAlias(includeDeprecated: bool = False, versionMinorMaximum: i
 	dataframe.drop(columns=['attribute', 'TypeAlias_hasDOTSubcategory', 'TypeAlias_hasDOTIdentifier'], inplace=True)
 	dataframe['useMatchCase'] = numpy.where(
 		((versionsTotal := dataframe.groupby('identifierTypeAlias')['versionMinorMinimumAttribute'].transform('nunique')) == 1)
-		& (dataframe.groupby('identifierTypeAlias')['versionMinorMinimumAttribute'].transform('max') <= pythonMinimumVersionMinor),
+		& (dataframe.groupby('identifierTypeAlias')['versionMinorMinimumAttribute'].transform('max') <= settingsPackageToManufacture.pythonMinimumVersionMinor),
 		0,
 		numpy.maximum(1, versionsTotal - dataframe.groupby('identifierTypeAlias')['versionMinorMinimumAttribute'].rank(method='first', ascending=False).astype(int) + 1)
 	)
@@ -703,7 +700,7 @@ def updateDataframe() -> None:
 	dataframe['hashableListTupleCall_keywords'] = dataframe['listTupleCall_keywords'].astype(str)
 
 	# === Save Final Result ===
-	dataframe.to_pickle(pathFilenameDataframeAST)
+	dataframe.to_pickle(settingsPackageToManufacture.pathFilenameDataframeAST)
 
 # if __name__ == "__main__":
 # 	updateDataframe()

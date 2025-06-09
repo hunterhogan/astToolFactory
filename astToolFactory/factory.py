@@ -1,24 +1,23 @@
 from astToolFactory import (
-	astName_overload, astName_staticmethod, astName_typing_TypeAlias, dictionaryIdentifiers,
-	getElementsBe, getElementsClassIsAndAttribute, getElementsDOT, getElementsGrab, getElementsMake,
-	getElementsTypeAlias, keywordArgumentsIdentifier, keywordKeywordArguments4Call, listPyrightErrors,
-	pythonMinimumVersionMinor, settingsPackageToManufacture,
+	astName_overload, astName_staticmethod, astName_typing_TypeAlias, dictionaryIdentifiers, getElementsBe,
+	getElementsClassIsAndAttribute, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias,
+	keywordKeywordArguments4Call, settingsPackageToManufacture,
 )
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factory_annex import (
-	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
-	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf,
-	FunctionDefMake_Attribute, FunctionDefMake_Import, listHandmade_astTypes, listOverloads_keyword,
-	listOverloadsTypeAlias,
+	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
+	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute, FunctionDefMake_Import,
+	listHandmade_astTypes, listOverloads_keyword, listOverloadsTypeAlias,
 )
 from astToolkit import (
-	astModuleToIngredientsFunction, ClassIsAndAttribute, IfThis, IngredientsFunction,
-	IngredientsModule, LedgerOfImports, Make, NodeChanger, parseLogicalPath2astModule,
+	astModuleToIngredientsFunction, ClassIsAndAttribute, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
+	Make, NodeChanger, parseLogicalPath2astModule,
 )
 from astToolkit.transformationTools import write_astModule
+from collections.abc import Callable
 from isort import code as isort_code
 from pathlib import PurePosixPath
-from typing import cast
+from typing import cast, TypedDict, TypeIs
 from Z0Z_tools import writeStringToHere
 import ast
 import autoflake
@@ -32,17 +31,16 @@ TODO protect against AttributeError (I guess) in DOT, Grab, and ClassIsAndAttrib
 	add docstrings to warn of problem, including in Make
 
 """
+
+class GuardIfThen(TypedDict):
+	"""Guard for a match-case."""
+	test: ast.expr
+	body: list[ast.stmt]
+dictionaryGuardVersion: dict[int, GuardIfThen] = {}
+
 def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	ast.fix_missing_locations(astModule)
 	pythonSource: str = ast.unparse(astModule)
-	if '_astTypes' in moduleIdentifier:
-		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
-	if 'ClassIsAndAttribute' in moduleIdentifier:
-		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
-	if 'DOT' in moduleIdentifier:
-		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
-	if 'Grab' in moduleIdentifier:
-		pythonSource = "# pyright: reportMatchNotExhaustive=false\n" + pythonSource
 	if 'Make' in moduleIdentifier:
 
 		# type ignore only works on hasDOTtype_comment
@@ -90,26 +88,29 @@ def make_astTypes() -> None:
 		])
 	)
 
-	list_match_case: list[ast.match_case] = []
-	for identifierTypeAlias, list4TypeAlias_value, useMatchCase, versionMinorMinimum in getElementsTypeAlias():
+
+	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias():
 		astNameTypeAlias: ast.Name = Make.Name(identifierTypeAlias, ast.Store())
 		TypeAlias_value: ast.expr = Make.BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in list4TypeAlias_value])
 		ast_stmt: ast.stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, value=TypeAlias_value)
 
-		if useMatchCase:
-			if versionMinorMinimum >= pythonMinimumVersionMinor:
-				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
-				guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+		if guardVersion:
+			orElse: ast.stmt | None = None
+			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
+				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+				body: list[ast.stmt] = [ast_stmt]
+				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
 			else:
-				pattern = Make.MatchAs()
-				guard = None
-			list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
+				orElse = ast_stmt
 
-			if useMatchCase > 1:
+			if guardVersion > 1:
 				continue
 			else:
-				ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
-				list_match_case.clear()
+				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
+					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
+				assert orElse is not None, "Programming by brinkmanship!"
+				ast_stmt = orElse
+				dictionaryGuardVersion.clear()
 
 		list4ModuleBody.append(ast_stmt)
 
@@ -127,7 +128,9 @@ def make_astTypes() -> None:
 def makeTool_dump() -> None:
 	ingredientsFunction: IngredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule('ast'), 'dump')
 	astConstant: ast.Constant = Make.Constant('ast.')
-	findThis = ClassIsAndAttribute.valueIs(ast.Attribute, IfThis.isAttributeNamespaceIdentifier('node', '__class__'))
+	findThis: Callable[[ast.AST], TypeIs[ast.MatchSingleton | ast.Constant | ast.Assign | ast.Attribute | ast.AugAssign | ast.Await | ast.DictComp | ast.Expr | ast.FormattedValue | ast.keyword | ast.MatchValue | ast.NamedExpr | ast.Starred | ast.Subscript | ast.TypeAlias | ast.YieldFrom | ast.AnnAssign | ast.Return | ast.Yield] | bool] = (
+		ClassIsAndAttribute.valueIs(
+		ast.Attribute, IfThis.isAttributeNamespaceIdentifier('node', '__class__'))) # pyright: ignore[reportArgumentType]
 	def doThatPrepend(node: ast.Attribute) -> ast.AST:
 		return Make.Add.join([astConstant, cast(ast.expr, node)])
 	prepend_ast = NodeChanger(findThis, doThatPrepend)
@@ -148,7 +151,7 @@ def makeToolBe(identifierToolClass: str) -> None:
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name('TypeIs'), slice=eval(classAs_astAttribute)))
 
-		if versionMinorMinimum > pythonMinimumVersionMinor:
+		if versionMinorMinimum > settingsPackageToManufacture.pythonMinimumVersionMinor:
 			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
 						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
@@ -167,9 +170,9 @@ def makeToolBe(identifierToolClass: str) -> None:
 
 def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
-	list_match_case: list[ast.match_case] = []
 
-	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsClassIsAndAttribute(identifierToolClass):
+
+	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsClassIsAndAttribute(identifierToolClass):
 		# Construct the parameters for `Make.FunctionDef`.
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 		decorator_list: list[ast.expr] = [astName_staticmethod]
@@ -226,21 +229,23 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 				, returns=returns
 			)
 
-		# If the function might not be available in the minimum "supported" version of Python, guard it with a match-case.
-		if useMatchCase:
-			if versionMinorMinimum >= pythonMinimumVersionMinor:
-				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
-				guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+		if guardVersion:
+			orElse: ast.stmt | None = None
+			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
+				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+				body: list[ast.stmt] = [ast_stmt]
+				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
 			else:
-				pattern = Make.MatchAs()
-				guard = None
-			list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
+				orElse = ast_stmt
 
-			if useMatchCase > 1:
+			if guardVersion > 1:
 				continue
 			else:
-				ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
-				list_match_case.clear()
+				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
+					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
+				assert orElse is not None, "Programming by brinkmanship!"
+				ast_stmt = orElse
+				dictionaryGuardVersion.clear()
 
 		list4ClassDefBody.append(ast_stmt)
 
@@ -260,9 +265,8 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 
 def makeToolDOT(identifierToolClass: str) -> None:
 	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
-	list_match_case: list[ast.match_case] = []
 
-	for identifierTypeOfNode, overloadDefinition, _canBeNone, attribute, list_ast_expr, useMatchCase, versionMinorMinimum in getElementsDOT(identifierToolClass):
+	for identifierTypeOfNode, overloadDefinition, _canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		decorator_list: list[ast.expr] = [astName_staticmethod]
@@ -280,21 +284,23 @@ def makeToolDOT(identifierToolClass: str) -> None:
 			, decorator_list=decorator_list
 			, returns=returns
 		)
-
-		if useMatchCase:
-			if versionMinorMinimum >= pythonMinimumVersionMinor:
-				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
-				guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+		if guardVersion:
+			orElse: ast.stmt | None = None
+			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
+				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+				body: list[ast.stmt] = [ast_stmt]
+				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
 			else:
-				pattern = Make.MatchAs()
-				guard = None
-			list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
+				orElse = ast_stmt
 
-			if useMatchCase > 1:
+			if guardVersion > 1:
 				continue
 			else:
-				ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
-				list_match_case.clear()
+				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
+					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
+				assert orElse is not None, "Programming by brinkmanship!"
+				ast_stmt = orElse
+				dictionaryGuardVersion.clear()
 
 		list4ClassDefBody.append(ast_stmt)
 
@@ -313,9 +319,9 @@ def makeToolDOT(identifierToolClass: str) -> None:
 
 def makeToolGrab(identifierToolClass: str) -> None:
 	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]], FunctionDefGrab_andDoAllOf]
-	list_match_case: list[ast.match_case] = []
 
-	for identifierTypeOfNode, list_ast_expr, attribute, useMatchCase, versionMinorMinimum in getElementsGrab(identifierToolClass):
+
+	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(identifierToolClass):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), eval(ast_expr)])) for ast_expr in list_ast_expr]))
@@ -339,22 +345,23 @@ def makeToolGrab(identifierToolClass: str) -> None:
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([astNameTypeOfNode]), astNameTypeOfNode])))
 
-		if useMatchCase:
-			# Create a guard or a catch-all match-case and append to list_match_case.
-			if versionMinorMinimum >= pythonMinimumVersionMinor:
-				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
-				guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+		if guardVersion:
+			orElse: ast.stmt | None = None
+			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
+				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+				body: list[ast.stmt] = [ast_stmt]
+				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
 			else:
-				pattern = Make.MatchAs()
-				guard = None
-			list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
+				orElse = ast_stmt
 
-			# If there are more match-case in the queue, then wait to create ast.Match.
-			if useMatchCase > 1:
+			if guardVersion > 1:
 				continue
 			else:
-				ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
-				list_match_case.clear()
+				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
+					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
+				assert orElse is not None, "Programming by brinkmanship!"
+				ast_stmt = orElse
+				dictionaryGuardVersion.clear()
 
 		list4ClassDefBody.append(ast_stmt)
 
@@ -385,9 +392,9 @@ def makeToolMake(identifierToolClass: str) -> None:
 	listBoolOpIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.boolop.__subclasses__()])
 	listOperatorIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.operator.__subclasses__()])
 
-	list_match_case: list[ast.match_case] = []
+
 	# The order of the tuple elements is the order in which they are used in the flow of the code.
-	for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, useMatchCase, versionMinorMinimum in getElementsMake(identifierToolClass):
+	for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, guardVersion, versionMinorMinimum in getElementsMake(identifierToolClass):
 		# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
 		if ClassDefIdentifier in listBoolOpIdentifiers:
 			list4ClassDefBody.append(Make.ClassDef(ClassDefIdentifier
@@ -420,7 +427,7 @@ def makeToolMake(identifierToolClass: str) -> None:
 		kwarg: ast.arg | None = None
 		if kwarg_annotationIdentifier != 'No':
 			ledgerOfImports.addImportFrom_asStr('astToolkit', kwarg_annotationIdentifier)
-			kwarg = Make.arg(keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(kwarg_annotationIdentifier)))
+			kwarg = Make.arg(settingsPackageToManufacture.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(kwarg_annotationIdentifier)))
 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in listDefaults]
 		decorator_list: list[ast.expr] = [astName_staticmethod]
 		classAs_astAttribute: ast.expr = eval(classAs_astAttributeAsStr)
@@ -451,23 +458,23 @@ def makeToolMake(identifierToolClass: str) -> None:
 			, decorator_list=decorator_list
 			, returns=classAs_astAttribute)
 
-		# If there are multiple versions, create a match-case for this version.
-		if useMatchCase:
-			# Create a guard or a catch-all match-case and append to list_match_case.
-			if versionMinorMinimum >= pythonMinimumVersionMinor:
-				pattern: ast.MatchAs = Make.MatchAs(name = 'version')
-				guard: ast.Compare | None = Make.Compare(Make.Name('version'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+		if guardVersion:
+			orElse: ast.stmt | None = None
+			if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
+				test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+				body: list[ast.stmt] = [ast_stmt]
+				dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
 			else:
-				pattern = Make.MatchAs()
-				guard = None
-			list_match_case.append(Make.match_case(pattern, guard, body = [ast_stmt]))
+				orElse = ast_stmt
 
-			# If there are more match-case in the queue, then wait to create ast.Match.
-			if useMatchCase > 1:
+			if guardVersion > 1:
 				continue
 			else:
-				ast_stmt = Make.Match(Make.Attribute(Make.Name('sys'), 'version_info'), cases=list_match_case)
-				list_match_case.clear()
+				for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
+					orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
+				assert orElse is not None, "Programming by brinkmanship!"
+				ast_stmt = orElse
+				dictionaryGuardVersion.clear()
 
 		list4ClassDefBody.append(ast_stmt)
 

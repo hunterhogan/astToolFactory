@@ -1,10 +1,7 @@
 from astToolFactory._theSSOT import (
 	dictionary_astSuperClasses as dictionary_astSuperClasses,
 	dictionaryIdentifiers as dictionaryIdentifiers,
-	keywordArgumentsIdentifier as keywordArgumentsIdentifier,
 	listPyrightErrors as listPyrightErrors,
-	pathFilenameDataframeAST as pathFilenameDataframeAST,
-	pythonMinimumVersionMinor as pythonMinimumVersionMinor,
 	settingsPackage as settingsPackage,
 	settingsPackageToManufacture as settingsPackageToManufacture,
 	versionMinor_astMinimumSupported as versionMinor_astMinimumSupported,

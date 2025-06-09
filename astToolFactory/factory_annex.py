@@ -1,7 +1,5 @@
 """Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
-from astToolFactory import (
-	astName_overload, astName_staticmethod, dictionary_astSuperClasses, dictionaryIdentifiers,
-)
+from astToolFactory import astName_overload, astName_staticmethod, dictionary_astSuperClasses, dictionaryIdentifiers
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
 from typing_extensions import NotRequired, TypedDict
