@@ -1,10 +1,19 @@
-"""Primarily: settings for this package.
-Secondarily: hardcoded values until I implement a dynamic solution."""
+"""Primary: settings for this package.
+Secondary: settings for manufacturing.
+Tertiary: hardcoded values until I implement a dynamic solution."""
+from copy import deepcopy
 from importlib import import_module as importlib_import_module
 from inspect import getfile as inspect_getfile
 from pathlib import Path
 from tomli import load as tomli_load
 import dataclasses
+
+"""Eliminate hardcoding"""
+listPyrightErrorsHARDCODED: list[str] = ['args', 'body', 'keys', 'kw_defaults', 'name', 'names', 'op', 'orelse', 'target', 'value',]
+listPyrightErrors: list[str] = listPyrightErrorsHARDCODED
+# TODO Can I dynamically set this by reading it from typeshed or somewhere else?
+# The value will change once a year
+versionMinor_astMinimumSupportedHARDCODED = 9
 
 try:
 	identifierPackagePACKAGING: str = tomli_load(Path("pyproject.toml").open('rb'))["project"]["name"]
@@ -28,51 +37,26 @@ class PackageSettings:
 
 settingsPackage = PackageSettings()
 
-# pathFilenameDataframeAST: Path = settingsPackage.pathPackage / 'dataframeAST.pkl'
-
-
-versionMinor_astMinimumSupported = 9
-
-listPyrightErrorsHARDCODED: list[str] = ['args', 'body', 'keys', 'kw_defaults', 'name', 'names', 'op', 'orelse', 'target', 'value',]
-listPyrightErrors = listPyrightErrorsHARDCODED
-
 @dataclasses.dataclass
 class ManufacturedPackageSettings(PackageSettings):
-	# isort_codeConfiguration: dict[str, int | str | list[str]] = dataclasses.field(default_factory=dict)
+	isort_code: dict[str, int | str | list[str]] = dataclasses.field(default_factory=dict[str, int | str | list[str]])
+	identifiers: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
+	astSuperClasses: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
 	pythonMinimumVersionMinor: int = 12
 	pathFilenameDataframeAST: Path = dataclasses.field(default=settingsPackage.pathPackage / 'dataframeAST.pkl')
 	keywordArgumentsIdentifier: str = 'keywordArguments'
+	versionMinor_astMinimumSupported: int = versionMinor_astMinimumSupportedHARDCODED
+	includeDeprecated: bool = False
+	versionMinorMaximum: int | None = None
 
+PackageToManufactureIdentifier: str = 'astToolkit'
 # NOTE why Z0Z_?
 # `settingsPackageToManufacture` is probably an acceptable way to handle this situation.
 # But I am dissatisfied with the steps to create the information. On the one hand, `'astToolkit'`
 # must be manually set, so I don't want to flag it with HARDCODED. On the other hand,
 # `Z0Z_pathRoot` is obviously specific to my environment. I suspect I need a different paradigm.
 Z0Z_pathRoot = Path('/apps')
-Z0Z_PackageToManufactureIdentifier: str = 'astToolkit'
-Z0Z_PackageToManufacturePath = Z0Z_pathRoot / Z0Z_PackageToManufactureIdentifier / Z0Z_PackageToManufactureIdentifier
-isort_codeConfiguration: dict[str, int | str | list[str]] = {
-	"combine_as_imports": True,
-	"force_alphabetical_sort_within_sections": True,
-	"from_first": True,
-	"honor_noqa": True,
-	"include_trailing_comma": True,
-	"indent": "\t",
-	"line_length": 120,
-	"lines_after_imports": 1,
-	"lines_between_types": 0,
-	"multi_line_output": 5,
-	"no_sections": True,
-	"skip": ["__init__.py"],
-	"use_parentheses": True,
-}
-
-settingsPackageToManufacture = ManufacturedPackageSettings(
-	identifierPackage=Z0Z_PackageToManufactureIdentifier,
-	pathPackage=Z0Z_PackageToManufacturePath,
-	)
-
-settingsPackageToManufacture.isort_codeConfiguration=isort_codeConfiguration # pyright: ignore[reportAttributeAccessIssue]
+Z0Z_PackageToManufacturePath = Z0Z_pathRoot / PackageToManufactureIdentifier / PackageToManufactureIdentifier
 
 dictionaryIdentifiers: dict[str, str] = {
 	'Be': 'Be',
@@ -82,7 +66,7 @@ dictionaryIdentifiers: dict[str, str] = {
 	'Grab': 'Grab',
 	'Make': 'Make',
 	'operatorJoinMethod': '_operatorJoinMethod',
-	}
+}
 
 dictionary_astSuperClasses: dict[str, str] = {
 	'AST': '木',
@@ -100,3 +84,34 @@ dictionary_astSuperClasses: dict[str, str] = {
 	'type_param': '形',
 	'unaryop': '一符',
 }
+
+# TODO Settings for isort are currently in two places: here and my personal VS Code JSON settings file.
+# I don't know how to create a single _authority_ for the settings. "EditorConfig" might be relevant.
+isort_codeConfiguration: dict[str, int | str | list[str]] = {
+	"combine_as_imports": True,
+	"force_alphabetical_sort_within_sections": True,
+	"from_first": True,
+	"honor_noqa": True,
+	"include_trailing_comma": True,
+	"indent": "\t",
+	"line_length": 120,
+	"lines_after_imports": 1,
+	"lines_between_types": 0,
+	"multi_line_output": 5,
+	"no_sections": True,
+	"skip": ["__init__.py"],
+	"use_parentheses": True,
+}
+
+settings_astToolkit = ManufacturedPackageSettings(
+	identifierPackage=PackageToManufactureIdentifier,
+	pathPackage=Z0Z_PackageToManufacturePath,
+	identifiers=dictionaryIdentifiers,
+	isort_code=isort_codeConfiguration,
+	astSuperClasses=dictionary_astSuperClasses,
+)
+
+# 1) An abstract, predictable identifier for the "factory"
+# 2) Infrastructure for more than one group of settings
+# It will probably never be used but it's the "right" way to design this
+settingsManufacturing: ManufacturedPackageSettings = deepcopy(settings_astToolkit)

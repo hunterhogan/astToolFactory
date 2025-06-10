@@ -2,14 +2,14 @@
 NOTE Use special indentation in this file.
     1. The generated files use spaces, not tabs, so use spaces here.
     2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
-from astToolFactory import dictionaryIdentifiers
+from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
 import ast
 
 identifierToolClass: str = 'Be'
 
-docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]] = Make.Expr(Make.Constant(
     """A comprehensive suite of functions for AST class identification and type narrowing.
 
     `class` `Be` has a method for each `ast.AST` subclass, also called "node type", to perform type

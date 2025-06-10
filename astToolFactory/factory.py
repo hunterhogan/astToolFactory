@@ -1,7 +1,7 @@
 from astToolFactory import (
-	astName_overload, astName_staticmethod, astName_typing_TypeAlias, dictionaryIdentifiers, getElementsBe,
-	getElementsClassIsAndAttribute, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias,
-	keywordKeywordArguments4Call, settingsPackageToManufacture,
+	astName_overload, astName_staticmethod, astName_typing_TypeAlias, getElementsBe, getElementsClassIsAndAttribute,
+	getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call,
+	ManufacturedPackageSettings, settingsManufacturing,
 )
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factory_annex import (
@@ -17,25 +17,17 @@ from astToolkit.transformationTools import write_astModule
 from collections.abc import Callable
 from isort import code as isort_code
 from pathlib import PurePosixPath
-from typing import cast, TypedDict, TypeIs
+from typing import Any, cast, TypedDict, TypeIs
 from Z0Z_tools import writeStringToHere
 import ast
 import autoflake
 
-"""
-class Name(expr):
-...
-	ctx: expr_context  # Not present in Python < 3.13 if not passed to `__init__`
-
-TODO protect against AttributeError (I guess) in DOT, Grab, and ClassIsAndAttribute
-	add docstrings to warn of problem, including in Make
-
-"""
-
 class GuardIfThen(TypedDict):
-	"""Guard for a match-case."""
+	"""Guard for Python versions."""
 	test: ast.expr
 	body: list[ast.stmt]
+# NOTE Global identifiers used by multiple functions to simplify using the `_makeGuardVersion` function.
+# If the separate functions converge enough, I can combine them into one function and remove this suboptimal system.
 dictionaryGuardVersion: dict[int, GuardIfThen] = {}
 ast_stmt: ast.stmt | None = None
 guardVersion: int = 0
@@ -46,7 +38,7 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	pythonSource: str = ast.unparse(astModule)
 	if 'Make' in moduleIdentifier:
 
-		# type ignore only works on hasDOTtype_comment
+		# type ignore only works on hasDOTtype_comment, right?
 		# TODO update docs
 
 		listTypeIgnore: list[ast.TypeIgnore] = []
@@ -63,8 +55,8 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 		pythonSource = pythonSource.replace('# type: ignore[', '# pyright: ignore[')
 	autoflake_additional_imports: list[str] = ['astToolkit']
 	pythonSource = autoflake.fix_code(pythonSource, autoflake_additional_imports, expand_star_imports=True, remove_all_unused_imports=True, remove_duplicate_keys = False, remove_unused_variables = False)
-	pythonSource = isort_code(pythonSource, **settingsPackageToManufacture.isort_codeConfiguration) # pyright: ignore[reportUnknownMemberType, reportAttributeAccessIssue, reportUnknownArgumentType]
-	pathFilenameModule = PurePosixPath(settingsPackageToManufacture.pathPackage, moduleIdentifier + settingsPackageToManufacture.fileExtension)
+	pythonSource = isort_code(code=pythonSource, **settingsManufacturing.isort_code) # pyright: ignore[reportArgumentType]
+	pathFilenameModule = PurePosixPath(settingsManufacturing.pathPackage, moduleIdentifier + settingsManufacturing.fileExtension)
 	writeStringToHere(pythonSource, pathFilenameModule)
 
 def writeClass(classIdentifier: str, list4ClassDefBody: list[ast.stmt], list4ModuleBody: list[ast.stmt], moduleIdentifierPrefix: str | None = '_tool') -> None:
@@ -83,7 +75,7 @@ def writeClass(classIdentifier: str, list4ClassDefBody: list[ast.stmt], list4Mod
 def _makeGuardVersion() -> None:
 	global ast_stmt, guardVersion, versionMinorMinimum
 	orElse: ast.stmt | None = None
-	if versionMinorMinimum >= settingsPackageToManufacture.pythonMinimumVersionMinor:
+	if versionMinorMinimum >= settingsManufacturing.pythonMinimumVersionMinor:
 		test: ast.Compare = Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), ops=[ast.GtE()], comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
 		assert ast_stmt is not None, "Programming by brinkmanship!"
 		body: list[ast.stmt] = [ast_stmt]
@@ -100,7 +92,7 @@ def _makeGuardVersion() -> None:
 		ast_stmt = orElse
 		dictionaryGuardVersion.clear()
 
-def make_astTypes() -> None:
+def make_astTypes(**keywordArguments: Any) -> None:
 	global ast_stmt, guardVersion, versionMinorMinimum
 	list4ModuleBody: list[ast.stmt] = []
 	ledgerOfImports = LedgerOfImports(
@@ -112,7 +104,7 @@ def make_astTypes() -> None:
 		])
 	)
 
-	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias():
+	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias(**keywordArguments):
 		astNameTypeAlias: ast.Name = Make.Name(identifierTypeAlias, ast.Store())
 		TypeAlias_value: ast.expr = Make.BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in list4TypeAlias_value])
 		ast_stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, value=TypeAlias_value)
@@ -146,20 +138,20 @@ def makeTool_dump() -> None:
 	def doThat(node: ast.FunctionDef) -> ast.AST:
 		return prepend_ast.visit(node)
 	NodeChanger(findThis, doThat).visit(ingredientsFunction.astFunctionDef)
-	pathFilename = PurePosixPath(settingsPackageToManufacture.pathPackage, '_dumpFunctionDef' + settingsPackageToManufacture.fileExtension)
-	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsPackageToManufacture.identifierPackage)
+	pathFilename = PurePosixPath(settingsManufacturing.pathPackage, '_dumpFunctionDef' + settingsManufacturing.fileExtension)
+	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsManufacturing.identifierPackage)
 
-def makeToolBe(identifierToolClass: str) -> None:
-	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
+def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
+	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
 
-	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute in getElementsBe(identifierToolClass):
+	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute in getElementsBe(identifierToolClass, **keywordArguments):
 		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Name('ast.AST'))])
 			, body=[Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), eval(classAs_astAttribute)]))]
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name('TypeIs'), slice=eval(classAs_astAttribute)))
 
-		if versionMinorMinimum > settingsPackageToManufacture.pythonMinimumVersionMinor:
+		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
 			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
 						, ops=[ast.GtE()]
 						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
@@ -176,11 +168,11 @@ def makeToolBe(identifierToolClass: str) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
+def makeToolClassIsAndAttribute(identifierToolClass: str, **keywordArguments: Any) -> None:
 	global ast_stmt, guardVersion, versionMinorMinimum
-	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
 
-	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsClassIsAndAttribute(identifierToolClass):
+	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsClassIsAndAttribute(identifierToolClass, **keywordArguments):
 		# Construct the parameters for `Make.FunctionDef`.
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 		decorator_list: list[ast.expr] = [astName_staticmethod]
@@ -215,16 +207,10 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 
 		returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), workhorse_returnsAnnotation]))
 
+		# joined Callable
 		# annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')])) for ast_expr in list_ast_expr]))
-		annotation: ast.expr = (
-			Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List(
-				[
-			Make.BitOr.join([
-					eval(ast_expr)
-				for ast_expr in list_ast_expr])
-				]
-				), Make.Name('bool')]))
-		)
+		# One Callable with joined parameters
+		annotation: ast.expr = (Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.BitOr.join([eval(ast_expr) for ast_expr in list_ast_expr])]), Make.Name('bool')])))
 
 		# Create the overload or implementation of the function.
 		ast_stmt = Make.FunctionDef(attribute + 'Is'
@@ -256,11 +242,11 @@ def makeToolClassIsAndAttribute(identifierToolClass: str) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolDOT(identifierToolClass: str) -> None:
+def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	global ast_stmt, guardVersion, versionMinorMinimum
-	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]]]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
 
-	for identifierTypeOfNode, overloadDefinition, _canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass):
+	for identifierTypeOfNode, overloadDefinition, _canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass, **keywordArguments):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		decorator_list: list[ast.expr] = [astName_staticmethod]
@@ -297,11 +283,11 @@ def makeToolDOT(identifierToolClass: str) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolGrab(identifierToolClass: str) -> None:
+def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	global ast_stmt, guardVersion, versionMinorMinimum
-	list4ClassDefBody: list[ast.stmt] = [docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]], FunctionDefGrab_andDoAllOf]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]], FunctionDefGrab_andDoAllOf]
 
-	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(identifierToolClass):
+	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(identifierToolClass, **keywordArguments):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), eval(ast_expr)])) for ast_expr in list_ast_expr]))
@@ -343,7 +329,7 @@ def makeToolGrab(identifierToolClass: str) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolMake(identifierToolClass: str) -> None:
+def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 	global ast_stmt, guardVersion, versionMinorMinimum
 	ledgerOfImports: LedgerOfImports = LedgerOfImports()
 	ledgerOfImports.addImportFrom_asStr('astToolkit', 'ConstantValueType')
@@ -359,7 +345,7 @@ def makeToolMake(identifierToolClass: str) -> None:
 	listOperatorIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.operator.__subclasses__()])
 
 	# The order of the tuple elements is the order in which they are used in the flow of the code.
-	for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, guardVersion, versionMinorMinimum in getElementsMake(identifierToolClass):
+	for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, guardVersion, versionMinorMinimum in getElementsMake(identifierToolClass, **keywordArguments):
 		# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
 		if ClassDefIdentifier in listBoolOpIdentifiers:
 			list4ClassDefBody.append(Make.ClassDef(ClassDefIdentifier
@@ -392,7 +378,7 @@ def makeToolMake(identifierToolClass: str) -> None:
 		kwarg: ast.arg | None = None
 		if kwarg_annotationIdentifier != 'No':
 			ledgerOfImports.addImportFrom_asStr('astToolkit', kwarg_annotationIdentifier)
-			kwarg = Make.arg(settingsPackageToManufacture.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(kwarg_annotationIdentifier)))
+			kwarg = Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(kwarg_annotationIdentifier)))
 		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in listDefaults]
 		decorator_list: list[ast.expr] = [astName_staticmethod]
 		classAs_astAttribute: ast.expr = eval(classAs_astAttributeAsStr)
@@ -443,12 +429,16 @@ def makeToolMake(identifierToolClass: str) -> None:
 def write_theSSOT():
 	writeModule(astModule_theSSOT, '_theSSOT')
 
-if __name__ == "__main__":
+def manufactureTools(settingsManufacturing: ManufacturedPackageSettings):
+	"""Reminder: `_makeGuardVersion` relies on global identifiers, so don't use concurrency."""
 	make_astTypes()
-	makeToolBe(dictionaryIdentifiers['Be'])
-	makeToolClassIsAndAttribute(dictionaryIdentifiers['ClassIsAndAttribute'])
-	makeToolDOT(dictionaryIdentifiers['DOT'])
-	makeToolGrab(dictionaryIdentifiers['Grab'])
-	makeToolMake(dictionaryIdentifiers['Make'])
+	makeToolBe(settingsManufacturing.identifiers['Be'])
+	makeToolClassIsAndAttribute(settingsManufacturing.identifiers['ClassIsAndAttribute'])
+	makeToolDOT(settingsManufacturing.identifiers['DOT'])
+	makeToolGrab(settingsManufacturing.identifiers['Grab'])
+	makeToolMake(settingsManufacturing.identifiers['Make'])
 	makeTool_dump()
 	write_theSSOT()
+
+if __name__ == "__main__":
+	manufactureTools(settingsManufacturing)

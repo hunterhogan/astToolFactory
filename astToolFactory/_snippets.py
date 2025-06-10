@@ -1,4 +1,4 @@
-from astToolFactory import settingsPackageToManufacture
+from astToolFactory import settingsManufacturing
 from astToolkit import Make
 from typing import cast
 import ast
@@ -14,4 +14,4 @@ astName_typing_TypeVar: ast.expr = cast(ast.expr, Make.Name('typing_TypeVar'))
 format_hasDOTIdentifier: str = "hasDOT{attribute}"
 formatTypeAliasSubcategory: str = "{hasDOTIdentifier}_{TypeAliasSubcategory}"
 
-keywordKeywordArguments4Call = Make.keyword(None, Make.Name(settingsPackageToManufacture.keywordArgumentsIdentifier))
+keywordKeywordArguments4Call = Make.keyword(None, Make.Name(settingsManufacturing.keywordArgumentsIdentifier))

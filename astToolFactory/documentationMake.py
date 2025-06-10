@@ -2,7 +2,7 @@
 NOTE Use special indentation in this file.
     1. The generated files use spaces, not tabs, so use spaces here.
     2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
-from astToolFactory import dictionaryIdentifiers
+from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
 import ast
@@ -10,12 +10,12 @@ import ast
 identifierToolClass: str = 'Make'
 
 for subclass in ast.boolop.__subclasses__():
-    docstrings[dictionaryIdentifiers[identifierToolClass]][subclass.__name__] = Make.Expr(Make.Constant("""Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BoolOp` class."""))
+    docstrings[settingsManufacturing.identifiers[identifierToolClass]][subclass.__name__] = Make.Expr(Make.Constant("""Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BoolOp` class."""))
 
 for subclass in ast.operator.__subclasses__():
-    docstrings[dictionaryIdentifiers[identifierToolClass]][subclass.__name__] = Make.Expr(Make.Constant("""Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BinOp` class."""))
+    docstrings[settingsManufacturing.identifiers[identifierToolClass]][subclass.__name__] = Make.Expr(Make.Constant("""Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BinOp` class."""))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[identifierToolClass]] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]] = Make.Expr(Make.Constant(
     """
     Factory methods for creating properly configured AST nodes with enhanced usability.
     (AI generated docstring)
@@ -45,7 +45,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers[ide
     """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['_boolopJoinMethod'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['_boolopJoinMethod'] = Make.Expr(Make.Constant(
         """
         Internal implementation for joining expressions with boolean operators.
         (AI generated docstring)
@@ -68,7 +68,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['_boolopJoinMethod'] = Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['boolopJoinMethod']] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers['boolopJoinMethod']] = Make.Expr(Make.Constant(
             """
             Single `ast.expr` from a sequence of `ast.expr` by forming an `ast.BoolOp` that logically "joins" expressions using the `ast.BoolOp` subclass.
 
@@ -105,7 +105,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['bo
             """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['_operatorJoinMethod'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['_operatorJoinMethod'] = Make.Expr(Make.Constant(
         """
         Internal implementation for joining expressions with binary operators.
         (AI generated docstring)
@@ -127,7 +127,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['_operatorJoinMethod'] = 
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['operatorJoinMethod']] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers['operatorJoinMethod']] = Make.Expr(Make.Constant(
             """
             Single `ast.expr` from a collection of `ast.expr` by forming nested `ast.BinOp` that are logically "joined" using the `ast.operator` subclass.
 
@@ -168,7 +168,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]][dictionaryIdentifiers['op
             """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['alias'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['alias'] = Make.Expr(Make.Constant(
         """
         Import alias AST `object` representing name mapping in import statements.
         (AI generated docstring)
@@ -189,7 +189,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['alias'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['AnnAssign'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['AnnAssign'] = Make.Expr(Make.Constant(
         """
         Annotated assignment AST `object` for type-annotated variable assignments.
         (AI generated docstring)
@@ -211,7 +211,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['AnnAssign'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['arg'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['arg'] = Make.Expr(Make.Constant(
         """
         Function parameter AST object representing individual arguments (**arg**ument) in function signatures.
         (AI generated docstring)
@@ -230,7 +230,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['arg'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['arguments'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['arguments'] = Make.Expr(Make.Constant(
         """
         Function signature AST object containing all parameter specifications (**arg**ument**s**).
         (AI generated docstring)
@@ -254,7 +254,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['arguments'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Assert'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Assert'] = Make.Expr(Make.Constant(
         """Create an `ast.Assert` node for assertion statements.
 
         The `Assert` node represents an `assert` statement that evaluates a test
@@ -270,7 +270,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Assert'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['AST'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['AST'] = Make.Expr(Make.Constant(
         """
         Base AST node object representing the abstract syntax tree foundation.
         (AI generated docstring)
@@ -288,7 +288,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['AST'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Assign'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Assign'] = Make.Expr(Make.Constant(
         """
         Assignment AST `object` for variable assignments without type annotations.
         (AI generated docstring)
@@ -309,7 +309,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Assign'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['AsyncFor'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['AsyncFor'] = Make.Expr(Make.Constant(
         """
         Asynchronous for loop AST `object` for iterating over async iterables.
         (AI generated docstring)
@@ -332,7 +332,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['AsyncFor'] = Make.Expr(M
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['AsyncFunctionDef'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['AsyncFunctionDef'] = Make.Expr(Make.Constant(
         """
         Asynchronous function definition AST object for `async def` declarations.
         (AI generated docstring)
@@ -355,7 +355,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['AsyncFunctionDef'] = Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['AsyncWith'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['AsyncWith'] = Make.Expr(Make.Constant(
         """
         Asynchronous context manager AST `object` for async resource management.
         (AI generated docstring)
@@ -376,7 +376,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['AsyncWith'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Attribute'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Attribute'] = Make.Expr(Make.Constant(
         """
         Attribute access AST `object` representing dot notation in Python code.
         (AI generated docstring)
@@ -399,7 +399,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Attribute'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['AugAssign'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['AugAssign'] = Make.Expr(Make.Constant(
         """
         Augmented assignment AST `object` for compound assignment operations.
         (AI generated docstring)
@@ -423,7 +423,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['AugAssign'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Await'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Await'] = Make.Expr(Make.Constant(
         """
         Await expression AST `object` for asynchronous operations.
         (AI generated docstring)
@@ -442,7 +442,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Await'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['BinOp'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['BinOp'] = Make.Expr(Make.Constant(
         """
         Binary operation AST `object` representing operators between two expressions.
         (AI generated docstring)
@@ -463,7 +463,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['BinOp'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['boolop'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['boolop'] = Make.Expr(Make.Constant(
         """
         Base boolean operator abstract class for logical operations.
         (AI generated docstring)
@@ -482,7 +482,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['boolop'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['BoolOp'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['BoolOp'] = Make.Expr(Make.Constant(
         """
         Boolean operation AST `object` for logical operations with multiple operands.
         (AI generated docstring)
@@ -502,7 +502,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['BoolOp'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Break'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Break'] = Make.Expr(Make.Constant(
         """Create an `ast.Break` node for break statements.
 
         The `Break` node represents a `break` statement that terminates the
@@ -513,7 +513,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Break'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Call'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Call'] = Make.Expr(Make.Constant(
         """
         Function call AST `object` representing function invocation with arguments.
         (AI generated docstring)
@@ -534,7 +534,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Call'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['ClassDef'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['ClassDef'] = Make.Expr(Make.Constant(
         """
         Class definition AST object for `class` declarations with inheritance and metadata.
         (AI generated docstring)
@@ -569,7 +569,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['ClassDef'] = Make.Expr(M
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['cmpop'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['cmpop'] = Make.Expr(Make.Constant(
         """
         Abstract ***c***o***mp***arison ***op***erator `object` for use in AST construction.
         (AI generated docstring)
@@ -588,7 +588,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['cmpop'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Compare'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Compare'] = Make.Expr(Make.Constant(
         """
         Comparison AST `object` for chained comparison operations.
         (AI generated docstring)
@@ -630,7 +630,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Compare'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['comprehension'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['comprehension'] = Make.Expr(Make.Constant(
         """
         Comprehension clause AST object for `for` clauses in list/set/dict comprehensions.
         (AI generated docstring)
@@ -651,7 +651,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['comprehension'] = Make.E
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Constant'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Constant'] = Make.Expr(Make.Constant(
         """
         Constant value AST `object` for literal values in Python code.
         (AI generated docstring)
@@ -671,7 +671,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Constant'] = Make.Expr(M
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Continue'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Continue'] = Make.Expr(Make.Constant(
         """Create an `ast.Continue` node for continue statements.
 
         The `Continue` node represents a `continue` statement that skips the
@@ -683,7 +683,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Continue'] = Make.Expr(M
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Del'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Del'] = Make.Expr(Make.Constant(
         """
         Delete context for removing expressions from memory.
         (AI generated docstring)
@@ -702,7 +702,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Del'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Delete'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Delete'] = Make.Expr(Make.Constant(
         """Create an `ast.Delete` node for deletion statements.
 
         The `Delete` node represents a `del` statement that removes references
@@ -716,7 +716,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Delete'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Dict'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Dict'] = Make.Expr(Make.Constant(
         """
         Dictionary literal AST `object` with key-value pairs.
         (AI generated docstring)
@@ -736,7 +736,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Dict'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['DictComp'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['DictComp'] = Make.Expr(Make.Constant(
         """
         Dictionary comprehension AST `object` for dynamic dictionary construction.
         (AI generated docstring)
@@ -772,7 +772,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['DictComp'] = Make.Expr(M
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Eq'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Eq'] = Make.Expr(Make.Constant(
         """
         'Eq', meaning 'is ***Eq***ual to', is the `object` representation of Python comparison operator '`==`'.
 
@@ -787,7 +787,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Eq'] = Make.Expr(Make.Co
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['excepthandler'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['excepthandler'] = Make.Expr(Make.Constant(
         """
         Exception handler abstract base class for try-except constructs.
         (AI generated docstring)
@@ -802,7 +802,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['excepthandler'] = Make.E
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['ExceptHandler'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['ExceptHandler'] = Make.Expr(Make.Constant(
         """
         Exception handler clause for try-except statements.
         (AI generated docstring)
@@ -822,7 +822,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['ExceptHandler'] = Make.E
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['expr'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['expr'] = Make.Expr(Make.Constant(
         """
         Abstract ***expr***ession `object` for base expression operations.
         (AI generated docstring)
@@ -848,7 +848,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['expr'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Expr'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Expr'] = Make.Expr(Make.Constant(
         """Create an `ast.Expr` node for expression statements.
 
         The `Expr` node represents a statement that consists of a single expression
@@ -863,7 +863,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Expr'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['expr_context'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['expr_context'] = Make.Expr(Make.Constant(
         """
         Expression context abstract base class for expression usage patterns.
         (AI generated docstring)
@@ -878,7 +878,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['expr_context'] = Make.Ex
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Expression'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Expression'] = Make.Expr(Make.Constant(
         """Create an `ast.Expression` node for expression-only modules.
 
         The `Expression` node represents a module that contains only a single
@@ -893,7 +893,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Expression'] = Make.Expr
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['For'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['For'] = Make.Expr(Make.Constant(
         """
         For loop AST `object` for iterating over iterable expressions.
         (AI generated docstring)
@@ -916,7 +916,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['For'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['FormattedValue'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['FormattedValue'] = Make.Expr(Make.Constant(
         """
         Formatted value AST `object` for f-string interpolation components.
         (AI generated docstring)
@@ -937,7 +937,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['FormattedValue'] = Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['FunctionDef'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['FunctionDef'] = Make.Expr(Make.Constant(
         """
         Function definition AST object for standard `def` declarations with typing support.
         (AI generated docstring)
@@ -975,7 +975,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['FunctionDef'] = Make.Exp
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['FunctionType'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['FunctionType'] = Make.Expr(Make.Constant(
         """Create an `ast.FunctionType` node for function type annotations.
 
         The `FunctionType` node represents function type annotations of the form
@@ -991,7 +991,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['FunctionType'] = Make.Ex
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['GeneratorExp'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['GeneratorExp'] = Make.Expr(Make.Constant(
         """
         Generator ***expr***ession object for memory-efficient iteration.
         (AI generated docstring)
@@ -1025,7 +1025,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['GeneratorExp'] = Make.Ex
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Global'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Global'] = Make.Expr(Make.Constant(
         """Create an `ast.Global` node for global declarations.
 
         The `Global` node represents a `global` statement that declares variables
@@ -1040,7 +1040,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Global'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Gt'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Gt'] = Make.Expr(Make.Constant(
         """
         'Gt', meaning 'Greater than', is the `object` representation of Python operator '`>`'.
 
@@ -1055,7 +1055,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Gt'] = Make.Expr(Make.Co
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['GtE'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['GtE'] = Make.Expr(Make.Constant(
         """
         'GtE', meaning 'is Greater than or Equal to', is the `object` representation of Python comparison operator '`>=`'.
 
@@ -1070,7 +1070,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['GtE'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['If'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['If'] = Make.Expr(Make.Constant(
         """
         Conditional statement AST `object` for branching execution paths.
         (AI generated docstring)
@@ -1124,7 +1124,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['If'] = Make.Expr(Make.Co
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['IfExp'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['IfExp'] = Make.Expr(Make.Constant(
         """
         Conditional ***expr***ession `object` for inline if-else operations.
         (AI generated docstring)
@@ -1161,7 +1161,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['IfExp'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Import'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Import'] = Make.Expr(Make.Constant(
         """
         Import statement AST `object` for absolute module imports.
         (AI generated docstring)
@@ -1199,7 +1199,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Import'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['ImportFrom'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['ImportFrom'] = Make.Expr(Make.Constant(
         """
         From-import statement AST `object` for selective module imports.
         (AI generated docstring)
@@ -1223,7 +1223,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['ImportFrom'] = Make.Expr
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['In'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['In'] = Make.Expr(Make.Constant(
         """
         'In', meaning 'is ***In***cluded in' or 'has membership In', is the `object` representation of Python keyword '`in`'.
 
@@ -1239,7 +1239,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['In'] = Make.Expr(Make.Co
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Interactive'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Interactive'] = Make.Expr(Make.Constant(
         """Create an `ast.Interactive` node for interactive mode modules.
 
         The `Interactive` node represents a module intended for interactive
@@ -1254,7 +1254,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Interactive'] = Make.Exp
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Invert'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Invert'] = Make.Expr(Make.Constant(
         """
         Bitwise complement operator representing Python '`~`' operator.
         (AI generated docstring)
@@ -1272,7 +1272,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Invert'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Is'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Is'] = Make.Expr(Make.Constant(
         """
         'Is', meaning 'Is identical to', is the `object` representation of Python keyword '`is`'.
 
@@ -1306,7 +1306,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Is'] = Make.Expr(Make.Co
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['IsNot'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['IsNot'] = Make.Expr(Make.Constant(
         """
         'IsNot', meaning 'Is Not identical to', is the `object` representation of Python keywords '`is not`'.
 
@@ -1342,7 +1342,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['IsNot'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['JoinedStr'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['JoinedStr'] = Make.Expr(Make.Constant(
         """
         Joined string `object` for f-string literal construction.
         (AI generated docstring)
@@ -1361,7 +1361,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['JoinedStr'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['keyword'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['keyword'] = Make.Expr(Make.Constant(
         """
         Keyword argument AST object for named parameters in function calls.
         (AI generated docstring)
@@ -1387,7 +1387,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['keyword'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Lambda'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Lambda'] = Make.Expr(Make.Constant(
         """
         Lambda function `object` for anonymous function expressions.
         (AI generated docstring)
@@ -1406,7 +1406,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Lambda'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['List'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['List'] = Make.Expr(Make.Constant(
         """
         List literal `object` with ordered element collection.
         (AI generated docstring)
@@ -1425,7 +1425,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['List'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['ListComp'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['ListComp'] = Make.Expr(Make.Constant(
         """
         List ***c***o***mp***rehension `object` for dynamic list construction.
         (AI generated docstring)
@@ -1444,7 +1444,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['ListComp'] = Make.Expr(M
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Load'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Load'] = Make.Expr(Make.Constant(
         """
         Load context for reading expression values.
         (AI generated docstring)
@@ -1459,7 +1459,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Load'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Lt'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Lt'] = Make.Expr(Make.Constant(
         """
         'Lt', meaning 'is Less than', is the `object` representation of Python comparison operator '`<`'.
 
@@ -1474,7 +1474,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Lt'] = Make.Expr(Make.Co
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['LtE'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['LtE'] = Make.Expr(Make.Constant(
         """
         'LtE', meaning 'is Less than or Equal to', is the `object` representation of Python comparison operator '`<=`'.
 
@@ -1489,7 +1489,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['LtE'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Match'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Match'] = Make.Expr(Make.Constant(
         """
         Match statement AST object for pattern matching with multiple cases.
         (AI generated docstring)
@@ -1508,7 +1508,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Match'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['match_case'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['match_case'] = Make.Expr(Make.Constant(
         """
         Match case clause AST object for individual cases in `match` statements (**match** **case**).
         (AI generated docstring)
@@ -1528,7 +1528,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['match_case'] = Make.Expr
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchAs'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchAs'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchAs` node representing a capture pattern or wildcard.
 
         (AI generated docstring)
@@ -1550,7 +1550,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchAs'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchClass'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchClass'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchClass` node for matching class instances.
 
         (AI generated docstring)
@@ -1576,7 +1576,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchClass'] = Make.Expr
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchMapping'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchMapping'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchMapping` node for matching dictionary-like objects.
 
         (AI generated docstring)
@@ -1599,7 +1599,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchMapping'] = Make.Ex
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchOr'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchOr'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchOr` node for alternative pattern matching.
 
         (AI generated docstring)
@@ -1617,7 +1617,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchOr'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchSequence'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchSequence'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchSequence` node for matching sequences.
 
         (AI generated docstring)
@@ -1637,7 +1637,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchSequence'] = Make.E
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchSingleton'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchSingleton'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchSingleton` node for matching singleton values.
 
         (AI generated docstring)
@@ -1657,7 +1657,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchSingleton'] = Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchStar'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchStar'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchStar` node for capturing sequence remainder.
 
         (AI generated docstring)
@@ -1676,7 +1676,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchStar'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchValue'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchValue'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchValue` node for matching literal values.
 
         (AI generated docstring)
@@ -1696,7 +1696,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['MatchValue'] = Make.Expr
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['mod'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['mod'] = Make.Expr(Make.Constant(
         """Create an appropriate `ast.mod` node based on the body content.
 
         The `mod` method creates the appropriate module type node based on the
@@ -1711,7 +1711,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['mod'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Module'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Module'] = Make.Expr(Make.Constant(
         """
         Module AST object representing complete Python modules with statements and type ignores.
         (AI generated docstring)
@@ -1740,7 +1740,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Module'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Name'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Name'] = Make.Expr(Make.Constant(
         """
         Name `object` for variable and identifier references.
         (AI generated docstring)
@@ -1759,7 +1759,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Name'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['NamedExpr'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['NamedExpr'] = Make.Expr(Make.Constant(
         """
         Named ***expr***ession `object` for assignment expressions (walrus operator).
         (AI generated docstring)
@@ -1791,7 +1791,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['NamedExpr'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Nonlocal'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Nonlocal'] = Make.Expr(Make.Constant(
         """Create an `ast.Nonlocal` node for nonlocal declarations.
 
         The `Nonlocal` node represents a `nonlocal` statement that declares
@@ -1806,7 +1806,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Nonlocal'] = Make.Expr(M
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Not'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Not'] = Make.Expr(Make.Constant(
         """
         Logical negation operator representing Python keyword '`not`'.
         (AI generated docstring)
@@ -1824,7 +1824,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Not'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['NotEq'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['NotEq'] = Make.Expr(Make.Constant(
         """
         'NotEq' meaning 'is ***Not*** ***Eq***ual to', is the `object` representation of Python comparison operator '`!=`'.
 
@@ -1839,7 +1839,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['NotEq'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['NotIn'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['NotIn'] = Make.Expr(Make.Constant(
         """
         'NotIn', meaning 'is Not ***In***cluded in' or 'does Not have membership In', is the `object` representation of Python keywords '`not in`'.
 
@@ -1855,7 +1855,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['NotIn'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['operator'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['operator'] = Make.Expr(Make.Constant(
         """Create an `ast.operator` node for arithmetic and bitwise operations.
 
         The `operator` method creates operator nodes used in binary operations,
@@ -1870,7 +1870,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['operator'] = Make.Expr(M
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['ParamSpec'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['ParamSpec'] = Make.Expr(Make.Constant(
         """
         Parameter specification type parameter for generic callable types (**Param**eter **Spec**ification).
         (AI generated docstring)
@@ -1889,7 +1889,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['ParamSpec'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Pass'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Pass'] = Make.Expr(Make.Constant(
         """Create an `ast.Pass` node for pass statements.
 
         The `Pass` node represents a `pass` statement, which is a null operation
@@ -1901,7 +1901,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Pass'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['pattern'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['pattern'] = Make.Expr(Make.Constant(
         """Create a base `ast.pattern` node.
 
         (AI generated docstring)
@@ -1916,7 +1916,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['pattern'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Raise'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Raise'] = Make.Expr(Make.Constant(
         """Create an `ast.Raise` node for raise statements.
 
         The `Raise` node represents a `raise` statement that raises an exception.
@@ -1932,7 +1932,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Raise'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Return'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Return'] = Make.Expr(Make.Constant(
         """
         Return statement AST object for function value returns and early exits.
         (AI generated docstring)
@@ -1950,7 +1950,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Return'] = Make.Expr(Mak
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Set'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Set'] = Make.Expr(Make.Constant(
         """
         Set literal `object` for unordered unique element collections.
         (AI generated docstring)
@@ -1968,7 +1968,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Set'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['SetComp'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['SetComp'] = Make.Expr(Make.Constant(
         """
         Set ***c***o***mp***rehension `object` for dynamic set construction.
         (AI generated docstring)
@@ -1987,7 +1987,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['SetComp'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Slice'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Slice'] = Make.Expr(Make.Constant(
         """
         Slice `object` for sequence slicing operations.
         (AI generated docstring)
@@ -2007,7 +2007,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Slice'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Starred'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Starred'] = Make.Expr(Make.Constant(
         """
         Starred ***expr***ession `object` for unpacking operations.
         (AI generated docstring)
@@ -2035,7 +2035,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Starred'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['stmt'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['stmt'] = Make.Expr(Make.Constant(
         """Create a statement node of the specified type.
 
         The `stmt` method provides a generic interface for creating any statement
@@ -2051,7 +2051,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['stmt'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Store'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Store'] = Make.Expr(Make.Constant(
         """
         Store context for assigning values to expressions.
         (AI generated docstring)
@@ -2070,7 +2070,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Store'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Subscript'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Subscript'] = Make.Expr(Make.Constant(
         """
         Subscript `object` for indexing and slicing operations.
         (AI generated docstring)
@@ -2090,7 +2090,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Subscript'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Try'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Try'] = Make.Expr(Make.Constant(
         """
         Try-except statement AST `object` for exception handling and resource cleanup.
         (AI generated docstring)
@@ -2115,7 +2115,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Try'] = Make.Expr(Make.C
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['TryStar'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['TryStar'] = Make.Expr(Make.Constant(
         """
         Try-except* statement AST `object` for exception group handling.
         (AI generated docstring)
@@ -2140,7 +2140,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['TryStar'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Tuple'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Tuple'] = Make.Expr(Make.Constant(
         """
         Tuple literal `object` for ordered immutable collections.
         (AI generated docstring)
@@ -2159,7 +2159,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Tuple'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['type_ignore'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['type_ignore'] = Make.Expr(Make.Constant(
         """Create an `ast.type_ignore` node for type checker ignore comments.
 
         The `type_ignore` node represents type checker ignore directives that
@@ -2175,7 +2175,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['type_ignore'] = Make.Exp
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['type_param'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['type_param'] = Make.Expr(Make.Constant(
         """
         Abstract type parameter base for generic type constructs (**type** **param**eter).
         (AI generated docstring)
@@ -2190,7 +2190,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['type_param'] = Make.Expr
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeAlias'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['TypeAlias'] = Make.Expr(Make.Constant(
         """
         Type alias definition AST object for `type` statement declarations.
         (AI generated docstring)
@@ -2210,7 +2210,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeAlias'] = Make.Expr(
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeIgnore'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['TypeIgnore'] = Make.Expr(Make.Constant(
         """
         Type ignore comment AST object for `# type: ignore` directives.
         (AI generated docstring)
@@ -2236,7 +2236,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeIgnore'] = Make.Expr
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeVar'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['TypeVar'] = Make.Expr(Make.Constant(
         """
         Type variable parameter for generic types with optional bounds and defaults (**Type** **Var**iable).
         (AI generated docstring)
@@ -2256,7 +2256,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeVar'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeVarTuple'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['TypeVarTuple'] = Make.Expr(Make.Constant(
         """
         Type variable tuple for variadic generic types (**Type** **Var**iable **Tuple**).
         (AI generated docstring)
@@ -2275,7 +2275,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['TypeVarTuple'] = Make.Ex
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['UAdd'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['UAdd'] = Make.Expr(Make.Constant(
         """
         'UAdd', meaning 'Unary Addition', operator representing Python '`+`' operator.
         (AI generated docstring)
@@ -2292,7 +2292,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['UAdd'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['unaryop'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['unaryop'] = Make.Expr(Make.Constant(
         """
         Abstract ***un***ary ***op***erator `object` for use in AST construction.
         (AI generated docstring)
@@ -2315,7 +2315,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['unaryop'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['UnaryOp'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['UnaryOp'] = Make.Expr(Make.Constant(
         """
         Unary ***op***eration `object` for single-operand operations.
         (AI generated docstring)
@@ -2333,7 +2333,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['UnaryOp'] = Make.Expr(Ma
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['USub'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['USub'] = Make.Expr(Make.Constant(
         """
         'USub', meaning 'Unary Subtraction', operator representing Python '`-`' operator.
         (AI generated docstring)
@@ -2350,7 +2350,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['USub'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['While'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['While'] = Make.Expr(Make.Constant(
         """
         While loop AST `object` for condition-based iteration.
         (AI generated docstring)
@@ -2373,7 +2373,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['While'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['With'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['With'] = Make.Expr(Make.Constant(
         """
         Context manager statement AST `object` for resource management and cleanup.
         (AI generated docstring)
@@ -2393,7 +2393,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['With'] = Make.Expr(Make.
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['withitem'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['withitem'] = Make.Expr(Make.Constant(
         """
         Context manager item AST object for individual items in `with` statements.
         (AI generated docstring)
@@ -2412,7 +2412,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['withitem'] = Make.Expr(M
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['Yield'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Yield'] = Make.Expr(Make.Constant(
         """
         Yield ***expr***ession `object` for generator function values.
         (AI generated docstring)
@@ -2430,7 +2430,7 @@ docstrings[dictionaryIdentifiers[identifierToolClass]]['Yield'] = Make.Expr(Make
         """
 ))
 
-docstrings[dictionaryIdentifiers[identifierToolClass]]['YieldFrom'] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers[identifierToolClass]]['YieldFrom'] = Make.Expr(Make.Constant(
         """
         Yield from ***expr***ession `object` for delegating to sub-generators.
         (AI generated docstring)

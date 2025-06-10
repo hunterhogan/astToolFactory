@@ -1,10 +1,8 @@
 from astToolFactory._theSSOT import (
-	dictionary_astSuperClasses as dictionary_astSuperClasses,
-	dictionaryIdentifiers as dictionaryIdentifiers,
 	listPyrightErrors as listPyrightErrors,
 	settingsPackage as settingsPackage,
-	settingsPackageToManufacture as settingsPackageToManufacture,
-	versionMinor_astMinimumSupported as versionMinor_astMinimumSupported,
+	settingsManufacturing as settingsManufacturing,
+    ManufacturedPackageSettings as ManufacturedPackageSettings,
 )
 
 from astToolFactory._snippets import (
@@ -17,6 +15,7 @@ from astToolFactory._snippets import (
 	keywordKeywordArguments4Call as keywordKeywordArguments4Call,
 )
 
+# change to _datacenter to obfuscate the source of the data: it could change
 from astToolFactory.datacenter import (
 	getElementsBe as getElementsBe,
 	getElementsClassIsAndAttribute as getElementsClassIsAndAttribute,

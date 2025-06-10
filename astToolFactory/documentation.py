@@ -2,7 +2,7 @@
 NOTE Use special indentation in this file.
     1. The generated files use spaces, not tabs, so use spaces here.
     2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
-from astToolFactory import dictionaryIdentifiers
+from astToolFactory import settingsManufacturing
 from astToolkit import Make
 from collections import defaultdict
 import ast
@@ -13,7 +13,7 @@ ImaDocstring: str = """This file is generated automatically, so changes to this 
 docstringWarning = Make.Expr(Make.Constant(ImaDocstring))
 del ImaDocstring
 
-docstrings[dictionaryIdentifiers['DOT']][dictionaryIdentifiers['DOT']] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers['DOT']][settingsManufacturing.identifiers['DOT']] = Make.Expr(Make.Constant(
     """
     Access attributes and sub-nodes of AST elements via consistent accessor methods.
 
@@ -26,7 +26,7 @@ docstrings[dictionaryIdentifiers['DOT']][dictionaryIdentifiers['DOT']] = Make.Ex
     """
 ))
 
-docstrings[dictionaryIdentifiers['ClassIsAndAttribute']][dictionaryIdentifiers['ClassIsAndAttribute']] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers['ClassIsAndAttribute']][settingsManufacturing.identifiers['ClassIsAndAttribute']] = Make.Expr(Make.Constant(
     """
     Create functions that verify AST nodes by type and attribute conditions.
 
@@ -42,7 +42,7 @@ docstrings[dictionaryIdentifiers['ClassIsAndAttribute']][dictionaryIdentifiers['
     """
 ))
 
-docstrings[dictionaryIdentifiers['Grab']][dictionaryIdentifiers['Grab']] = Make.Expr(Make.Constant(
+docstrings[settingsManufacturing.identifiers['Grab']][settingsManufacturing.identifiers['Grab']] = Make.Expr(Make.Constant(
     """
     Modify specific attributes of AST nodes while preserving the node structure.
 
