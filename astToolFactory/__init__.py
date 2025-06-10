@@ -16,7 +16,7 @@ from astToolFactory._snippets import (
 )
 
 # change to _datacenter to obfuscate the source of the data: it could change
-from astToolFactory.datacenter import (
+from astToolFactory._datacenter import (
 	getElementsBe as getElementsBe,
 	getElementsClassIsAndAttribute as getElementsClassIsAndAttribute,
 	getElementsDOT as getElementsDOT,

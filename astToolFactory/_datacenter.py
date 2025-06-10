@@ -1,7 +1,7 @@
 """API for data. The rest of the package should be ignorant of the specifics of the data source.
 This module provides a set of functions to interact with the data source, allowing for easy retrieval and manipulation of data."""
 from astToolFactory import settingsManufacturing
-from astToolFactory.datacenter_annex import (
+from astToolFactory._datacenter_annex import (
 	_columns, attributeRename__attribute, attributeRename__ClassDefIdentifier_attribute, defaultValue__attribute,
 	defaultValue__ClassDefIdentifier_attribute, defaultValue__typeStub_attribute, move2keywordArguments__attribute,
 	move2keywordArguments__attributeKind, type__ClassDefIdentifier_attribute,
