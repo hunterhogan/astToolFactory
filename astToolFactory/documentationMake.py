@@ -16,7 +16,7 @@ for subclass in ast.operator.__subclasses__():
     docstrings[settingsManufacturing.identifiers[identifierToolClass]][subclass.__name__] = Make.Expr(Make.Constant("""Identical to the `ast` class but with a method, `join()`, that "joins" expressions using the `ast.BinOp` class."""))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]] = Make.Expr(Make.Constant(
-    """
+    f"""
     Factory methods for creating properly configured AST nodes with enhanced usability.
     (AI generated docstring)
 
@@ -33,11 +33,11 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManuf
     Common AST attributes accessible through `**keywordArguments`:
 
         col_offset: Position information specifying the column where an AST object begins.
-        end_col_offset (None): Position information specifying the column where an AST object ends.
-        end_lineno (None): Position information specifying the line number where an AST object ends.
-        level (0): Module import depth level that controls relative vs absolute imports. Default 0 indicates absolute import.
-        lineno: Position information manually specifying the line number where an AST object begins.
-        type_comment (None): Optional string with the type annotation as a comment or `# type: ignore`.
+        end_col_offset, {diminutive2etymology['end_col_offset']}, (None): Position information specifying the column where an AST object ends.
+        end_lineno, {diminutive2etymology['end_lineno']}, (None): Position information specifying the line number where an AST object ends.
+        level, {diminutive2etymology['level']}, (0): Module import depth level that controls relative vs absolute imports. Default 0 indicates absolute import.
+        lineno, {diminutive2etymology['lineno']}: Position information manually specifying the line number where an AST object begins.
+        type_comment, {diminutive2etymology['type_comment']}, (None): Optional string with the type annotation as a comment or `# type: ignore`.
 
     The Make class supports the antecedent-action pattern where factory methods serve as actions
     combined with predicates from `Be`, `IfThis`, and `ClassIsAndAttribute` classes through visitor
@@ -256,6 +256,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['arguments'] 
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Assert'] = Make.Expr(Make.Constant(
         f"""Create an `ast.Assert` node for assertion statements.
+        (AI generated docstring)
 
         The `Assert` node represents an `assert` statement that evaluates a test
         expression and optionally raises `AssertionError` with a message if the
@@ -504,6 +505,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['BoolOp'] = M
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Break'] = Make.Expr(Make.Constant(
         """Create an `ast.Break` node for break statements.
+        (AI generated docstring)
 
         The `Break` node represents a `break` statement that terminates the
         nearest enclosing loop. Can only be used within loop constructs.
@@ -671,6 +673,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Constant'] =
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Continue'] = Make.Expr(Make.Constant(
         """Create an `ast.Continue` node for continue statements.
+        (AI generated docstring)
 
         The `Continue` node represents a `continue` statement that skips the
         remainder of the current iteration and continues with the next iteration
@@ -702,6 +705,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Del'] = Make
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Delete'] = Make.Expr(Make.Constant(
         """Create an `ast.Delete` node for deletion statements.
+        (AI generated docstring)
 
         The `Delete` node represents a `del` statement that removes references
         to objects. Can delete variables, attributes, subscripts, or slices.
@@ -848,6 +852,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['expr'] = Mak
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Expr'] = Make.Expr(Make.Constant(
         """Create an `ast.Expr` node for expression statements.
+        (AI generated docstring)
 
         The `Expr` node represents a statement that consists of a single expression
         whose value is discarded. This is used for expressions evaluated for their
@@ -878,6 +883,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['expr_context
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Expression'] = Make.Expr(Make.Constant(
         """Create an `ast.Expression` node for expression-only modules.
+        (AI generated docstring)
 
         The `Expression` node represents a module that contains only a single
         expression. This is used in contexts where only an expression is expected,
@@ -975,6 +981,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['FunctionDef'
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['FunctionType'] = Make.Expr(Make.Constant(
         """Create an `ast.FunctionType` node for function type annotations.
+        (AI generated docstring)
 
         The `FunctionType` node represents function type annotations of the form
         `(arg_types) -> return_type`. This is used in type annotations and
@@ -1025,6 +1032,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['GeneratorExp
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Global'] = Make.Expr(Make.Constant(
         """Create an `ast.Global` node for global declarations.
+        (AI generated docstring)
 
         The `Global` node represents a `global` statement that declares variables
         as referring to global scope rather than local scope. This affects variable
@@ -1239,6 +1247,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['In'] = Make.
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Interactive'] = Make.Expr(Make.Constant(
         """Create an `ast.Interactive` node for interactive mode modules.
+        (AI generated docstring)
 
         The `Interactive` node represents a module intended for interactive
         execution, such as in the Python REPL. Unlike regular modules, interactive
@@ -1528,7 +1537,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['match_case']
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchAs'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchAs` node representing a capture pattern or wildcard.
-
         (AI generated docstring)
 
         The `ast.MatchAs` node represents match patterns that capture values or
@@ -1550,7 +1558,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchAs'] = 
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchClass'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchClass` node for matching class instances.
-
         (AI generated docstring)
 
         The `ast.MatchClass` node represents patterns that match instances of a
@@ -1576,7 +1583,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchClass']
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchMapping'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchMapping` node for matching dictionary-like objects.
-
         (AI generated docstring)
 
         The `ast.MatchMapping` node represents patterns that match mapping objects
@@ -1599,7 +1605,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchMapping
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchOr'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchOr` node for alternative pattern matching.
-
         (AI generated docstring)
 
         The `ast.MatchOr` node represents or-patterns that match if any of the
@@ -1617,7 +1622,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchOr'] = 
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchSequence'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchSequence` node for matching sequences.
-
         (AI generated docstring)
 
         The `ast.MatchSequence` node represents patterns that match sequence objects
@@ -1637,7 +1641,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchSequenc
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchSingleton'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchSingleton` node for matching singleton values.
-
         (AI generated docstring)
 
         The `ast.MatchSingleton` node represents patterns that match singleton
@@ -1657,7 +1660,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchSinglet
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchStar'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchStar` node for capturing sequence remainder.
-
         (AI generated docstring)
 
         The `ast.MatchStar` node represents star patterns that capture remaining
@@ -1676,7 +1678,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchStar'] 
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchValue'] = Make.Expr(Make.Constant(
         """Create an `ast.MatchValue` node for matching literal values.
-
         (AI generated docstring)
 
         The `ast.MatchValue` node represents patterns that match by equality
@@ -1696,6 +1697,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchValue']
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['mod'] = Make.Expr(Make.Constant(
         """Create an appropriate `ast.mod` node based on the body content.
+        (AI generated docstring)
 
         The `mod` method creates the appropriate module type node based on the
         provided body. This is a convenience method that determines whether to
@@ -1791,6 +1793,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['NamedExpr'] 
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Nonlocal'] = Make.Expr(Make.Constant(
         """Create an `ast.Nonlocal` node for nonlocal declarations.
+        (AI generated docstring)
 
         The `Nonlocal` node represents a `nonlocal` statement that declares
         variables as referring to the nearest enclosing scope that is not global.
@@ -1855,6 +1858,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['NotIn'] = Ma
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['operator'] = Make.Expr(Make.Constant(
         """Create an `ast.operator` node for arithmetic and bitwise operations.
+        (AI generated docstring)
 
         The `operator` method creates operator nodes used in binary operations,
         unary operations, and comparison operations. These represent the specific
@@ -1889,6 +1893,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['ParamSpec'] 
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Pass'] = Make.Expr(Make.Constant(
         """Create an `ast.Pass` node for pass statements.
+        (AI generated docstring)
 
         The `Pass` node represents a `pass` statement, which is a null operation
         that does nothing when executed. It serves as syntactic placeholder where
@@ -1901,7 +1906,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Pass'] = Mak
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['pattern'] = Make.Expr(Make.Constant(
         """Create a base `ast.pattern` node.
-
         (AI generated docstring)
 
         Creates a generic `ast.pattern` node that serves as the abstract base
@@ -1916,6 +1920,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['pattern'] = 
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Raise'] = Make.Expr(Make.Constant(
         f"""Create an `ast.Raise` node for raise statements.
+        (AI generated docstring)
 
         The `Raise` node represents a `raise` statement that raises an exception.
         Can re-raise the current exception, raise a new exception, or raise with
@@ -2035,6 +2040,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Starred'] = 
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['stmt'] = Make.Expr(Make.Constant(
         """Create a statement node of the specified type.
+        (AI generated docstring)
 
         The `stmt` method provides a generic interface for creating any statement
         node type. This is a convenience method that delegates to the appropriate
@@ -2158,14 +2164,15 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Tuple'] = Ma
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['type_ignore'] = Make.Expr(Make.Constant(
-        """Create an `ast.type_ignore` node for type checker ignore comments.
+        f"""Create an `ast.type_ignore` node for type checker ignore comments.
+        (AI generated docstring)
 
         The `type_ignore` node represents type checker ignore directives that
         suppress type checking warnings for specific lines. This is used with
         comments like `# type: ignore`.
 
         Parameters
-            lineno: Line number where the ignore directive applies
+            lineno, {diminutive2etymology['lineno']}: Line number where the ignore directive applies
             tag: Tag identifying the specific type ignore directive
 
         Returns
@@ -2209,7 +2216,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['TypeAlias'] 
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['TypeIgnore'] = Make.Expr(Make.Constant(
-        """
+        f"""
         Type ignore comment AST object for `# type: ignore` directives.
         (AI generated docstring)
 
@@ -2218,7 +2225,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['TypeIgnore']
         Includes optional tags for categorizing different types of ignores.
 
         Parameters:
-            lineno: Line number where the ignore comment appears.
+            lineno, {diminutive2etymology['lineno']}: Line number where the ignore comment appears.
             tag: Optional string tag for categorizing the ignore (e.g., '[assignment]').
 
         Returns:

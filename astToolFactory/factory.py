@@ -147,7 +147,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute in getElementsBe(identifierToolClass, **keywordArguments):
 		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Name('ast.AST'))])
-			, body=[Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), eval(classAs_astAttribute)]))]
+			, body=[docstrings[identifierToolClass][ClassDefIdentifier], Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), eval(classAs_astAttribute)]))]
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name('TypeIs'), slice=eval(classAs_astAttribute)))
 
@@ -398,8 +398,8 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 			if kwarg is not None:
 				listCall_keyword.append(keywordKeywordArguments4Call)
 
-			body = [docstrings[identifierToolClass][ClassDefIdentifier],
-				Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))
+			body = [docstrings[identifierToolClass][ClassDefIdentifier]
+					, Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))
 				]
 
 		ast_stmt = Make.FunctionDef(
