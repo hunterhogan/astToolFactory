@@ -3,7 +3,7 @@ NOTE Use special indentation in this file.
     1. The generated files use spaces, not tabs, so use spaces here.
     2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
 from astToolFactory import settingsManufacturing
-from astToolFactory.documentation import docstrings
+from astToolFactory.documentation import diminutive2etymology, docstrings
 from astToolkit import Make
 import ast
 
@@ -169,7 +169,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManuf
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['alias'] = Make.Expr(Make.Constant(
-        """
+        f"""
         Import alias AST `object` representing name mapping in import statements.
         (AI generated docstring)
 
@@ -179,7 +179,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['alias'] = Ma
 
         Parameters:
             name: The actual module, class, or function name being imported.
-            asName (None): Optional alias name to use instead of the original name.
+            asName (None): Optional {diminutive2etymology['asName']} to use instead of the original name.
                 This corresponds to `ast.alias.asname`.
 
         Returns
@@ -231,7 +231,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['arg'] = Make
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['arguments'] = Make.Expr(Make.Constant(
-        """
+        f"""
         Function signature AST object containing all parameter specifications (**arg**ument**s**).
         (AI generated docstring)
 
@@ -241,7 +241,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['arguments'] 
 
         Parameters:
             posonlyargs ([]): List of positional-only parameters (before /).
-            list_arg ([]): List of regular positional parameters. This corresponds to `ast.arguments.args`.
+            list_arg ([]): {diminutive2etymology['list_arg']}. This corresponds to `ast.arguments.args`.
             vararg (None): Single parameter for *args variadic arguments.
             kwonlyargs ([]): List of keyword-only parameters (after * or *args).
             kw_defaults ([None]): Default values for keyword-only parameters; None indicates required.
@@ -255,7 +255,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['arguments'] 
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Assert'] = Make.Expr(Make.Constant(
-        """Create an `ast.Assert` node for assertion statements.
+        f"""Create an `ast.Assert` node for assertion statements.
 
         The `Assert` node represents an `assert` statement that evaluates a test
         expression and optionally raises `AssertionError` with a message if the
@@ -263,7 +263,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Assert'] = M
 
         Parameters
             test: Expression to evaluate for truthiness
-            msg (None): Optional expression for the assertion error message
+            msg (None): Optional expression for the assertion error {diminutive2etymology['msg']}
 
         Returns
             nodeAssert: The constructed assertion node
@@ -535,7 +535,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Call'] = Mak
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['ClassDef'] = Make.Expr(Make.Constant(
-        """
+        f"""
         Class definition AST object for `class` declarations with inheritance and metadata.
         (AI generated docstring)
 
@@ -546,7 +546,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['ClassDef'] =
         Parameters:
             name: Class name as string identifier.
             bases ([]): List of base class expressions for inheritance.
-            list_keyword ([]): List of keyword arguments including metaclass specifications. This corresponds to `ast.ClassDef.keywords`.
+            list_keyword ([]): {diminutive2etymology['list_keyword']} including metaclass specifications. This corresponds to `ast.ClassDef.keywords`.
             body ([]): List of statements forming the class body.
             decorator_list ([]): List of decorator expressions applied to class.
             type_params ([]): List of type parameters for generic classes (Python 3.12+).
@@ -570,21 +570,19 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['ClassDef'] =
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['cmpop'] = Make.Expr(Make.Constant(
-        """
-        Abstract ***c***o***mp***arison ***op***erator `object` for use in AST construction.
-        (AI generated docstring)
+        f"""
+        `class` `ast.cmpop`, {diminutive2etymology['cmpop']}, is the parent (or "base") class of all comparison operator classes used in `ast.Compare`.
 
-        Class `ast.cmpop` is the base for all comparison operators in Python's AST.
-        It serves as the abstract parent for specific comparison operators: `ast.Eq`, `ast.NotEq`,
-        `ast.Lt`, `ast.LtE`, `ast.Gt`, `ast.GtE`, `ast.Is`, `ast.IsNot`, `ast.In`, `ast.NotIn`.
-        This factory method makes a generic comparison operator `object` that can be used
-        in the antecedent-action pattern with visitor classes.
+        It is the abstract parent for: `ast.Eq`, `ast.NotEq`, `ast.Lt`, `ast.LtE`, `ast.Gt`,
+        `ast.GtE`, `ast.Is`, `ast.IsNot`, `ast.In`, `ast.NotIn`. This factory method makes a generic
+        comparison operator `object` that can be used in the antecedent-action pattern with visitor
+        classes.
 
         Returns
         -------
         comparisonOperator: ast.cmpop
-            Abstract comparison operator `object` that serves as the base `class` for all
-            Python comparison operators in AST structures.
+            Abstract comparison operator `object` that serves as the base `class` for all Python
+            comparison operators in AST structures.
         """
 ))
 
@@ -1917,14 +1915,14 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['pattern'] = 
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Raise'] = Make.Expr(Make.Constant(
-        """Create an `ast.Raise` node for raise statements.
+        f"""Create an `ast.Raise` node for raise statements.
 
         The `Raise` node represents a `raise` statement that raises an exception.
         Can re-raise the current exception, raise a new exception, or raise with
         an explicit cause chain.
 
         Parameters
-            exc (None): Optional expression for the exception to raise
+            exc (None): Optional expression for the {diminutive2etymology['exc']} to raise
             cause (None): Optional expression for the exception cause
 
         Returns

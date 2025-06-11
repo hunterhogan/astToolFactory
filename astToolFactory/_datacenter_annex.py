@@ -68,6 +68,14 @@ dataframe['columnLHS'] = dataframe['columnRHS'].map(columnLHS__columnRHS).fillna
 dataframe['columnLHS'] = dataframe[['columnRHS', 'columnRHSn']].apply(tuple, axis='columns').map(columnLHS__columnRHS_columnRHSn).fillna(dataframe['columnLHS'])
 """
 
+"""
+dataframe = dataframe[dataframe['deprecated'].apply(str).str.contains("False", regex=False, na=False, case=False)]
+
+dataframe = dataframe.drop(columns=['ClassDefIdentifier', 'base', 'base_typing_TypeAlias', 'match_args', 'attributeKind', 'typeC', 'type_field_type', 'typeStub', 'typeStub_typing_TypeAlias', 'versionMajorData', 'versionMinorData', 'versionMicroData', 'attributeRename', 'move2keywordArguments', 'defaultValue', 'classAs_astAttribute', 'type', 'typeSansNone', 'canBeNone', 'type_ast_expr', 'typeSansNone_ast_expr', 'ast_arg', 'TypeAlias_hasDOTIdentifier', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args', 'versionMinorMinimumAttribute', 'listStr4FunctionDef_args', 'listDefaults', 'deprecated', 'listTupleCall_keywords', 'list2Sequence', 'kwarg_annotationIdentifier', 'hashableListStr4FunctionDef_args', 'hashableListDefaults', 'hashableListTupleCall_keywords', 'typeGrab', 'typeGrab_ast_expr'])
+
+dataframe = dataframe.drop_duplicates()
+"""
+
 attributeRename__attribute: dict[str, str] = {
     'arg': 'Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo',
     'asname': 'asName',

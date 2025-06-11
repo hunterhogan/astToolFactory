@@ -1,22 +1,150 @@
 """A warehouse for docstrings added to manufactured ast tools.
 NOTE Use special indentation in this file.
-    1. The generated files use spaces, not tabs, so use spaces here.
-    2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
+	1. The generated files use spaces, not tabs, so use spaces here.
+	2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
 from astToolFactory import settingsManufacturing
 from astToolkit import Make
 from collections import defaultdict
 import ast
 
 docstrings: dict[str, dict[str, ast.Expr]] = defaultdict(lambda: defaultdict(lambda: Make.Expr(Make.Constant(''))))
-diminutive2etymology: dict[str, str] = {}
 
 docstringWarning = Make.Expr(Make.Constant("""This file is generated automatically, so changes to this file will be lost."""))
 
 def getMoreDocstrings():
-    import astToolFactory.documentationBe
-    import astToolFactory.documentationClassIsAndAttribute
-    import astToolFactory.documentationDOT
-    import astToolFactory.documentationGrab
-    import astToolFactory.documentationMake
+	import astToolFactory.documentationBe
+	import astToolFactory.documentationClassIsAndAttribute
+	import astToolFactory.documentationDOT
+	import astToolFactory.documentationGrab
+	import astToolFactory.documentationMake
+
+diminutive2etymology: dict[str, str] = {
+	'AnnAssign': '***Ann***otated ***Assign***ment',
+	'arg': '***arg***ument',
+	'args': '***arg***ument***s***',
+	'argtypes': '***arg***ument types',
+	'asname': '***as*** name',
+	'asName': '***a***lia***s*** name',
+	'AsyncFor': '***Async***hronous For loop',
+	'AsyncFunctionDef': '***Async***hronous Function ***Def***inition',
+	'AsyncWith': '***Async***hronous With statement',
+	'attr': '***attr***ibute',
+	'AugAssign': '***Aug***mented ***Assign***ment',
+	'Await': '***Await*** the asynchronous operation',
+	'BinOp': '***Bin***ary ***Op***eration',
+	'BitAnd': '***Bit***wise And',
+	'BitOr': '***Bit***wise Or',
+	'BitXor': '***Bit***wise e***X***clusive Or',
+	'boolop': '***bool***ean ***op***erator',
+	'BoolOp': '***Bool***ean ***Op***eration',
+	'ClassDef': '***Class*** ***Def***inition',
+	'cls': '***cl***a***s***s',
+	'cmpop': '***c***o***mp***arison ***op***erator',
+	'col_offset': '***col***umn offset',
+	'context_expr': '***context*** ***expr***ession',
+	'ctx': '***c***on***t***e***x***t',
+	'decorator_list': 'list of ***decorator*** expressions',
+	'Del': '***Del***ete',
+	'Dict': '***Dict***ionary',
+	'DictComp': '***Dict***ionary ***c***o***mp***rehension',
+	'Div': '***Div***ision',
+	'elt': '***e***lemen***t***',
+	'elts': '***e***lemen***t***s',
+	'end_col_offset': '***end*** col***umn offset***',
+	'end_lineno': 'end line _**n**umer**o**_ (_Latin_ "number")',
+	'Eq': 'is ***Eq***ual to',
+	'exc': '***exc***eption',
+	'excepthandler': '***except***ion ***handler***',
+	'ExceptHandler': '***Except***ion ***Handler***',
+	'expr_context': '***expr***ession ***context***',
+	'expr': '***expr***ession',
+	'Expr': '***Expr***ession',
+	'finalbody': 'final body',
+	'FloorDiv': 'Floor ***Div***ision',
+	'format_spec': 'format ***spec***ification',
+	'func': '***func***tion',
+	'FunctionDef': 'Function ***Def***inition',
+	'FunctionType': 'Function Type',
+	'GeneratorExp': 'Generator ***Exp***ression',
+	'Gt': 'is Greater than',
+	'GtE': 'is Greater than or Equal to',
+	'id': '***id***entifier',
+	'IfExp': 'If ***Exp***ression',
+	'ifs': 'if clauses',
+	'Interactive': 'Interactive mode',
+	'is_async': 'is ***async***hronous',
+	'iter': '***iter***able',
+	'JoinedStr': 'Joined ***Str***ing',
+	'kw_defaults': '***k***ey***w***ord defaults',
+	'kwarg': '***k***ey***w***ord ***arg***ument',
+	'kwd_attrs': '***k***ey***w***or***d*** ***attr***ibute***s***',
+	'kwd_patterns': '***k***ey***w***or***d*** ***patterns***',
+	'kwonlyargs': '***k***ey***w***ord-only ***arg***ument***s***',
+	'Lambda': 'Lambda function',
+	'left': 'left-hand-side operand',
+	'level': 'relative import level',
+	'lineno': 'line _**n**umer**o**_ (_Latin_ "number")',
+	'list_arg': 'list of ast.***arg***ument ',
+	'list_keyword': 'list of ast.***keyword***',
+	'ListComp': 'List ***c***o***mp***rehension',
+	'lower': 'lower bound',
+	'LShift': 'Left Shift',
+	'Lt': 'is Less than',
+	'LtE': 'is Less than or Equal to',
+
+	'match_case': 'match case',
+	'Match': 'Match this',
+	'MatchAs': 'Match As',
+	'MatchClass': 'Match Class',
+	'MatchMapping': 'Match Mapping',
+	'MatchOr': 'Match this Or that',
+	'MatchSequence': 'Match this Sequence',
+	'MatchSingleton': 'Match Singleton',
+	'MatchStar': 'Match Star',
+	'MatchValue': 'Match Value',
+
+	'MatMult': '***Mat***rix ***Mult***iplication',
+	'mod': '***mod***ule',
+	'Mod': '***Mod***ulo',
+	'msg': '***m***e***s***sa***g***e',
+	'Mult': '***Mult***iplication',
+	'NamedExpr': 'Named ***Expr***ession',
+	'NotEq': 'is Not ***Eq***ual to',
+	'NotIn': 'is Not ***In***cluded in or does Not have membership In',
+	'op': '***op***erator',
+	'ops': '***op***erator***s***',
+	'optional_vars': 'optional ***var***iable***s***',
+	'orelse': 'or else execute this',
+	'orElse': 'or Else execute this',
+	'ParamSpec': '***Param***eter ***Spec***ification',
+	'posonlyargs': '***pos***itional-only ***arg***ument***s***',
+	'Pow': '***Pow***er',
+	'rest': 'the rest of the mapping elements',
+	'returns': 'this returns',
+	'right': 'right-hand-side operand',
+	'RShift': 'Right Shift',
+	'SetComp': 'Set ***c***o***mp***rehension',
+	'stmt': '***st***ate***m***en***t***',
+	'Sub': '***Sub***traction',
+	'TryStar': 'Try executing this, protected by `except*` ("except star")',
+	'type_comment': 'a `type` annotation in a comment',
+	'type_ignore': 'this type error, you ignore it',
+	'type_ignores': 'type ***ignore*** comments',
+	'type_param': 'type ***param***eter',
+	'type_params': 'type ***param***eter***s***',
+	'TypeAlias': 'Type Alias',
+	'TypeIgnore': 'this type error, you ignore it',
+	'TypeVar': 'Type ***Var***iable',
+	'TypeVarTuple': 'Type ***Var***iable ***Tuple***',
+	'UAdd': '***U***nary ***Add***ition',
+	'unaryop': '***un***ary ***op***erator',
+	'UnaryOp': '***Un***ary ***Op***eration',
+	'upper': 'upper bound',
+	'USub': '***U***nary ***Sub***traction',
+	'vararg': '***var***iadic ***arg***ument',
+	'withitem': 'with item',
+	'Yield': 'Yield an element',
+	'YieldFrom': 'Yield an element From',
+}
 
 getMoreDocstrings()
