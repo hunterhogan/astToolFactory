@@ -15,12 +15,20 @@ import ast
 import numpy
 import pandas
 
-# Use idiomatic pandas.
-# No `lambda`.
-# No intermediate data structures.
-# No `for`, no `iterrows`, no loops.
-# No duplicate statements.
-# Use idiomatic pandas.
+"""
+- Use idiomatic pandas.
+- No `lambda`, except `key=lambda`.
+- No intermediate data structures.
+- A dataframe is a data structure: no intermediate dataframes.
+- A so-called mask is an intermediate dataframe: no "masks".
+- A column is a data structure: no intermediate columns.
+- No `for`, no `iterrows`, no loops, no loops hidden in comprehension.
+- No `zip`.
+- No new functions.
+- No new classes.
+- No helper dataframes, no helper functions, no helper classes.
+- Use idiomatic pandas.
+"""
 
 """
 Generalized flow for get* functions:
@@ -446,36 +454,68 @@ def updateDataframe() -> None:
 	dataframe['versionMinorMinimumAttribute'] = computeVersionMinimum(['ClassDefIdentifier', 'attribute'])
 	dataframe['versionMinorMinimumClass'] = computeVersionMinimum(['ClassDefIdentifier'])
 
-	columnsOfLists: list[str] = ['listFunctionDef_args', 'listDefaults', 'listCall_keyword']
-	def compute_listFunctionDef_args(dataframeTarget: pandas.DataFrame) -> pandas.Series: # pyright: ignore[reportMissingTypeArgument, reportUnknownParameterType]
+	def compute_listFunctionDef_args(dataframeTarget: pandas.DataFrame) -> list[ast.arg]:
 		listFunctionDef_args: list[ast.arg] = []
-		listDefaults: list[ast.expr] = []
-		listCall_keyword: list[ast.keyword] = []
 
 		if cast(str, dataframeTarget['attributeKind']) != "No":
 			for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
-				# TODO if dataframe['move2keywordArguments'] == 'Unpack':
-				if attributeTarget == 'type_comment':
-					continue
-
 				matchingRows: pandas.DataFrame = dataframe[
 					(dataframe['attribute'] == attributeTarget)
 					& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
 					& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
 				]
+				# `attributeTarget` is not a `Make` parameter
+				if matchingRows.iloc[0]['move2keywordArguments'] == 'Unpack':
+					continue
+
+				# `attributeTarget` is a `Make` parameter
+				if not matchingRows.iloc[0]['move2keywordArguments']:
+					# Append 'ast_arg' in the same order as match_args
+					listFunctionDef_args.append(cast(ast.arg, matchingRows.iloc[0]['ast_arg']))
+
+		return listFunctionDef_args
+	dataframe['listFunctionDef_args'] = dataframe.apply(compute_listFunctionDef_args, axis='columns')
+
+	def compute_listDefaults(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
+		listDefaults: list[ast.expr] = []
+
+		if cast(str, dataframeTarget['attributeKind']) != "No":
+			for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
+				matchingRows: pandas.DataFrame = dataframe[
+					(dataframe['attribute'] == attributeTarget)
+					& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
+					& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
+				]
+				if matchingRows.iloc[0]['move2keywordArguments'] == 'Unpack':
+					continue
+
+				# `attributeTarget` is a `Make` parameter
+				if not matchingRows.iloc[0]['move2keywordArguments']:
+					# "argspec" or ast.arguments or Make.arguments: default values must be in the same order as their parameters
+					if matchingRows.iloc[0]['defaultValue'] != "No":
+						listDefaults.append(cast(ast.expr, matchingRows.iloc[0]['defaultValue']))
+
+		return listDefaults
+	dataframe['listDefaults'] = dataframe.apply(compute_listDefaults, axis='columns')
+
+	def compute_listCall_keyword(dataframeTarget: pandas.DataFrame) -> list[ast.keyword]:
+		listCall_keyword: list[ast.keyword] = []
+
+		if cast(str, dataframeTarget['attributeKind']) != "No":
+			for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
+				matchingRows: pandas.DataFrame = dataframe[
+					(dataframe['attribute'] == attributeTarget)
+					& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
+					& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
+				]
+				if matchingRows.iloc[0]['move2keywordArguments'] == 'Unpack':
+					continue
 
 				# "Hide" `attributeTarget` in the call to the `ast` constructor
 				if matchingRows.iloc[0]['move2keywordArguments']:
 					keywordValue = cast(ast.expr, matchingRows.iloc[0]['defaultValue'])
 				# `attributeTarget` is a `Make` parameter
 				else:
-					# Append 'ast_arg' in the same order as match_args
-					listFunctionDef_args.append(cast(ast.arg, matchingRows.iloc[0]['ast_arg']))
-
-					# "argspec" or ast.arguments or Make.arguments: default values must be in the same order as their parameters
-					if matchingRows.iloc[0]['defaultValue'] != "No":
-						listDefaults.append(cast(ast.expr, matchingRows.iloc[0]['defaultValue']))
-
 					keywordValue = Make.Name(cast(str, matchingRows.iloc[0]['attributeRename']))
 					# If the type is `Sequence`, type checker will complain unless call `list` in the `ast` constructor
 					if matchingRows.iloc[0]['list2Sequence']:
@@ -483,8 +523,8 @@ def updateDataframe() -> None:
 
 				listCall_keyword.append(Make.keyword(attributeTarget, keywordValue))
 
-		return pandas.Series([listFunctionDef_args, listDefaults, listCall_keyword], index=columnsOfLists)
-	dataframe[columnsOfLists] = dataframe.apply(compute_listFunctionDef_args, axis='columns') # pyright: ignore[reportUnknownArgumentType, reportArgumentType]
+		return listCall_keyword
+	dataframe['listCall_keyword'] = dataframe.apply(compute_listCall_keyword, axis='columns')
 
 	dataframe.to_pickle(settingsManufacturing.pathFilenameDataframeAST)
 

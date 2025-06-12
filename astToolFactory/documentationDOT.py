@@ -5,7 +5,6 @@ NOTE Use special indentation in this file.
 from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
-import ast
 
 identifierToolClass: str = 'DOT'
 
