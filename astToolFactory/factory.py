@@ -27,7 +27,7 @@ class GuardIfThen(TypedDict):
 	test: ast.expr
 	body: list[ast.stmt]
 
-# NOTE Global identifiers used by multiple functions to simplify using the `_makeGuardVersion` function.
+# NOTE These are Global identifiers used by multiple functions to simplify using the `_makeGuardVersion` function.
 # If the separate functions converge enough, I can combine them into one function and remove this suboptimal system.
 dictionaryGuardVersion: dict[int, GuardIfThen] = {}
 ast_stmt: ast.stmt | None = None
@@ -208,10 +208,7 @@ def makeToolClassIsAndAttribute(identifierToolClass: str, **keywordArguments: An
 
 		returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), workhorse_returnsAnnotation]))
 
-		# joined Callable
-		# annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), Make.Name('bool')])) for ast_expr in list_ast_expr]))
-		# One Callable with joined parameters
-		annotation: ast.expr = (Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.BitOr.join([eval(ast_expr) for ast_expr in list_ast_expr])]), Make.Name('bool')])))
+		annotation: ast.expr = (Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.BitOr.join(list_ast_expr)]), Make.Name('bool')])))
 
 		# Create the overload or implementation of the function.
 		ast_stmt = Make.FunctionDef(attribute + 'Is'
@@ -257,7 +254,7 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 		else:
 			body = [Make.Return(Make.Attribute(Make.Name('node'), attribute))]
 
-		returns: ast.expr = Make.BitOr.join([eval(ast_expr) for ast_expr in list_ast_expr])
+		returns: ast.expr = Make.BitOr.join(list_ast_expr)
 
 		ast_stmt = Make.FunctionDef(attribute
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=astNameTypeOfNode)])
@@ -291,7 +288,7 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(identifierToolClass, **keywordArguments):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
-		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([eval(ast_expr)]), eval(ast_expr)])) for ast_expr in list_ast_expr]))
+		annotation: ast.expr = (Make.BitOr.join([Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([ast_expr]), ast_expr])) for ast_expr in list_ast_expr]))
 
 		ast_stmt = Make.FunctionDef(attribute + 'Attribute'
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('action', annotation=annotation)])

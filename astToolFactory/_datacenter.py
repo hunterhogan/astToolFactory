@@ -6,7 +6,7 @@ from astToolFactory._datacenter_annex import (
 	defaultValue__ClassDefIdentifier_attribute, defaultValue__typeStub_attribute, move2keywordArguments__attribute,
 	move2keywordArguments__attributeKind, type__ClassDefIdentifier_attribute,
 )
-from astToolkit import Be, DOT, dump, Make, NodeTourist, Then
+from astToolkit import Be, DOT, Make, NodeTourist, Then
 from collections.abc import Sequence
 from pathlib import Path
 from typing import Any, cast
@@ -34,13 +34,12 @@ dataframe = dataframe[elementsTarget]
 return list(dataframe.to_records(index=False))
 """
 
-def _makeColumn_guardVersion(dataframe: pandas.DataFrame, by: str) -> pandas.DataFrame:
-	# Calculate guardVersion as countdown for each ClassDefIdentifier-versionMinorMinimum_match_args group
-	# If only one version exists, guardVersion should be 0 (no match-case needed)
-	# If multiple versions exist, countdown from total count to 1
-	# And as a guard for Python versions below the minimum.
+def _makeColumn_guardVersion(dataframe: pandas.DataFrame, byColumn: str) -> pandas.DataFrame:
+	"""Column 'guardVersion' = False unless:
+	- A `byColumn`-'versionMinorMinimum' group is larger than 1, then 'guardVersion' is a countdown from the total number of versions in the group.
+	- Or if the only member of a group has a python version greater than `pythonMinimumVersionMinor`."""
 	dataframe['guardVersion'] = numpy.where(
-		((versionsTotal := (seriesGroupByVersion := dataframe.groupby(by)['versionMinorMinimum']).transform('nunique')) == 1)
+		((versionsTotal := (seriesGroupByVersion := dataframe.groupby(byColumn)['versionMinorMinimum']).transform('nunique')) == 1)
 		& (seriesGroupByVersion.transform('max') <= settingsManufacturing.pythonMinimumVersionMinor),
 		False,
 		numpy.maximum(1, versionsTotal - seriesGroupByVersion.rank(method='first', ascending=False).astype(int) + 1)
@@ -95,7 +94,7 @@ def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tup
 
 	return list(dataframe.to_records(index=False))
 
-def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[str], int, int]]:
+def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[ast.expr], int, int]]:
 	listColumnsHARDCODED: list[str] = [
 		'attribute',
 		'TypeAlias_hasDOTSubcategory',
@@ -184,31 +183,31 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 
 	dataframe.loc[dataframe['canBeNone'] == "Not calculated", 'canBeNone'] = dataframe[dataframe['canBeNone'] == "Not calculated"].apply(makeColumn_canBeNone, axis='columns')
 
-	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame):
+	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
 		if bool(dataframeTarget['overloadDefinition']):
-			return [str(dataframeTarget['type_ast_expr'])]
+			return [cast(ast.expr, dataframeTarget['type_ast_expr'])]
 		matchingRows = dataframe.loc[
 			(dataframe['attribute'] == dataframeTarget['attribute'])
 			& (dataframe['type'] != "No")
 			& (dataframe['versionMinorMinimum'] <= dataframeTarget['versionMinorMinimum'])
 			, ['type_ast_expr', 'type']
-		].drop_duplicates().sort_values('type', key=lambda x: x.str.lower())
+		].drop_duplicates(subset='type').sort_values('type', key=lambda x: x.str.lower())
 
 		return matchingRows['type_ast_expr'].tolist()
 
 	dataframe['list_ast_expr'] = dataframe.apply(makeColumn_list_ast_expr, axis='columns')
 	dataframe.drop(columns=['type_ast_expr', 'type',], inplace=True)
 
-	by: str = 'identifierTypeOfNode'
-	dataframe = _makeColumn_guardVersion(dataframe, by)
+	byColumn: str = 'identifierTypeOfNode'
+	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
 
 	dataframe = dataframe[elementsTarget]
 	return list(dataframe.to_records(index=False))
 
-def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[str], int, int]]:
+def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[ast.expr], int, int]]:
 	return getElementsClassIsAndAttribute(identifierToolClass, **keywordArguments)
 
-def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[str], str, int, int]]:
+def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:
 	listColumnsHARDCODED: list[str] = ['attribute', 'type_astSuperClasses', 'versionMinorMinimumAttribute', 'TypeAlias_hasDOTIdentifier', 'type_astSuperClasses_ast_expr', ]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
@@ -232,7 +231,8 @@ def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	del listColumns
 
 	elementsTarget: list[str] = ['TypeAlias_hasDOTIdentifier', 'list_ast_expr', 'attribute', 'guardVersion', 'versionMinorMinimum']
-	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[str]:
+
+	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
 		matchingRows: pandas.DataFrame = dataframe.loc[
 			(dataframe['attribute'] == dataframeTarget['attribute'])
 			& (dataframe['versionMinorMinimum'] <= dataframeTarget['versionMinorMinimum']),
@@ -243,9 +243,8 @@ def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[t
 
 	dataframe['list_ast_expr'] = dataframe.apply(makeColumn_list_ast_expr, axis='columns')
 
-	# TODO more semantic identifier than `by`
-	by: str = 'attribute'
-	dataframe = _makeColumn_guardVersion(dataframe, by)
+	byColumn: str = 'attribute'
+	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
 
 	dataframe = dataframe[elementsTarget].drop_duplicates(subset=elementsTarget[2:None], keep='last').reset_index(drop=True)
 
@@ -280,8 +279,8 @@ def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[t
 
 	elementsTarget: list[str] = ['ClassDefIdentifier', 'listFunctionDef_args', 'kwarg_annotationIdentifier', 'listDefaults', 'classAs_astAttribute', 'overloadDefinition', 'listCall_keyword', 'guardVersion', 'versionMinorMinimum']
 
-	by: str = 'ClassDefIdentifier'
-	dataframe = _makeColumn_guardVersion(dataframe, by)
+	byColumn: str = 'ClassDefIdentifier'
+	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
 
 	# TODO Create overloadDefinition flag - False until new logic added
 	dataframe['overloadDefinition'] = False
@@ -358,8 +357,8 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 		)
 	)
 
-	by: str = 'identifierTypeAlias'
-	dataframe = _makeColumn_guardVersion(dataframe, by)
+	byColumn: str = 'identifierTypeAlias'
+	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
 
 	dataframe = dataframe[elementsTarget]
 	return list(dataframe.to_records(index=False))
@@ -367,7 +366,7 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 def updateDataframe() -> None:
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=None, modifyVersionMinorMinimum=False)
 
-	# Change the order of columns
+	# columns: reorder; drop columns, but they might be recreated later in the flow.
 	# dataframe = dataframe[_columns]
 
 	# Create 'attributeRename'
@@ -384,7 +383,6 @@ def updateDataframe() -> None:
 	dataframe['defaultValue'] = dataframe[['ClassDefIdentifier', 'attribute']].apply(tuple, axis='columns').map(defaultValue__ClassDefIdentifier_attribute).fillna(dataframe['defaultValue'])
 	dataframe['defaultValue'] = dataframe[['typeStub', 'attribute']].apply(tuple, axis='columns').map(defaultValue__typeStub_attribute).fillna(dataframe['defaultValue'])
 
-	# Update 'classAs_astAttribute' column with formatted value
 	def makeColumn_classAs_astAttribute(ClassDefIdentifier:str):
 		return Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
 	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].astype(str).map(makeColumn_classAs_astAttribute)
@@ -410,24 +408,25 @@ def updateDataframe() -> None:
 			return False
 	dataframe['canBeNone'] = dataframe.apply(makeColumn_canBeNone, axis='columns')
 
-	def pythonCode2expr(string: str) -> str:
+	def pythonCode2expr(string: str) -> Any:
 		astModule: ast.Module = ast.parse(string)
 		ast_expr: ast.expr = raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
-		return dump(ast_expr)
+		return ast_expr
 
-	# Update 'type_ast_expr' based on 'type' column
-	dataframe['type_ast_expr'] = numpy.where(dataframe['type'] == 'No', 'No', dataframe['type'].apply(pythonCode2expr))
-	# Update 'type_ast_expr' based on 'list2Sequence' column
-	dataframe.loc[dataframe['list2Sequence'] == True, 'type_ast_expr'] = dataframe['type_ast_expr'].str.replace("'list'", "'Sequence'")  # noqa: E712
+	# Create 'type_ast_expr' based on columns 'type' and 'list2Sequence'
+	dataframe.loc[dataframe['list2Sequence'], 'type_ast_expr'] = dataframe['type'].str.replace("list", "Sequence").apply(pythonCode2expr)
+	dataframe.loc[~dataframe['list2Sequence'], 'type_ast_expr'] = dataframe['type'].apply(pythonCode2expr)
+	dataframe.loc[dataframe['type'] == "No", 'type_ast_expr'] = "No"
 
 	# Create 'type_astSuperClasses' with TypeVar substitutions
 	dataframe['type_astSuperClasses'] = dataframe['type'].replace({f"ast.{key}": value for key, value in settingsManufacturing.astSuperClasses.items()}, regex=True)
+	# Create 'type_astSuperClasses_ast_expr'
 	dataframe['type_astSuperClasses_ast_expr'] = numpy.where(dataframe['type_astSuperClasses'] == 'No', 'No', dataframe['type_astSuperClasses'].apply(pythonCode2expr))
 
 	def makeColumn_ast_arg(dataframeTarget: pandas.DataFrame) -> Any:
 		if cast(str | bool, dataframeTarget['move2keywordArguments']) != False:  # noqa: E712
 			return "No"
-		return Make.arg(cast(str, dataframeTarget['attributeRename']), annotation=eval(cast(str, dataframeTarget['type_ast_expr'])))
+		return Make.arg(cast(str, dataframeTarget['attributeRename']), annotation=cast(ast.expr, dataframeTarget['type_ast_expr']))
 	dataframe['ast_arg'] = dataframe.apply(makeColumn_ast_arg, axis='columns')
 
 	# Create TypeAlias_hasDOTIdentifier
@@ -439,9 +438,9 @@ def updateDataframe() -> None:
 	)
 
 	# === Group-Based Column Computation ===
-	def computeVersionMinimum(columns: list[str]) -> numpy.ndarray[tuple[int, ...], numpy.dtype[numpy.int64]]:
-		return numpy.where(dataframe.groupby(columns)['versionMinorData'].transform('min') == settingsManufacturing.versionMinor_astMinimumSupported,
-			-1, dataframe.groupby(columns)['versionMinorData'].transform('min'))
+	def computeVersionMinimum(list_byColumns: list[str]) -> numpy.ndarray[tuple[int, ...], numpy.dtype[numpy.int64]]:
+		return numpy.where(dataframe.groupby(list_byColumns)['versionMinorData'].transform('min') == settingsManufacturing.versionMinor_astMinimumSupported,
+			-1, dataframe.groupby(list_byColumns)['versionMinorData'].transform('min'))
 
 	dataframe['versionMinorMinimum_match_args'] = computeVersionMinimum(['ClassDefIdentifier', 'match_args'])
 	dataframe['versionMinorMinimumAttribute'] = computeVersionMinimum(['ClassDefIdentifier', 'attribute'])
@@ -455,7 +454,7 @@ def updateDataframe() -> None:
 
 		if cast(str, dataframeTarget['attributeKind']) != "No":
 			for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
-				# if dataframe['move2keywordArguments'] == 'Unpack':
+				# TODO if dataframe['move2keywordArguments'] == 'Unpack':
 				if attributeTarget == 'type_comment':
 					continue
 

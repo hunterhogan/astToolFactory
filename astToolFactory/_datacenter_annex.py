@@ -47,8 +47,8 @@ _columns: list[str] = [
 	'kwarg_annotationIdentifier',
 
 	# columns computed from other columns and a dictionary per row
-	'typeGrab',
-	'typeGrab_ast_expr',
+    'type_astSuperClasses',
+    'type_astSuperClasses_ast_expr',
 ]
 
 """
