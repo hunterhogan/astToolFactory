@@ -2,6 +2,7 @@
 NOTE Use special indentation in this file.
     1. The generated files use spaces, not tabs, so use spaces here.
     2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
+from ast import AST, Constant
 from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import (
 	diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators,
@@ -9,7 +10,6 @@ from astToolFactory.documentation import (
 from astToolkit import identifierDotAttribute, Make
 from itertools import chain
 import ast
-from ast import AST, Constant
 
 identifierToolClass: str = 'Be'
 ImaIndentMethod: str = ' ' * 8

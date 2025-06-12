@@ -20,11 +20,13 @@ classifiers = [
   "Typing :: Typed",]
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
 dependencies = [
-  "Z0Z_tools",
-  "astToolkit==0.5.3",
+  "astToolkit==0.5.4",
+  "isort",
   "pandas",
   "pyarrow",
-  "tomli",]
+  "tomli",
+  "Z0Z_tools",
+  ]
 optional-dependencies = { testing = [
   "mypy",
   "pytest",

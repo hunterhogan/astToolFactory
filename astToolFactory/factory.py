@@ -26,6 +26,7 @@ class GuardIfThen(TypedDict):
 	"""Guard for Python versions."""
 	test: ast.expr
 	body: list[ast.stmt]
+
 # NOTE Global identifiers used by multiple functions to simplify using the `_makeGuardVersion` function.
 # If the separate functions converge enough, I can combine them into one function and remove this suboptimal system.
 dictionaryGuardVersion: dict[int, GuardIfThen] = {}
@@ -106,7 +107,7 @@ def make_astTypes(**keywordArguments: Any) -> None:
 
 	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias(**keywordArguments):
 		astNameTypeAlias: ast.Name = Make.Name(identifierTypeAlias, ast.Store())
-		TypeAlias_value: ast.expr = Make.BitOr.join([eval(classAs_astAttribute) for classAs_astAttribute in list4TypeAlias_value])
+		TypeAlias_value: ast.expr = Make.BitOr.join(list4TypeAlias_value)
 		ast_stmt = Make.AnnAssign(astNameTypeAlias, astName_typing_TypeAlias, value=TypeAlias_value)
 
 		if guardVersion:
@@ -147,9 +148,9 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute in getElementsBe(identifierToolClass, **keywordArguments):
 		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Name('ast.AST'))])
-			, body=[docstrings[identifierToolClass][ClassDefIdentifier], Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), eval(classAs_astAttribute)]))]
+			, body=[docstrings[identifierToolClass][ClassDefIdentifier], Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), classAs_astAttribute]))]
 			, decorator_list=[astName_staticmethod]
-			, returns=Make.Subscript(Make.Name('TypeIs'), slice=eval(classAs_astAttribute)))
+			, returns=Make.Subscript(Make.Name('TypeIs'), slice=classAs_astAttribute))
 
 		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
 			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
@@ -345,7 +346,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 	listOperatorIdentifiers: list[str] = sorted([subclass.__name__ for subclass in ast.operator.__subclasses__()])
 
 	# The order of the tuple elements is the order in which they are used in the flow of the code.
-	for ClassDefIdentifier, listStr4FunctionDef_args, kwarg_annotationIdentifier, listDefaults, classAs_astAttributeAsStr, overloadDefinition, listTupleCall_keywords, guardVersion, versionMinorMinimum in getElementsMake(identifierToolClass, **keywordArguments):
+	for ClassDefIdentifier, listFunctionDef_args, kwarg_annotationIdentifier, defaults, classAs_astAttribute, overloadDefinition, listCall_keyword, guardVersion, versionMinorMinimum in getElementsMake(identifierToolClass, **keywordArguments):
 		# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
 		if ClassDefIdentifier in listBoolOpIdentifiers:
 			list4ClassDefBody.append(Make.ClassDef(ClassDefIdentifier
@@ -374,27 +375,17 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 			list4ClassDefBody.extend(listOverloads_keyword)
 			ledgerOfImports.addImportFrom_asStr('typing', 'overload')
 
-		listFunctionDef_args: list[ast.arg] = [cast(ast.arg, eval(ast_argAsStr)) for ast_argAsStr in listStr4FunctionDef_args]
 		kwarg: ast.arg | None = None
 		if kwarg_annotationIdentifier != 'No':
 			ledgerOfImports.addImportFrom_asStr('astToolkit', kwarg_annotationIdentifier)
 			kwarg = Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name(kwarg_annotationIdentifier)))
-		defaults: list[ast.expr] = [cast(ast.expr, eval(defaultAsStr)) for defaultAsStr in listDefaults]
 		decorator_list: list[ast.expr] = [astName_staticmethod]
-		classAs_astAttribute: ast.expr = eval(classAs_astAttributeAsStr)
 
 		# For the first refactoring, _all_ `overloadDefinition` are `False` because overload is handled above.
 		if overloadDefinition:
 			decorator_list.append(astName_overload)
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
-			listCall_keyword: list[ast.keyword] = []
-			for tupleCall_keywords in listTupleCall_keywords:
-				argIdentifier, keywordValue = tupleCall_keywords
-				# If there are not call keywords
-				if keywordValue == 'No':
-					break
-				listCall_keyword.append(Make.keyword(argIdentifier, value=eval(keywordValue)))
 			if kwarg is not None:
 				listCall_keyword.append(keywordKeywordArguments4Call)
 

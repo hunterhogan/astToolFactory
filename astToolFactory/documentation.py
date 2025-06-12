@@ -502,7 +502,7 @@ map2PythonOperators: dict[str, str] = {
 'Pass': '',
 'pattern': '',
 'patterns': '',
-'posonlyargs': '',
+'posonlyargs': '/',
 'Pow': '**',
 'Raise': '',
 'rest': '**',
