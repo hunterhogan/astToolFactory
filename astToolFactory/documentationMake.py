@@ -17,31 +17,53 @@ for subclass in ast.operator.__subclasses__():
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]] = Make.Expr(Make.Constant(
     f"""
-    Factory methods for creating properly configured AST nodes with enhanced usability.
-    (AI generated docstring)
+    Create a `class` `ast.AST` `object` or an `ast.AST` subclass `object`.
 
-    The `Make` class provides 160+ static methods for constructing Python AST nodes with correct
-    attributes and type annotations. This is the primary factory component of the astToolkit
-    package, designed to simplify AST node creation through enhanced parameter naming and
-    composable operations.
+    Every non-deprecated subclass of `ast.AST` ({diminutive2etymology['AST']}), has a corresponding
+    method in `Make`, and for each `class`, you can set the value of each attribute. But, what is an
+    "attribute"? In the `ast` universe, one word may have many different meanings, and if you want
+    to avoid confusion, you should pay close attention to capitalization, leading underscores, and
+    context. In Python, an "attribute" is a property of an `object`. In `class` `Make`, when you
+    create an `ast.AST` subclass `object`, you can set the value of any attribute of that `object`.
+    The `ast` universe divides attributes into two categories, `_attributes` and `_fields` (or
+    `_field*`).
 
-    Key features include parameter renaming for better usability while maintaining access to all
-    AST constructor parameters, enhanced functionality such as variadic parameters that create
-    chained structures, and consistent `**keywordArguments` access to position and type information
-    across all methods.
+    The attributes in category `_attributes` are `lineno` ({diminutive2etymology['lineno']}),
+    `col_offset` ({diminutive2etymology['col_offset']}), `end_lineno`
+    ({diminutive2etymology['end_lineno']}), and `end_col_offset`
+    ({diminutive2etymology['end_col_offset']}). These attributes of an `ast` `object` represent the
+    physical location of the text when rendered as Python code. With abstract syntax trees, as
+    opposed to concrete syntax trees for example, you rarely need to work directly with physical
+    locations, therefore `_attributes` are almost always relegated to `**keywordArguments` in `Make`
+    methods. For a counter example, see `Make.TypeIgnore` ({diminutive2etymology['TypeIgnore']}), for
+    which `lineno` is a named parameter.
 
-    Common AST attributes accessible through `**keywordArguments`:
+    In an attempt to distinguish the attributes of `ast.AST` subclasses that are not in the category
+    `_attributes` from the four attributes in the category `_attributes`, all other attributes of
+    `ast.AST` subclasses are in category `_fields` (or sometimes, category `_field*`, such as
+    `_field_types`).
 
-        col_offset: Position information specifying the column where an AST object begins.
-        end_col_offset, {diminutive2etymology['end_col_offset']}, (None): Position information specifying the column where an AST object ends.
-        end_lineno, {diminutive2etymology['end_lineno']}, (None): Position information specifying the line number where an AST object ends.
-        level, {diminutive2etymology['level']}, (0): Module import depth level that controls relative vs absolute imports. Default 0 indicates absolute import.
-        lineno, {diminutive2etymology['lineno']}: Position information manually specifying the line number where an AST object begins.
-        type_comment, {diminutive2etymology['type_comment']}, (None): Optional string with the type annotation as a comment or `# type: ignore`.
+    You probably want to try to avoid confusing these concepts and categories with similarly named
+    things, including `ast.Attribute`, `ast.Attribute.attr` ({diminutive2etymology['attr']}),
+    `getattr`, `setattr`, `ast.MatchClass.kwd_attrs` ({diminutive2etymology['kwd_attrs']}), and
+    `_Attributes` (no, really, it's a thing).
 
-    The Make class supports the antecedent-action pattern where factory methods serve as actions
-    combined with predicates from `Be`, `IfThis`, and `ClassIsAndAttribute` classes through visitor
-    classes like `NodeTourist` and `NodeChanger`.
+    Potential **keywordArguments
+    ----------------
+
+        col_offset ({diminutive2etymology['col_offset']}):
+            Position information specifying the column where an AST object begins.
+        end_col_offset ({diminutive2etymology['end_col_offset']}):
+            Position information specifying the column where an AST object ends.
+        end_lineno ({diminutive2etymology['end_lineno']}):
+            Position information specifying the line number where an AST object ends.
+        level ({diminutive2etymology['level']}):
+            Module import depth level that controls relative vs absolute imports. Default 0
+            indicates absolute import.
+        lineno ({diminutive2etymology['lineno']}):
+            Position information manually specifying the line number where an AST object begins.
+        type_comment ({diminutive2etymology['type_comment']}):
+            Optional string with the type annotation as a comment or `# type: ignore`.
     """
 ))
 
@@ -2164,20 +2186,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['Tuple'] = Ma
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['type_ignore'] = Make.Expr(Make.Constant(
-        f"""Create an `ast.type_ignore` node for type checker ignore comments.
-        (AI generated docstring)
-
-        The `type_ignore` node represents type checker ignore directives that
-        suppress type checking warnings for specific lines. This is used with
-        comments like `# type: ignore`.
-
-        Parameters
-            lineno, {diminutive2etymology['lineno']}: Line number where the ignore directive applies
-            tag: Tag identifying the specific type ignore directive
-
-        Returns
-            nodeTypeIgnore: The constructed type ignore node
-        """
+        """`class` `ast.type_ignore` is the base class for `ast.TypeIgnore`."""
 ))
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]]['type_param'] = Make.Expr(Make.Constant(

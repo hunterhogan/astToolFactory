@@ -1,8 +1,9 @@
 from astToolFactory._theSSOT import (
 	listPyrightErrors as listPyrightErrors,
-	settingsPackage as settingsPackage,
+	ManufacturedPackageSettings as ManufacturedPackageSettings,
+	pathRoot_typeshed as pathRoot_typeshed,
 	settingsManufacturing as settingsManufacturing,
-    ManufacturedPackageSettings as ManufacturedPackageSettings,
+	settingsPackage as settingsPackage,
 )
 
 from astToolFactory._snippets import (

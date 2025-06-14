@@ -14,6 +14,7 @@ listPyrightErrors: list[str] = listPyrightErrorsHARDCODED
 # TODO Can I dynamically set this by reading it from typeshed or somewhere else?
 # The value will change once a year
 versionMinor_astMinimumSupportedHARDCODED = 9
+pathRelativeRoot_typeshedHARDCODED: Path = Path('typings/stdlib')
 
 try:
 	identifierPackagePACKAGING: str = tomli_load(Path("pyproject.toml").open('rb'))["project"]["name"]
@@ -37,6 +38,8 @@ class PackageSettings:
 
 settingsPackage = PackageSettings()
 
+pathRoot_typeshed: Path = Path(settingsPackage.pathPackage, '..', pathRelativeRoot_typeshedHARDCODED)
+
 @dataclasses.dataclass
 class ManufacturedPackageSettings(PackageSettings):
 	isort_code: dict[str, int | str | list[str]] = dataclasses.field(default_factory=dict[str, int | str | list[str]])
@@ -47,7 +50,7 @@ class ManufacturedPackageSettings(PackageSettings):
 	keywordArgumentsIdentifier: str = 'keywordArguments'
 	versionMinor_astMinimumSupported: int = versionMinor_astMinimumSupportedHARDCODED
 	includeDeprecated: bool = False
-	versionMinorMaximum: int | None = None
+	versionMinorMaximum: int | None = 13
 
 PackageToManufactureIdentifier: str = 'astToolkit'
 # NOTE why Z0Z_?

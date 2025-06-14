@@ -3,20 +3,19 @@ import ast
 
 _columns: list[str] = [
 	# read from sources
+    # Interpreter
 	'ClassDefIdentifier',
-	'deprecated',
+	'versionMajorPythonInterpreter',
+	'versionMinorPythonInterpreter',
+	'versionMicroPythonInterpreter',
 	'base',
-	'base_typing_TypeAlias',
+
+    # stdlib/ast.pyi
+	'deprecated',
 	'match_args',
 	'attribute',
 	'attributeKind',
-	'typeC',
-	'type_field_type',
-	'typeStub',
-	'typeStub_typing_TypeAlias',
-	'versionMajorData',
-	'versionMinorData',
-	'versionMicroData',
+	'type',
 
 	# Purely a human choice
 	'attributeRename',
@@ -25,7 +24,6 @@ _columns: list[str] = [
 
 	# columns computed from sources per row
 	'classAs_astAttribute',
-	'type',
 	'canBeNone',
 	'type_ast_expr',
 	'ast_arg',
@@ -161,7 +159,7 @@ defaultValue__ClassDefIdentifier_attribute: dict[tuple[str, str], ast.expr] = {
     ('Yield', 'value'): Make.Constant(None),
 }
 
-defaultValue__typeStub_attribute: dict[tuple[str, str], ast.expr] = {
+defaultValue__type_attribute: dict[tuple[str, str], ast.expr] = {
 	('int | None', 'end_col_offset'): Make.Constant(None),
 	('int | None', 'end_lineno'): Make.Constant(None),
 }

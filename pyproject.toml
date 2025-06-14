@@ -26,6 +26,7 @@ dependencies = [
   "pandas",
   "pyarrow",
   "tomli",
+  "typeshed_client",
   "Z0Z_tools",
 ]
 optional-dependencies = { testing = [

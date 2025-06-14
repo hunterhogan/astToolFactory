@@ -2,7 +2,6 @@
 NOTE Use special indentation in this file.
 	1. The generated files use spaces, not tabs, so use spaces here.
 	2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
-from astToolFactory import settingsManufacturing
 from astToolkit import Make
 from collections import defaultdict
 import ast
@@ -12,11 +11,11 @@ docstrings: dict[str, dict[str, ast.Expr]] = defaultdict(lambda: defaultdict(lam
 docstringWarning = Make.Expr(Make.Constant("""This file is generated automatically, so changes to this file will be lost."""))
 
 def getMoreDocstrings():
-	import astToolFactory.documentationBe
-	import astToolFactory.documentationClassIsAndAttribute
-	import astToolFactory.documentationDOT
-	import astToolFactory.documentationGrab
-	import astToolFactory.documentationMake
+	import astToolFactory.documentationBe  # pyright: ignore[reportUnusedImport]
+	import astToolFactory.documentationClassIsAndAttribute  # pyright: ignore[reportUnusedImport]
+	import astToolFactory.documentationDOT  # pyright: ignore[reportUnusedImport]
+	import astToolFactory.documentationGrab  # pyright: ignore[reportUnusedImport]
+	import astToolFactory.documentationMake  # pyright: ignore[reportUnusedImport]
 
 diminutive2etymology: dict[str, str] = {
 	'AnnAssign': '***Ann***otated ***Assign***ment',
@@ -25,6 +24,8 @@ diminutive2etymology: dict[str, str] = {
 	'argtypes': '***arg***ument types',
 	'asname': '***as*** name',
 	'asName': '***a***lia***s*** name',
+	'ast': 'abstract syntax tree',
+	'AST': 'Abstract Syntax Tree',
 	'AsyncFor': '***Async***hronous For loop',
 	'AsyncFunctionDef': '***Async***hronous Function ***Def***inition',
 	'AsyncWith': '***Async***hronous With statement',
@@ -49,7 +50,7 @@ diminutive2etymology: dict[str, str] = {
 	'Div': '***Div***ision',
 	'elt': '***e***lemen***t***',
 	'elts': '***e***lemen***t***s',
-	'end_col_offset': '***end*** col***umn offset***',
+	'end_col_offset': 'end ***col***umn offset',
 	'end_lineno': 'end line _**n**umer**o**_ (_Latin_ "number")',
 	'Eq': 'is ***Eq***ual to',
 	'exc': '***exc***eption',
@@ -127,12 +128,12 @@ diminutive2etymology: dict[str, str] = {
 	'Sub': '***Sub***traction',
 	'TryStar': 'Try executing this, protected by `except*` ("except star")',
 	'type_comment': 'a `type` annotation in a comment',
-	'type_ignore': 'this type error, you ignore it',
+	'type_ignore': 'this `type` error, you ignore it',
 	'type_ignores': 'type ***ignore*** comments',
 	'type_param': 'type ***param***eter',
 	'type_params': 'type ***param***eter***s***',
 	'TypeAlias': 'Type Alias',
-	'TypeIgnore': 'this type error, you ignore it',
+	'TypeIgnore': 'this Type (`type`) error, Ignore it',
 	'TypeVar': 'Type ***Var***iable',
 	'TypeVarTuple': 'Type ***Var***iable ***Tuple***',
 	'UAdd': '***U***nary ***Add***ition',

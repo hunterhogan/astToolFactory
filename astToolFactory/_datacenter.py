@@ -1,19 +1,22 @@
 """API for data. The rest of the package should be ignorant of the specifics of the data source.
 This module provides a set of functions to interact with the data source, allowing for easy retrieval and manipulation of data."""
-from astToolFactory import settingsManufacturing
+from astToolFactory import pathRoot_typeshed, settingsManufacturing
 from astToolFactory._datacenter_annex import (
 	_columns, attributeRename__attribute, attributeRename__ClassDefIdentifier_attribute, defaultValue__attribute,
-	defaultValue__ClassDefIdentifier_attribute, defaultValue__typeStub_attribute, move2keywordArguments__attribute,
+	defaultValue__ClassDefIdentifier_attribute, defaultValue__type_attribute, move2keywordArguments__attribute,
 	move2keywordArguments__attributeKind, type__ClassDefIdentifier_attribute,
 )
-from astToolkit import Be, DOT, Make, NodeTourist, Then
-from collections.abc import Sequence
+from astToolkit import (
+	Be, ClassIsAndAttribute, DOT, extractClassDef, IfThis, Make, NodeTourist, parsePathFilename2astModule, Then,
+)
+from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, cast
 from Z0Z_tools import raiseIfNone
 import ast
 import numpy
 import pandas
+import typeshed_client
 
 """
 - Use idiomatic pandas.
@@ -74,7 +77,7 @@ def getDataframe(*indices: str, **keywordArguments: Any) -> pandas.DataFrame:
 		dataframe = dataframe[~dataframe['deprecated']]
 
 	if versionMinorMaximum is not None:
-		dataframe = dataframe[dataframe['versionMinorData'] <= versionMinorMaximum]
+		dataframe = dataframe[dataframe['versionMinorPythonInterpreter'] <= versionMinorMaximum]
 
 	if modifyVersionMinorMinimum:
 		columnsVersion: list[str] = ['versionMinorMinimumAttribute', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args']
@@ -194,7 +197,7 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
 		if bool(dataframeTarget['overloadDefinition']):
 			return [cast(ast.expr, dataframeTarget['type_ast_expr'])]
-		matchingRows = dataframe.loc[
+		matchingRows: pandas.DataFrame = dataframe.loc[
 			(dataframe['attribute'] == dataframeTarget['attribute'])
 			& (dataframe['type'] != "No")
 			& (dataframe['versionMinorMinimum'] <= dataframeTarget['versionMinorMinimum'])
@@ -372,13 +375,66 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 	return list(dataframe.to_records(index=False))
 
 def updateDataframe() -> None:
-	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=None, modifyVersionMinorMinimum=False)
+	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
 
 	# columns: reorder; drop columns, but they might be recreated later in the flow.
 	# dataframe = dataframe[_columns]
 
+	# TODO Columns to create using the Python Interpreter,
+	# from version 3.settingsManufacturing.versionMinor_astMinimumSupported
+	# to version 3.settingsManufacturing.versionMinorMaximum, inclusive.
+	# 'ClassDefIdentifier',
+	# 'versionMajorPythonInterpreter',
+	# 'versionMinorPythonInterpreter',
+	# 'versionMicroPythonInterpreter',
+	# 'base',
+
+	ImaSearchContext: typeshed_client.SearchContext = typeshed_client.get_search_context(typeshed=pathRoot_typeshed)
+	astModule_astStub: ast.Module = parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file('ast', search_context=ImaSearchContext)))
+
+	# Columns and rows to create from `astModule_astStub`
+	# 'deprecated', is 'ClassDefIdentifier' deprecated?
+	# 'match_args',
+	# 'attribute',
+	# 'attributeKind',
+	# 'type',
+
+	# NOTE testing value:
+	ClassDefIdentifier = "ParamSpec"
+	versionMinorPythonInterpreter = 13
+
+	astClassDef: ast.ClassDef = raiseIfNone(extractClassDef(astModule_astStub, ClassDefIdentifier))
+
+	deprecated: bool = bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(Make.Module(cast(list[ast.stmt], astClassDef.decorator_list))))
+
+	def findThis(node: ast.AST):
+		thisNode: bool = False
+		if Be.If(node) and Be.Compare(node.test):
+			if IfThis.isAttributeNamespaceIdentifier('sys', 'version_info')(node.test.left) and Be.Tuple(node.test.comparators[0]):
+				if IfThis.isConstant_value(versionMinorPythonInterpreter)(node.test.comparators[0].elts[1]):
+					if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(node.body[0]):
+						thisNode = True
+		return thisNode
+
+	body: list[ast.expr] | None = NodeTourist(findThis, Then.extractIt(cast(Callable[[ast.If], list[ast.expr]], DOT.body))).captureLastMatch(astClassDef)
+	if body:
+		match_args: tuple[str, ...] = ast.literal_eval(cast(ast.Assign, body[0]).value)
+
+	def findThis_orelse(node: ast.AST):
+		thisNode: bool = False
+		if Be.If(node) and Be.Compare(node.test):
+			if IfThis.isAttributeNamespaceIdentifier('sys', 'version_info')(node.test.left) and Be.Tuple(node.test.comparators[0]):
+				if node.orelse:
+					if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(node.orelse[0]):
+						thisNode = True
+		return thisNode
+
+	body: list[ast.expr] | None = NodeTourist(findThis_orelse, Then.extractIt(cast(Callable[[ast.If], list[ast.expr]], DOT.orelse))).captureLastMatch(astClassDef)
+	if body:
+		match_args: tuple[str, ...] = ast.literal_eval(cast(ast.Assign, body[0]).value)
+
 	# Create 'attributeRename'
-	dataframe['attributeRename'] = dataframe['attribute']
+	dataframe['attributeRename'] = pandas.Series(data=dataframe['attribute'], index=dataframe.index, dtype=str, name='attributeRename', copy=True)
 	dataframe['attributeRename'] = dataframe['attribute'].map(attributeRename__attribute).fillna(dataframe['attributeRename'])
 	dataframe['attributeRename'] = dataframe[['ClassDefIdentifier', 'attribute']].apply(tuple, axis='columns').map(attributeRename__ClassDefIdentifier_attribute).fillna(dataframe['attributeRename'])
 
@@ -389,32 +445,18 @@ def updateDataframe() -> None:
 	dataframe['defaultValue'] = "No"  # Default value for the column
 	dataframe['defaultValue'] = dataframe['attribute'].map(defaultValue__attribute).fillna(dataframe['defaultValue'])
 	dataframe['defaultValue'] = dataframe[['ClassDefIdentifier', 'attribute']].apply(tuple, axis='columns').map(defaultValue__ClassDefIdentifier_attribute).fillna(dataframe['defaultValue'])
-	dataframe['defaultValue'] = dataframe[['typeStub', 'attribute']].apply(tuple, axis='columns').map(defaultValue__typeStub_attribute).fillna(dataframe['defaultValue'])
+	dataframe['defaultValue'] = dataframe[['type', 'attribute']].apply(tuple, axis='columns').map(defaultValue__type_attribute).fillna(dataframe['defaultValue'])
 
-	def makeColumn_classAs_astAttribute(ClassDefIdentifier:str):
+	dataframe['canBeNone'] = pandas.Series(data=False, index=dataframe.index, dtype=object, name='canBeNone')
+	dataframe.loc[dataframe['type'].str.contains(' | None', regex=False, na=False), 'canBeNone'] = True
+	dataframe.loc[dataframe['type'].str.contains(' | None', regex=False, na=False) & dataframe['type'].str.contains('list', regex=False, na=False), 'canBeNone'] = "list"
+	dataframe.loc[dataframe['type'] == "No", 'canBeNone'] = "No"
+
+	def makeColumn_classAs_astAttribute(ClassDefIdentifier:str) -> ast.expr:
 		return Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
 	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].astype(str).map(makeColumn_classAs_astAttribute)
 
-	identifiersPattern: str = r'\b(' + '|'.join(dataframe['ClassDefIdentifier'].dropna().unique()) + r')\b'
-	dataframe['type'] = (
-		dataframe['typeStub']
-		.where(dataframe['typeStub_typing_TypeAlias'] == 'No', dataframe['typeC'])
-		.str.replace(identifiersPattern, r'ast.\1', regex=True)
-		.str.replace("Literal[True, False]", "bool", regex=False)
-	)
-
 	dataframe['type'] = dataframe[['ClassDefIdentifier', 'attribute']].apply(tuple, axis='columns').map(type__ClassDefIdentifier_attribute).fillna(dataframe['type'])
-
-	def makeColumn_canBeNone(dataframeTarget: pandas.DataFrame) -> str | bool:
-		if cast(str, dataframeTarget['type']) == "No":
-			return "No"
-		elif ' | None' in dataframeTarget['type'] and 'list' in dataframeTarget['type']:
-			return "list"
-		elif ' | None' in dataframeTarget['type']:
-			return True
-		else:
-			return False
-	dataframe['canBeNone'] = dataframe.apply(makeColumn_canBeNone, axis='columns')
 
 	def pythonCode2expr(string: str) -> Any:
 		astModule: ast.Module = ast.parse(string)
@@ -447,8 +489,8 @@ def updateDataframe() -> None:
 
 	# === Group-Based Column Computation ===
 	def computeVersionMinimum(list_byColumns: list[str]) -> numpy.ndarray[tuple[int, ...], numpy.dtype[numpy.int64]]:
-		return numpy.where(dataframe.groupby(list_byColumns)['versionMinorData'].transform('min') == settingsManufacturing.versionMinor_astMinimumSupported,
-			-1, dataframe.groupby(list_byColumns)['versionMinorData'].transform('min'))
+		return numpy.where(dataframe.groupby(list_byColumns)['versionMinorPythonInterpreter'].transform('min') == settingsManufacturing.versionMinor_astMinimumSupported,
+			-1, dataframe.groupby(list_byColumns)['versionMinorPythonInterpreter'].transform('min'))
 
 	dataframe['versionMinorMinimum_match_args'] = computeVersionMinimum(['ClassDefIdentifier', 'match_args'])
 	dataframe['versionMinorMinimumAttribute'] = computeVersionMinimum(['ClassDefIdentifier', 'attribute'])
@@ -457,21 +499,17 @@ def updateDataframe() -> None:
 	def compute_listFunctionDef_args(dataframeTarget: pandas.DataFrame) -> list[ast.arg]:
 		listFunctionDef_args: list[ast.arg] = []
 
-		if cast(str, dataframeTarget['attributeKind']) != "No":
-			for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
-				matchingRows: pandas.DataFrame = dataframe[
-					(dataframe['attribute'] == attributeTarget)
-					& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
-					& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
-				]
-				# `attributeTarget` is not a `Make` parameter
-				if matchingRows.iloc[0]['move2keywordArguments'] == 'Unpack':
-					continue
+		for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
+			matchingRows: pandas.DataFrame = dataframe[
+				(dataframe['attribute'] == attributeTarget)
+				& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
+				& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
+			]
 
-				# `attributeTarget` is a `Make` parameter
-				if not matchingRows.iloc[0]['move2keywordArguments']:
-					# Append 'ast_arg' in the same order as match_args
-					listFunctionDef_args.append(cast(ast.arg, matchingRows.iloc[0]['ast_arg']))
+			# `attributeTarget` is a `Make` parameter
+			if not matchingRows.iloc[0]['move2keywordArguments']:
+				# Append 'ast_arg' in the same order as match_args
+				listFunctionDef_args.append(cast(ast.arg, matchingRows.iloc[0]['ast_arg']))
 
 		return listFunctionDef_args
 	dataframe['listFunctionDef_args'] = dataframe.apply(compute_listFunctionDef_args, axis='columns')
@@ -479,21 +517,18 @@ def updateDataframe() -> None:
 	def compute_listDefaults(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
 		listDefaults: list[ast.expr] = []
 
-		if cast(str, dataframeTarget['attributeKind']) != "No":
-			for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
-				matchingRows: pandas.DataFrame = dataframe[
-					(dataframe['attribute'] == attributeTarget)
-					& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
-					& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
-				]
-				if matchingRows.iloc[0]['move2keywordArguments'] == 'Unpack':
-					continue
+		for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
+			matchingRows: pandas.DataFrame = dataframe[
+				(dataframe['attribute'] == attributeTarget)
+				& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
+				& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
+			]
 
-				# `attributeTarget` is a `Make` parameter
-				if not matchingRows.iloc[0]['move2keywordArguments']:
-					# "argspec" or ast.arguments or Make.arguments: default values must be in the same order as their parameters
-					if matchingRows.iloc[0]['defaultValue'] != "No":
-						listDefaults.append(cast(ast.expr, matchingRows.iloc[0]['defaultValue']))
+			# `attributeTarget` is a `Make` parameter
+			if not matchingRows.iloc[0]['move2keywordArguments']:
+				# "argspec" or ast.arguments or Make.arguments: default values must be in the same order as their parameters
+				if matchingRows.iloc[0]['defaultValue'] != "No":
+					listDefaults.append(cast(ast.expr, matchingRows.iloc[0]['defaultValue']))
 
 		return listDefaults
 	dataframe['listDefaults'] = dataframe.apply(compute_listDefaults, axis='columns')
@@ -501,27 +536,26 @@ def updateDataframe() -> None:
 	def compute_listCall_keyword(dataframeTarget: pandas.DataFrame) -> list[ast.keyword]:
 		listCall_keyword: list[ast.keyword] = []
 
-		if cast(str, dataframeTarget['attributeKind']) != "No":
-			for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
-				matchingRows: pandas.DataFrame = dataframe[
-					(dataframe['attribute'] == attributeTarget)
-					& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
-					& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
-				]
-				if matchingRows.iloc[0]['move2keywordArguments'] == 'Unpack':
-					continue
+		for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
+			matchingRows: pandas.DataFrame = dataframe[
+				(dataframe['attribute'] == attributeTarget)
+				& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
+				& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
+			]
+			if matchingRows.iloc[0]['move2keywordArguments'] == 'Unpack':
+				continue
 
-				# "Hide" `attributeTarget` in the call to the `ast` constructor
-				if matchingRows.iloc[0]['move2keywordArguments']:
-					keywordValue = cast(ast.expr, matchingRows.iloc[0]['defaultValue'])
-				# `attributeTarget` is a `Make` parameter
-				else:
-					keywordValue = Make.Name(cast(str, matchingRows.iloc[0]['attributeRename']))
-					# If the type is `Sequence`, type checker will complain unless call `list` in the `ast` constructor
-					if matchingRows.iloc[0]['list2Sequence']:
-						keywordValue = Make.Call(Make.Name('list'), [keywordValue])
+			# "Hide" `attributeTarget` in the call to the `ast` constructor
+			if matchingRows.iloc[0]['move2keywordArguments']:
+				keywordValue = cast(ast.expr, matchingRows.iloc[0]['defaultValue'])
+			# `attributeTarget` is a `Make` parameter
+			else:
+				keywordValue = Make.Name(cast(str, matchingRows.iloc[0]['attributeRename']))
+				# If the type is `Sequence`, type checker will complain unless call `list` in the `ast` constructor
+				if matchingRows.iloc[0]['list2Sequence']:
+					keywordValue = Make.Call(Make.Name('list'), [keywordValue])
 
-				listCall_keyword.append(Make.keyword(attributeTarget, keywordValue))
+			listCall_keyword.append(Make.keyword(attributeTarget, keywordValue))
 
 		return listCall_keyword
 	dataframe['listCall_keyword'] = dataframe.apply(compute_listCall_keyword, axis='columns')
