@@ -6,9 +6,7 @@ from astToolFactory._datacenterAnnex import (
 	defaultValue__ClassDefIdentifier_attribute, defaultValue__type_attribute, move2keywordArguments__attribute,
 	move2keywordArguments__attributeKind, type__ClassDefIdentifier_attribute,
 )
-from astToolkit import (
-	Be, ClassIsAndAttribute, DOT, extractClassDef, IfThis, Make, NodeTourist, parsePathFilename2astModule, Then,
-)
+from astToolkit import Be, DOT, extractClassDef, IfThis, Make, NodeTourist, parsePathFilename2astModule, Then
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, cast
@@ -144,7 +142,7 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 	elementsTarget: list[str] = ['identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'guardVersion', 'versionMinorMinimum']
 
 	dataframe['overloadDefinition'] = dataframe.groupby('attribute').transform('size') > 1
-	dataframeImplementationFunctionDefinitions = (
+	dataframeImplementationFunctionDefinitions: pandas.DataFrame = (
 		dataframe[dataframe['overloadDefinition']]
 		.groupby('attribute')['versionMinorMinimum']
 		.unique()
@@ -405,7 +403,7 @@ def updateDataframe() -> None:
 
 	astClassDef: ast.ClassDef = raiseIfNone(extractClassDef(astModule_astStub, ClassDefIdentifier))
 
-	deprecated: bool = bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(Make.Module(cast(list[ast.stmt], astClassDef.decorator_list))))
+	deprecated: bool = bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(Make.Module(cast(list[ast.stmt], astClassDef.decorator_list))))  # pyright: ignore[reportUnusedVariable] # noqa: F841
 
 	def findThis(node: ast.AST):
 		thisNode: bool = False
@@ -418,7 +416,7 @@ def updateDataframe() -> None:
 
 	body: list[ast.expr] | None = NodeTourist(findThis, Then.extractIt(cast(Callable[[ast.If], list[ast.expr]], DOT.body))).captureLastMatch(astClassDef)
 	if body:
-		match_args: tuple[str, ...] = ast.literal_eval(cast(ast.Assign, body[0]).value)
+		match_args: tuple[str, ...] = ast.literal_eval(cast(ast.Assign, body[0]).value) # pyright: ignore[reportUnusedVariable]
 
 	def findThis_orelse(node: ast.AST):
 		thisNode: bool = False
@@ -431,7 +429,7 @@ def updateDataframe() -> None:
 
 	body: list[ast.expr] | None = NodeTourist(findThis_orelse, Then.extractIt(cast(Callable[[ast.If], list[ast.expr]], DOT.orelse))).captureLastMatch(astClassDef)
 	if body:
-		match_args: tuple[str, ...] = ast.literal_eval(cast(ast.Assign, body[0]).value)
+		match_args: tuple[str, ...] = ast.literal_eval(cast(ast.Assign, body[0]).value)  # pyright: ignore[reportUnusedVariable] # noqa: F841
 
 	# Create 'attributeRename'
 	dataframe['attributeRename'] = pandas.Series(data=dataframe['attribute'], index=dataframe.index, dtype=str, name='attributeRename', copy=True)
@@ -496,69 +494,36 @@ def updateDataframe() -> None:
 	dataframe['versionMinorMinimumAttribute'] = computeVersionMinimum(['ClassDefIdentifier', 'attribute'])
 	dataframe['versionMinorMinimumClass'] = computeVersionMinimum(['ClassDefIdentifier'])
 
-	def compute_listFunctionDef_args(dataframeTarget: pandas.DataFrame) -> list[ast.arg]:
-		listFunctionDef_args: list[ast.arg] = []
+	def make3Columns4ClassMake(dataframeTarget: pandas.DataFrame):
+		matchingRows: pandas.DataFrame = dataframe[
+			(dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
+			& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
+		]
+		matchingRows['attribute'] = pandas.Categorical(matchingRows['attribute'], categories=matchingRows['match_args'].iloc[0], ordered=True)
 
-		for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
-			matchingRows: pandas.DataFrame = dataframe[
-				(dataframe['attribute'] == attributeTarget)
-				& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
-				& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
-			]
+		matchingRows_listCall_keyword: pandas.DataFrame = matchingRows[matchingRows['move2keywordArguments'] != "No"].copy(deep=True)
+		matchingRows = matchingRows[matchingRows['move2keywordArguments'] == False].sort_values('attribute') # noqa: E712
+		matchingRows_listDefaults = matchingRows[matchingRows['defaultValue'] != "No"].copy(deep=True)
 
-			# `attributeTarget` is a `Make` parameter
-			if not matchingRows.iloc[0]['move2keywordArguments']:
-				# Append 'ast_arg' in the same order as match_args
-				listFunctionDef_args.append(cast(ast.arg, matchingRows.iloc[0]['ast_arg']))
+		dataframeTarget['listFunctionDef_args'] = matchingRows.drop_duplicates(subset='attribute')['ast_arg'].tolist()
+		dataframeTarget['listDefaults'] = matchingRows_listDefaults.drop_duplicates(subset='attribute')['defaultValue'].tolist() # noqa: E712
 
-		return listFunctionDef_args
-	dataframe['listFunctionDef_args'] = dataframe.apply(compute_listFunctionDef_args, axis='columns')
+		matchingRows_listCall_keyword = matchingRows_listCall_keyword[matchingRows_listCall_keyword['move2keywordArguments'] != 'Unpack'].drop_duplicates(subset='attribute').sort_values('attribute') # noqa: E712
 
-	def compute_listDefaults(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
-		listDefaults: list[ast.expr] = []
-
-		for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
-			matchingRows: pandas.DataFrame = dataframe[
-				(dataframe['attribute'] == attributeTarget)
-				& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
-				& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
-			]
-
-			# `attributeTarget` is a `Make` parameter
-			if not matchingRows.iloc[0]['move2keywordArguments']:
-				# "argspec" or ast.arguments or Make.arguments: default values must be in the same order as their parameters
-				if matchingRows.iloc[0]['defaultValue'] != "No":
-					listDefaults.append(cast(ast.expr, matchingRows.iloc[0]['defaultValue']))
-
-		return listDefaults
-	dataframe['listDefaults'] = dataframe.apply(compute_listDefaults, axis='columns')
-
-	def compute_listCall_keyword(dataframeTarget: pandas.DataFrame) -> list[ast.keyword]:
-		listCall_keyword: list[ast.keyword] = []
-
-		for attributeTarget in list(cast(tuple[str, ...], dataframeTarget['match_args'])):
-			matchingRows: pandas.DataFrame = dataframe[
-				(dataframe['attribute'] == attributeTarget)
-				& (dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
-				& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
-			]
-			if matchingRows.iloc[0]['move2keywordArguments'] == 'Unpack':
-				continue
-
-			# "Hide" `attributeTarget` in the call to the `ast` constructor
-			if matchingRows.iloc[0]['move2keywordArguments']:
-				keywordValue = cast(ast.expr, matchingRows.iloc[0]['defaultValue'])
-			# `attributeTarget` is a `Make` parameter
+		def make_keyword(thisIsNotA_row: pandas.DataFrame) -> Any:
+			if cast(bool, thisIsNotA_row['move2keywordArguments']):
+				keywordValue: ast.expr = cast(ast.expr, thisIsNotA_row['defaultValue'])
 			else:
-				keywordValue = Make.Name(cast(str, matchingRows.iloc[0]['attributeRename']))
-				# If the type is `Sequence`, type checker will complain unless call `list` in the `ast` constructor
-				if matchingRows.iloc[0]['list2Sequence']:
+				keywordValue = Make.Name(cast(str, thisIsNotA_row['attributeRename']))
+				if thisIsNotA_row['list2Sequence'] is True:
 					keywordValue = Make.Call(Make.Name('list'), [keywordValue])
+			return Make.keyword(cast(str, thisIsNotA_row['attribute']), keywordValue)
 
-			listCall_keyword.append(Make.keyword(attributeTarget, keywordValue))
+		matchingRows_listCall_keyword['Call_keyword'] = matchingRows_listCall_keyword.apply(make_keyword, axis='columns')
+		dataframeTarget['listCall_keyword'] = matchingRows_listCall_keyword['Call_keyword'].tolist()
 
-		return listCall_keyword
-	dataframe['listCall_keyword'] = dataframe.apply(compute_listCall_keyword, axis='columns')
+		return dataframeTarget['listFunctionDef_args'], dataframeTarget['listDefaults'], dataframeTarget['listCall_keyword']
+	dataframe[['listFunctionDef_args', 'listDefaults', 'listCall_keyword']] = dataframe.apply(make3Columns4ClassMake, axis='columns', result_type='expand') # pyright: ignore[reportArgumentType]
 
 	dataframe.to_pickle(settingsManufacturing.pathFilenameDataframeAST)
 
