@@ -4,7 +4,7 @@ from astToolFactory import (
 	ManufacturedPackageSettings, settingsManufacturing,
 )
 from astToolFactory.documentation import docstrings, docstringWarning
-from astToolFactory.factory_annex import (
+from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
 	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute, FunctionDefMake_Import,
 	listHandmade_astTypes, listOverloads_keyword, listOverloadsTypeAlias,
