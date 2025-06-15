@@ -397,29 +397,56 @@ def updateDataframe() -> None:
 	# 'type',
 
 	dictionaryClassDef: dict[str, ast.ClassDef] = makeDictionaryClassDef(astModule_astStub)
+	list_astIf_sys_version_info: list[ast.If] = []
+	NodeTourist(
+		findThis=ClassIsAndAttribute.testIs(ast.If, ClassIsAndAttribute.leftIs(ast.Compare, IfThis.isAttributeNamespaceIdentifier('sys', 'version_info')))
+		, doThat=Then.appendTo(list_astIf_sys_version_info)
+		).visit(astModule_astStub)
+
+	dictionaryIdentifier2astIf: dict[str, ast.If] = {}
+	for astIf in list_astIf_sys_version_info:
+		NodeTourist(Be.ClassDef, Then.updateKeyValueIn(DOT.name, lambda _node: astIf, dictionaryIdentifier2astIf)).visit(astIf) # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+
 	def get_match_argsByVersionGuard(dataframeTarget: pandas.DataFrame):
-		def findThis_body(node: ast.AST) -> bool:
-			thisNode: bool = False
-			if findThisVersion(node, False):
-				if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(cast(ast.If, node).body[0]):
-					thisNode = True
-			return thisNode
-
-		def findThis_orelse(node: ast.AST):
-			thisNode: bool = False
-			if findThisVersion(node, True):
-				if cast(ast.If, node).orelse:
-					if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(cast(ast.If, node).orelse[0]):
-						thisNode = True
-			return thisNode
-
-		def findThisVersion(node: ast.AST, orelse: bool = False) -> bool:
+		def filterByVersion(node: ast.AST, orelse: bool = False) -> bool:
 			thisNode: bool = False
 			if Be.If(node) and Be.Compare(node.test):
 				if IfThis.isAttributeNamespaceIdentifier('sys', 'version_info')(node.test.left) and Be.Tuple(node.test.comparators[0]):
 					if IfThis.isConstant_value(dataframeTarget['versionMinorPythonInterpreter'] + orelse)(node.test.comparators[0].elts[1]):
 						thisNode = True
 			return thisNode
+
+		def findThis_body(node: ast.AST) -> bool:
+			thisNode: bool = False
+			if filterByVersion(node, False):
+				if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(cast(ast.If, node).body[0]):
+					thisNode = True
+			return thisNode
+
+		def findThis_orelse(node: ast.AST) -> bool:
+			thisNode: bool = False
+			if filterByVersion(node, True):
+				if cast(ast.If, node).orelse:
+					if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(cast(ast.If, node).orelse[0]):
+						thisNode = True
+			return thisNode
+
+		def getNaked_match_args():
+			body: list[ast.stmt] | None = None
+			if (nodeIf := dictionaryIdentifier2astIf.get(cast(str, dataframeTarget['ClassDefIdentifier']))):
+				# `node` is an `ast.If` node. dataframeTarget['ClassDefIdentifier'] is in `ast.If.body`.
+				if filterByVersion(nodeIf, False):
+					# And, version == dataframeTarget['versionMinorPythonInterpreter']
+					def findThis_match_args(node: ast.AST) -> bool:
+						thisNode: bool = False
+						# look for dataframeTarget['ClassDefIdentifier'] and return match_args or None
+						if IfThis.isClassDefIdentifier(cast(str, dataframeTarget['ClassDefIdentifier']))(node):
+							if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(cast(ast.ClassDef, node).body[0]):
+								thisNode = True
+						return thisNode
+					body = NodeTourist(findThis_match_args, Then.extractIt(cast(Callable[[ast.ClassDef], list[ast.stmt]], DOT.body))
+													).captureLastMatch(nodeIf)
+			return body
 
 		dataframeTarget['match_args'] = None  # Default value for the column
 
@@ -432,42 +459,13 @@ def updateDataframe() -> None:
 											).captureLastMatch(dictionaryClassDef[cast(str, dataframeTarget['ClassDefIdentifier'])])
 			if orelse:
 				dataframeTarget['match_args'] = ast.literal_eval(cast(ast.Assign, orelse[0]).value)
+			else:
+				naked_match_args: list[ast.stmt] | None = getNaked_match_args()
+				if naked_match_args:
+					dataframeTarget['match_args'] = ast.literal_eval(cast(ast.Assign, naked_match_args[0]).value)
 		return dataframeTarget['match_args']
 
 	dataframe['match_args'] = dataframe[['ClassDefIdentifier', 'versionMinorPythonInterpreter']].apply(get_match_argsByVersionGuard, axis='columns')
-
-	def geeeeeeeeeeeeeeeeet_match_args(dataframeTarget: pandas.DataFrame):
-		def findThisVersion(node: ast.AST, orelse: bool = False) -> bool:
-			thisNode: bool = False
-			if Be.If(node) and Be.Compare(node.test):
-				if IfThis.isAttributeNamespaceIdentifier('sys', 'version_info')(node.test.left) and Be.Tuple(node.test.comparators[0]):
-					if IfThis.isConstant_value(dataframeTarget['versionMinorPythonInterpreter'] + orelse)(node.test.comparators[0].elts[1]):
-						thisNode = True
-			return thisNode
-
-		def getNaked_match_args():
-			for nodeIf in ast.walk(astModule_astStub):
-				if findThisVersion(nodeIf, False):
-					# `node` is an `ast.If` node. version == dataframeTarget['versionMinorPythonInterpreter']
-					def findThisClassDefIdentifier(node: ast.AST) -> bool:
-						thisNode: bool = False
-						# look for dataframeTarget['ClassDefIdentifier'] and return match_args or None
-						if IfThis.isClassDefIdentifier(cast(str, dataframeTarget['ClassDefIdentifier']))(node):
-							if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(cast(ast.ClassDef, node).body[0]):
-								thisNode = True
-						return thisNode
-					body: list[ast.stmt] | None = NodeTourist(findThisClassDefIdentifier, Then.extractIt(cast(Callable[[ast.ClassDef], list[ast.stmt]], DOT.body))
-													).captureLastMatch(nodeIf)
-					if body:
-						dataframeTarget['match_args'] = ast.literal_eval(cast(ast.Assign, body[0]).value)
-
-		# For someone else TODO: vectorize this.
-		dataframeTarget['match_args'] = None
-		getNaked_match_args()
-		return dataframeTarget['match_args']
-
-	# It's still stupidly slow.
-	dataframe['match_args'] = dataframe['match_args'].where(cond=dataframe['match_args'].notna(), other=dataframe[['ClassDefIdentifier', 'versionMinorPythonInterpreter']].apply(geeeeeeeeeeeeeeeeet_match_args, axis='columns'))
 
 	dataframe = _sortCaseInsensitive(dataframe, ['ClassDefIdentifier', 'versionMinorPythonInterpreter'], ['versionMinorPythonInterpreter'], [True, False])
 	# Assign 'match_args' from 'versionMinorPythonInterpreter' < your version.
