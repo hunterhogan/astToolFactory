@@ -6,7 +6,8 @@ from astToolFactory._datacenterAnnex import (
 	defaultValue__ClassDefIdentifier_attribute, defaultValue__type_attribute, move2keywordArguments__attribute,
 	move2keywordArguments__attributeKind, type__ClassDefIdentifier_attribute,
 )
-from astToolkit import Be, DOT, extractClassDef, IfThis, Make, NodeTourist, parsePathFilename2astModule, Then
+from astToolkit import Be, ClassIsAndAttribute, DOT, dump, IfThis, Make, NodeTourist, parsePathFilename2astModule, Then
+from astToolkit.transformationTools import makeDictionaryClassDef
 from collections.abc import Callable, Sequence
 from pathlib import Path
 from typing import Any, cast
@@ -280,7 +281,7 @@ def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)
 		[listColumns]
 		.pipe(_sortCaseInsensitive, listColumns[sliceString] + listColumns[sliceNonString], listColumns[sliceNonString], [True] * len(listColumns[sliceString]) + [False] * len(listColumns[sliceNonString]))
-		.drop_duplicates(listColumns[slice_drop_duplicates], keep='last')
+		.drop_duplicates(listColumns[slice_drop_duplicates])
 		.reset_index(drop=True)
 	)
 	dataframe.rename(columns = {listColumns[index_versionMinorMinimum]: 'versionMinorMinimum'}, inplace=True)
@@ -391,46 +392,116 @@ def updateDataframe() -> None:
 	astModule_astStub: ast.Module = parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file('ast', search_context=ImaSearchContext)))
 
 	# Columns and rows to create from `astModule_astStub`
-	# 'deprecated', is 'ClassDefIdentifier' deprecated?
-	# 'match_args',
 	# 'attribute',
 	# 'attributeKind',
 	# 'type',
 
-	# NOTE testing value:
-	ClassDefIdentifier = "ParamSpec"
-	versionMinorPythonInterpreter = 13
+	dictionaryClassDef: dict[str, ast.ClassDef] = makeDictionaryClassDef(astModule_astStub)
+	def get_match_argsByVersionGuard(dataframeTarget: pandas.DataFrame):
+		def findThis_body(node: ast.AST) -> bool:
+			thisNode: bool = False
+			if findThisVersion(node, False):
+				if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(cast(ast.If, node).body[0]):
+					thisNode = True
+			return thisNode
 
-	astClassDef: ast.ClassDef = raiseIfNone(extractClassDef(astModule_astStub, ClassDefIdentifier))
-
-	deprecated: bool = bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(Make.Module(cast(list[ast.stmt], astClassDef.decorator_list))))  # pyright: ignore[reportUnusedVariable] # noqa: F841
-
-	def findThis(node: ast.AST):
-		thisNode: bool = False
-		if Be.If(node) and Be.Compare(node.test):
-			if IfThis.isAttributeNamespaceIdentifier('sys', 'version_info')(node.test.left) and Be.Tuple(node.test.comparators[0]):
-				if IfThis.isConstant_value(versionMinorPythonInterpreter)(node.test.comparators[0].elts[1]):
-					if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(node.body[0]):
+		def findThis_orelse(node: ast.AST):
+			thisNode: bool = False
+			if findThisVersion(node, True):
+				if cast(ast.If, node).orelse:
+					if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(cast(ast.If, node).orelse[0]):
 						thisNode = True
-		return thisNode
+			return thisNode
 
-	body: list[ast.expr] | None = NodeTourist(findThis, Then.extractIt(cast(Callable[[ast.If], list[ast.expr]], DOT.body))).captureLastMatch(astClassDef)
-	if body:
-		match_args: tuple[str, ...] = ast.literal_eval(cast(ast.Assign, body[0]).value) # pyright: ignore[reportUnusedVariable]
-
-	def findThis_orelse(node: ast.AST):
-		thisNode: bool = False
-		if Be.If(node) and Be.Compare(node.test):
-			if IfThis.isAttributeNamespaceIdentifier('sys', 'version_info')(node.test.left) and Be.Tuple(node.test.comparators[0]):
-				if node.orelse:
-					if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(node.orelse[0]):
+		def findThisVersion(node: ast.AST, orelse: bool = False) -> bool:
+			thisNode: bool = False
+			if Be.If(node) and Be.Compare(node.test):
+				if IfThis.isAttributeNamespaceIdentifier('sys', 'version_info')(node.test.left) and Be.Tuple(node.test.comparators[0]):
+					if IfThis.isConstant_value(dataframeTarget['versionMinorPythonInterpreter'] + orelse)(node.test.comparators[0].elts[1]):
 						thisNode = True
-		return thisNode
+			return thisNode
 
-	body: list[ast.expr] | None = NodeTourist(findThis_orelse, Then.extractIt(cast(Callable[[ast.If], list[ast.expr]], DOT.orelse))).captureLastMatch(astClassDef)
-	if body:
-		match_args: tuple[str, ...] = ast.literal_eval(cast(ast.Assign, body[0]).value)  # pyright: ignore[reportUnusedVariable] # noqa: F841
+		dataframeTarget['match_args'] = None  # Default value for the column
 
+		body: list[ast.stmt] | None = NodeTourist(findThis_body, Then.extractIt(cast(Callable[[ast.If], list[ast.stmt]], DOT.body))
+										).captureLastMatch(dictionaryClassDef[cast(str, dataframeTarget['ClassDefIdentifier'])])
+		if body:
+			dataframeTarget['match_args'] = ast.literal_eval(cast(ast.Assign, body[0]).value)
+		else:
+			orelse: list[ast.stmt] | None = NodeTourist(findThis_orelse, Then.extractIt(cast(Callable[[ast.If], list[ast.stmt]], DOT.orelse))
+											).captureLastMatch(dictionaryClassDef[cast(str, dataframeTarget['ClassDefIdentifier'])])
+			if orelse:
+				dataframeTarget['match_args'] = ast.literal_eval(cast(ast.Assign, orelse[0]).value)
+		return dataframeTarget['match_args']
+
+	dataframe['match_args'] = dataframe[['ClassDefIdentifier', 'versionMinorPythonInterpreter']].apply(get_match_argsByVersionGuard, axis='columns')
+
+	def geeeeeeeeeeeeeeeeet_match_args(dataframeTarget: pandas.DataFrame):
+		def findThisVersion(node: ast.AST, orelse: bool = False) -> bool:
+			thisNode: bool = False
+			if Be.If(node) and Be.Compare(node.test):
+				if IfThis.isAttributeNamespaceIdentifier('sys', 'version_info')(node.test.left) and Be.Tuple(node.test.comparators[0]):
+					if IfThis.isConstant_value(dataframeTarget['versionMinorPythonInterpreter'] + orelse)(node.test.comparators[0].elts[1]):
+						thisNode = True
+			return thisNode
+
+		def getNaked_match_args():
+			for nodeIf in ast.walk(astModule_astStub):
+				if findThisVersion(nodeIf, False):
+					# `node` is an `ast.If` node. version == dataframeTarget['versionMinorPythonInterpreter']
+					def findThisClassDefIdentifier(node: ast.AST) -> bool:
+						thisNode: bool = False
+						# look for dataframeTarget['ClassDefIdentifier'] and return match_args or None
+						if IfThis.isClassDefIdentifier(cast(str, dataframeTarget['ClassDefIdentifier']))(node):
+							if IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('__match_args__'))(cast(ast.ClassDef, node).body[0]):
+								thisNode = True
+						return thisNode
+					body: list[ast.stmt] | None = NodeTourist(findThisClassDefIdentifier, Then.extractIt(cast(Callable[[ast.ClassDef], list[ast.stmt]], DOT.body))
+													).captureLastMatch(nodeIf)
+					if body:
+						dataframeTarget['match_args'] = ast.literal_eval(cast(ast.Assign, body[0]).value)
+
+		# For someone else TODO: vectorize this.
+		dataframeTarget['match_args'] = None
+		getNaked_match_args()
+		return dataframeTarget['match_args']
+
+	# It's still stupidly slow.
+	dataframe['match_args'] = dataframe['match_args'].where(cond=dataframe['match_args'].notna(), other=dataframe[['ClassDefIdentifier', 'versionMinorPythonInterpreter']].apply(geeeeeeeeeeeeeeeeet_match_args, axis='columns'))
+
+	dataframe = _sortCaseInsensitive(dataframe, ['ClassDefIdentifier', 'versionMinorPythonInterpreter'], ['versionMinorPythonInterpreter'], [True, False])
+	# Assign 'match_args' from 'versionMinorPythonInterpreter' < your version.
+	dataframe['match_args'] = dataframe.groupby('ClassDefIdentifier')['match_args'].bfill()
+	# # Because Python 3.9 does not have `__match_args__`, Assign 'match_args' from 'versionMinorPythonInterpreter' > your version.
+	dataframe['match_args'] = dataframe.groupby('ClassDefIdentifier')['match_args'].ffill()
+
+	# Fill missing 'match_args' values with empty tuple
+	dataframe['match_args'] = dataframe['match_args'].apply(lambda x: () if pandas.isna(x) else x) # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+
+	def amIDeprecated(ClassDefIdentifier: str) -> bool:
+		return bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(Make.Module(cast(list[ast.stmt], dictionaryClassDef[ClassDefIdentifier].decorator_list))))
+
+	dataframe['deprecated'] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name='deprecated')
+	dataframe['deprecated'] = dataframe['ClassDefIdentifier'].apply(amIDeprecated)
+
+	# if match_args:
+	# 	for attribute in match_args:
+	# 		theType: ast.expr = raiseIfNone(NodeTourist(findThis=ClassIsAndAttribute.targetIs(ast.AnnAssign, IfThis.isNameIdentifier(attribute)), doThat=Then.extractIt(DOT.annotation)).captureLastMatch(dictionaryClassDef[ClassDefIdentifier])) # pyright: ignore[reportUnusedVariable, reportUnknownVariableType, reportArgumentType, reportUnknownArgumentType]  # noqa: F841
+
+	# TODO get class _Attributes, and get the key names and annotations
+	# lineno: int
+	# col_offset: int
+	# end_lineno: _EndPositionT
+	# end_col_offset: _EndPositionT
+
+	# _attribute_ast_expr = NodeTourist(ClassIsAndAttribute.valueIs(ast.Subscript, IfThis.isNameIdentifier('Unpack')), Then.extractIt(DOT.slice)).captureLastMatch(dictionaryClassDef[ClassDefIdentifier]) # pyright: ignore[reportArgumentType]
+	# if _attribute_ast_expr:
+	# 	if Be.Name(_attribute_ast_expr):
+	# 		_attributes = int | None
+	# 	elif Be.Subscript(_attribute_ast_expr):
+	# 		_attributes = int
+	# else:
+	# 	_attributes = None
 	# Create 'attributeRename'
 	dataframe['attributeRename'] = pandas.Series(data=dataframe['attribute'], index=dataframe.index, dtype=str, name='attributeRename', copy=True)
 	dataframe['attributeRename'] = dataframe['attribute'].map(attributeRename__attribute).fillna(dataframe['attributeRename'])
@@ -481,8 +552,8 @@ def updateDataframe() -> None:
 	dataframe['TypeAlias_hasDOTIdentifier'] = numpy.where(dataframe['attributeKind'] == '_field', "hasDOT" + cast(str, dataframe['attribute']), "No")
 
 	# Create TypeAlias_hasDOTSubcategory
-	dataframe['TypeAlias_hasDOTSubcategory'] = numpy.where((identifier := dataframe['TypeAlias_hasDOTIdentifier']) == "No", "No",
-		cast(str, identifier) + "_" + dataframe['type'].str.replace('|', 'Or', regex=False).str.replace('[', '_', regex=False).str.replace('[\\] ]', '', regex=True).str.replace('ast.', '', regex=False)
+	dataframe['TypeAlias_hasDOTSubcategory'] = numpy.where((attribute := dataframe['TypeAlias_hasDOTIdentifier']) == "No", "No",
+		cast(str, attribute) + "_" + dataframe['type'].str.replace('|', 'Or', regex=False).str.replace('[', '_', regex=False).str.replace('[\\] ]', '', regex=True).str.replace('ast.', '', regex=False)
 	)
 
 	# === Group-Based Column Computation ===
@@ -499,6 +570,7 @@ def updateDataframe() -> None:
 			(dataframe['ClassDefIdentifier'] == cast(str, dataframeTarget['ClassDefIdentifier']))
 			& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
 		]
+
 		matchingRows['attribute'] = pandas.Categorical(matchingRows['attribute'], categories=matchingRows['match_args'].iloc[0], ordered=True)
 
 		matchingRows_listCall_keyword: pandas.DataFrame = matchingRows[matchingRows['move2keywordArguments'] != "No"].copy(deep=True)
@@ -524,6 +596,8 @@ def updateDataframe() -> None:
 
 		return dataframeTarget['listFunctionDef_args'], dataframeTarget['listDefaults'], dataframeTarget['listCall_keyword']
 	dataframe[['listFunctionDef_args', 'listDefaults', 'listCall_keyword']] = dataframe.apply(make3Columns4ClassMake, axis='columns', result_type='expand') # pyright: ignore[reportArgumentType]
+	"""
+	"""
 
 	dataframe.to_pickle(settingsManufacturing.pathFilenameDataframeAST)
 

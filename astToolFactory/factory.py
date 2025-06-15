@@ -386,8 +386,8 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 			if kwarg is not None:
 				listCall_keyword.append(keywordKeywordArguments4Call)
 
-			body = [docstrings[identifierToolClass][ClassDefIdentifier]
-					, Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))
+			body = [docstrings[identifierToolClass][ClassDefIdentifier],
+					Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))
 				]
 
 		ast_stmt = Make.FunctionDef(

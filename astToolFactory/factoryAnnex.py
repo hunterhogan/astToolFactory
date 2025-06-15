@@ -57,8 +57,8 @@ FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturing.
 	, decorator_list=[astName_staticmethod]
     , returns=Make.BitOr().join([Make.Attribute(Make.Name('ast'), 'expr'), Make.Attribute(Make.Name('ast'), 'BoolOp')]))
 
-FunctionDef_join_boolop: ast.stmt = makeFunctionDef_join('Sequence', settingsManufacturing.identifiers['boolopJoinMethod'], docstrings[settingsManufacturing.identifiers['Make']][settingsManufacturing.identifiers['boolopJoinMethod']])
-FunctionDef_join_operator: ast.stmt = makeFunctionDef_join('Iterable', settingsManufacturing.identifiers['operatorJoinMethod'], docstrings[settingsManufacturing.identifiers['Make']][settingsManufacturing.identifiers['operatorJoinMethod']])
+FunctionDef_join_boolop: ast.stmt = makeFunctionDef_join('Sequence', settingsManufacturing.identifiers['boolopJoinMethod'], docstrings[settingsManufacturing.identifiers['Make']]['join_boolop'])
+FunctionDef_join_operator: ast.stmt = makeFunctionDef_join('Iterable', settingsManufacturing.identifiers['operatorJoinMethod'], docstrings[settingsManufacturing.identifiers['Make']]['join_operator'])
 
 FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturing.identifiers['operatorJoinMethod']
 	, Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'operator')))
