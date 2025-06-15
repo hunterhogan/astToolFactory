@@ -1,16 +1,23 @@
 """API for data. The rest of the package should be ignorant of the specifics of the data source.
 This module provides a set of functions to interact with the data source, allowing for easy retrieval and manipulation of data."""
+from ast import (
+	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, keyword, match_case,
+	Name, operator, pattern, stmt, Subscript, type_param, TypeIgnore, unaryop, withitem,
+)
 from astToolFactory import pathRoot_typeshed, settingsManufacturing
 from astToolFactory._datacenterAnnex import (
 	_columns, attributeRename__attribute, attributeRename__ClassDefIdentifier_attribute, defaultValue__attribute,
 	defaultValue__ClassDefIdentifier_attribute, defaultValue__type_attribute, move2keywordArguments__attribute,
 	move2keywordArguments__attributeKind, type__ClassDefIdentifier_attribute,
 )
-from astToolkit import Be, ClassIsAndAttribute, DOT, dump, IfThis, Make, NodeTourist, parsePathFilename2astModule, Then
+from astToolkit import (
+	Be, ClassIsAndAttribute, DOT, dump, identifierDotAttribute, IfThis, Make, NodeChanger, NodeTourist,
+	parsePathFilename2astModule, Then,
+)
 from astToolkit.transformationTools import makeDictionaryClassDef
 from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, cast, TypeIs
 from Z0Z_tools import raiseIfNone
 import ast
 import numpy
@@ -391,11 +398,6 @@ def updateDataframe() -> None:
 	ImaSearchContext: typeshed_client.SearchContext = typeshed_client.get_search_context(typeshed=pathRoot_typeshed)
 	astModule_astStub: ast.Module = parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file('ast', search_context=ImaSearchContext)))
 
-	# Columns and rows to create from `astModule_astStub`
-	# 'attribute',
-	# 'attributeKind',
-	# 'type',
-
 	dictionaryClassDef: dict[str, ast.ClassDef] = makeDictionaryClassDef(astModule_astStub)
 	list_astIf_sys_version_info: list[ast.If] = []
 	NodeTourist(
@@ -482,9 +484,29 @@ def updateDataframe() -> None:
 	dataframe['deprecated'] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name='deprecated')
 	dataframe['deprecated'] = dataframe['ClassDefIdentifier'].apply(amIDeprecated)
 
-	# if match_args:
-	# 	for attribute in match_args:
-	# 		theType: ast.expr = raiseIfNone(NodeTourist(findThis=ClassIsAndAttribute.targetIs(ast.AnnAssign, IfThis.isNameIdentifier(attribute)), doThat=Then.extractIt(DOT.annotation)).captureLastMatch(dictionaryClassDef[ClassDefIdentifier])) # pyright: ignore[reportUnusedVariable, reportUnknownVariableType, reportArgumentType, reportUnknownArgumentType]  # noqa: F841
+	"""
+	Columns and rows to create from `astModule_astStub`
+	column 'attribute': an element from column 'match_args'
+	column 'attributeKind' = "_field"
+	column 'type_ast_expr' = `type_ast_expr`
+	column 'type' = `ast.unparse(type_ast_expr)`
+
+	"""
+	# NOTE test values:
+	attribute = 'name'
+	ClassDefIdentifier = "Eq"
+
+	# def makeRowsFrom_match_args(dataframeTarget: pandas.DataFrame):
+	# 	pass
+
+	findThisNodeTourist: Callable[[ast.AST], TypeIs[ast.AnnAssign] | bool] = ClassIsAndAttribute.targetIs(ast.AnnAssign, IfThis.isNameIdentifier(attribute))
+	doThatNodeTourist: Callable[[ast.AnnAssign], ast.expr] = Then.extractIt(DOT.annotation)
+	learningGeneric: NodeTourist[ast.AnnAssign, ast.expr] = NodeTourist(findThisNodeTourist, doThatNodeTourist)
+	type_ast_expr: ast.expr = raiseIfNone(learningGeneric.captureLastMatch(dictionaryClassDef[ClassDefIdentifier]))
+
+	findThisNodeChanger: Callable[[ast.AST], TypeIs[ast.Name] | bool] = lambda node: Be.Name(node) and issubclass(ast.literal_eval(node), ast.AST)  # noqa: E731
+	doThatNodeChanger: Callable[[ast.Name], ast.expr] = lambda node: Make.Attribute(Make.Name('ast'), node.id)  # noqa: E731
+	NodeChanger(findThisNodeChanger, doThatNodeChanger).visit(type_ast_expr)
 
 	# TODO get class _Attributes, and get the key names and annotations
 	# lineno: int
@@ -500,6 +522,7 @@ def updateDataframe() -> None:
 	# 		_attributes = int
 	# else:
 	# 	_attributes = None
+
 	# Create 'attributeRename'
 	dataframe['attributeRename'] = pandas.Series(data=dataframe['attribute'], index=dataframe.index, dtype=str, name='attributeRename', copy=True)
 	dataframe['attributeRename'] = dataframe['attribute'].map(attributeRename__attribute).fillna(dataframe['attributeRename'])
