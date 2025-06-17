@@ -73,7 +73,6 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManuf
     ClassDefIdentifier: str = 'For'
 """
 for astClass in [C for C in [AST,*chain(*map(lambda c:c.__subclasses__(), [AST,Constant,*AST.__subclasses__()]))] if issubclass(C,AST)]:
-    pass
 
     ClassDefIdentifier: str = astClass.__name__
     astClassDefIdentifier: identifierDotAttribute = 'ast.' + ClassDefIdentifier

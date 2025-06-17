@@ -118,7 +118,7 @@ def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tup
 	return dataframe.to_records(index=False).tolist()
 
 def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[ast.expr], int, int]]:
-	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'type', 'TypeAlias_hasDOTIdentifier', 'canBeNone',]
+	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'TypeAlias_hasDOTIdentifier', 'canBeNone',]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
 
@@ -127,7 +127,6 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 	ascending: list[bool] = caseInsensitive.copy()
 	drop_duplicates: list[str] = listColumns[0:2]
 
-	index_type: int = 4
 	index_type_ast_expr: int = 3
 	index_versionMinorMinimum: int = 2
 
@@ -140,7 +139,6 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 	)
 
 	dataframe.rename(columns = {
-			listColumns[index_type]: 'type',
 			listColumns[index_type_ast_expr]: 'type_ast_expr',
 			listColumns[index_versionMinorMinimum]: 'versionMinorMinimum',
 		}, inplace=True)
@@ -149,42 +147,23 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 
 	elementsTarget: list[str] = ['identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'guardVersion', 'versionMinorMinimum']
 
-	# dataframe['identifierTypeOfNode'] = dataframe['TypeAlias_hasDOTSubcategory'].where(
-	# 	dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
-	# 	, dataframe['TypeAlias_hasDOTIdentifier']
-	# )
-	# dataframe['overloadDefinition'] = dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
-	# dataframe['list_ast_expr'] = dataframe['type_ast_expr'].apply(lambda srsly: [srsly]) # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+	dataframe['identifierTypeOfNode'] = dataframe['TypeAlias_hasDOTSubcategory'].where(
+		dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
+		, dataframe['TypeAlias_hasDOTIdentifier']
+	)
+	dataframe['overloadDefinition'] = dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
+	dataframe['list_ast_expr'] = dataframe['type_ast_expr'].apply(lambda srsly: [srsly]) # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
 
-	# currentColumns: list[str] = [
-    #     'TypeAlias_hasDOTIdentifier',
-	# 	'identifierTypeOfNode',
-    #     'overloadDefinition',
-    #     'canBeNone',
-    #     'attribute',
-    #     'list_ast_expr',
-    #     'versionMinorMinimum',
-    # ]
-	# dataframe = dataframe[currentColumns]
+	currentColumns: list[str] = ['TypeAlias_hasDOTIdentifier', 'identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'versionMinorMinimum',]
+	dataframe = dataframe[currentColumns]
 
-	# def tired(dataframeTarget: pandas.DataFrame):
-	# 	matchingRows: pandas.DataFrame = dataframe.loc[
-	# 		(dataframe['attribute'] == dataframeTarget['attribute'])
-	# 		& (dataframe['versionMinorMinimum'] <= dataframeTarget['versionMinorMinimum'])
-	# 	]
+	#idk
 
-	# 	if len(matchingRows) > 1:
-	# 		dataframeTarget = dataframeTarget.ap
+	byColumn: str = 'identifierTypeOfNode'
+	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
 
-	# 	return dataframeTarget
-
-	# dataframe = dataframe.groupby(['attribute', 'versionMinorMinimum']).apply(tired).reset_index(drop=True) # pyright: ignore[reportArgumentType, reportCallIssue]
-
-	# byColumn: str = 'identifierTypeOfNode'
-	# dataframe = _makeColumn_guardVersion(dataframe, byColumn)
-
-	# dataframe = dataframe[elementsTarget]
-	# return dataframe.to_records(index=False).tolist()
+	dataframe = dataframe[elementsTarget]
+	return dataframe.to_records(index=False).tolist()
 
 
 	dataframe['overloadDefinition'] = dataframe.groupby('attribute').transform('size') > 1
