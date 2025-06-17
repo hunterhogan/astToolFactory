@@ -38,13 +38,11 @@ _columns: list[str] = [
 	'listDefaults',
 	'listCall_keyword',
 
-	# columns ought to be computed per row
-	'list2Sequence',
-
 	# columns ought to be computed per group
 	'kwarg_annotationIdentifier',
 
 	# columns computed from other columns and a dictionary per row
+	'list2Sequence',
     'type_astSuperClasses',
     'type_astSuperClasses_ast_expr',
 ]

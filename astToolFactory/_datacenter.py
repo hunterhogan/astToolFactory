@@ -1,5 +1,6 @@
 """API for data. The rest of the package should be ignorant of the specifics of the data source.
 This module provides a set of functions to interact with the data source, allowing for easy retrieval and manipulation of data."""
+# pyright: reportUnusedImport=false
 from ast import (
 	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, keyword, match_case,
 	Name, operator, pattern, stmt, Subscript, type_param, TypeIgnore, unaryop, withitem,
@@ -17,7 +18,7 @@ from astToolkit import (
 from astToolkit.transformationTools import makeDictionaryClassDef
 from collections.abc import Callable, Sequence
 from pathlib import Path
-from typing import Any, cast, Literal, NamedTuple, TypeIs
+from typing import Any, cast, Literal, TypeIs
 from Z0Z_tools import raiseIfNone
 import ast
 import numpy
@@ -66,17 +67,9 @@ def _makeColumn_guardVersion(dataframe: pandas.DataFrame, byColumn: str) -> pand
 	)
 	return dataframe
 
-def _sortCaseInsensitive(dataframe: pandas.DataFrame, columnsPriority: Sequence[str], columnsNonString: Sequence[str] = [], ascending: bool | Sequence[bool] = True) -> pandas.DataFrame:
+def _sortCaseInsensitive(dataframe: pandas.DataFrame, sortBy: Sequence[str], caseInsensitive: bool | Sequence[bool] = True, ascending: bool | Sequence[bool] = True) -> pandas.DataFrame:
 	dataframeCopy: pandas.DataFrame = dataframe.copy()
-	columnsString: list[str] = list(set(columnsPriority).difference(set(columnsNonString)))
-	dataframeCopy[columnsString] = dataframe[columnsString].map(str.lower) # pyright: ignore[reportArgumentType]
-
-	indicesSorted = dataframeCopy.sort_values(by=columnsPriority, ascending=ascending).index
-	return dataframe.loc[indicesSorted]
-
-def Z_sortCaseInsensitive(dataframe: pandas.DataFrame, sortBy: Sequence[str], caseInsensitive: bool | Sequence[bool] = True, ascending: bool | Sequence[bool] = True) -> pandas.DataFrame:
-	dataframeCopy: pandas.DataFrame = dataframe.copy()
-	maskCaseInsensitive = pandas.Series(caseInsensitive, index=sortBy) # pyright: ignore[reportArgumentType, reportCallIssue]
+	maskCaseInsensitive = pandas.Series(caseInsensitive, index=list(sortBy), dtype=numpy.bool)
 	dataframeCopy[maskCaseInsensitive[maskCaseInsensitive].index] = dataframe[maskCaseInsensitive[maskCaseInsensitive].index].map(str.lower) # pyright: ignore[reportArgumentType]
 
 	indicesSorted = dataframeCopy.sort_values(by=sortBy, ascending=ascending).index
@@ -108,19 +101,21 @@ def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tup
 	listColumnsHARDCODED: list[str] = ['ClassDefIdentifier', 'versionMinorMinimumClass', 'classAs_astAttribute']
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
-	sliceString: slice = slice(0, 1)
-	sliceNonString: slice = slice(1, 2)
-	slice_drop_duplicates: slice = slice(0, 2)
+
+	sortBy: list[str] = listColumns[0:2]
+	caseInsensitive: list[bool] = [True, False]
+	ascending: list[bool] = caseInsensitive.copy()
+	drop_duplicates: list[str] = sortBy.copy()
 
 	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)
 		[listColumns]
-		.drop_duplicates(listColumns[slice_drop_duplicates], keep='last')
-		.pipe(_sortCaseInsensitive, listColumns[sliceString] + listColumns[sliceNonString], listColumns[sliceNonString], [True] * len(listColumns[sliceString]) + [False] * len(listColumns[sliceNonString]))
+		.drop_duplicates(drop_duplicates, keep='last')
+		.pipe(_sortCaseInsensitive, sortBy, caseInsensitive, ascending)
 		.reset_index(drop=True)
 	)
 	del listColumns
 
-	return list(dataframe.to_records(index=False))
+	return dataframe.to_records(index=False).tolist()
 
 def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[ast.expr], int, int]]:
 	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'type', 'TypeAlias_hasDOTIdentifier', 'canBeNone',]
@@ -138,7 +133,7 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 
 	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)
 		.query("attributeKind == '_field'")
-		.pipe(Z_sortCaseInsensitive, sortBy, caseInsensitive, ascending)
+		.pipe(_sortCaseInsensitive, sortBy, caseInsensitive, ascending)
 		[listColumns]
 		.drop_duplicates(drop_duplicates, keep='last')
 		.reset_index(drop=True)
@@ -153,6 +148,44 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 	del listColumns
 
 	elementsTarget: list[str] = ['identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'guardVersion', 'versionMinorMinimum']
+
+	# dataframe['identifierTypeOfNode'] = dataframe['TypeAlias_hasDOTSubcategory'].where(
+	# 	dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
+	# 	, dataframe['TypeAlias_hasDOTIdentifier']
+	# )
+	# dataframe['overloadDefinition'] = dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
+	# dataframe['list_ast_expr'] = dataframe['type_ast_expr'].apply(lambda srsly: [srsly]) # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+
+	# currentColumns: list[str] = [
+    #     'TypeAlias_hasDOTIdentifier',
+	# 	'identifierTypeOfNode',
+    #     'overloadDefinition',
+    #     'canBeNone',
+    #     'attribute',
+    #     'list_ast_expr',
+    #     'versionMinorMinimum',
+    # ]
+	# dataframe = dataframe[currentColumns]
+
+	# def tired(dataframeTarget: pandas.DataFrame):
+	# 	matchingRows: pandas.DataFrame = dataframe.loc[
+	# 		(dataframe['attribute'] == dataframeTarget['attribute'])
+	# 		& (dataframe['versionMinorMinimum'] <= dataframeTarget['versionMinorMinimum'])
+	# 	]
+
+	# 	if len(matchingRows) > 1:
+	# 		dataframeTarget = dataframeTarget.ap
+
+	# 	return dataframeTarget
+
+	# dataframe = dataframe.groupby(['attribute', 'versionMinorMinimum']).apply(tired).reset_index(drop=True) # pyright: ignore[reportArgumentType, reportCallIssue]
+
+	# byColumn: str = 'identifierTypeOfNode'
+	# dataframe = _makeColumn_guardVersion(dataframe, byColumn)
+
+	# dataframe = dataframe[elementsTarget]
+	# return dataframe.to_records(index=False).tolist()
+
 
 	dataframe['overloadDefinition'] = dataframe.groupby('attribute').transform('size') > 1
 	dataframeImplementationFunctionDefinitions: pandas.DataFrame = (
@@ -233,9 +266,12 @@ def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	listColumnsHARDCODED: list[str] = ['attribute', 'type_astSuperClasses', 'versionMinorMinimumAttribute', 'TypeAlias_hasDOTIdentifier', 'type_astSuperClasses_ast_expr', ]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
-	sliceString: slice = slice(0, 2)
-	sliceNonString: slice = slice(2, 3)
-	slice_drop_duplicates: slice = slice(0, 2)
+
+	sortBy: list[str] = listColumns[0:3]
+	caseInsensitive: list[bool] = [True, True, False]
+	ascending: list[bool] = caseInsensitive.copy()
+	drop_duplicates: list[str] = listColumns[0:2]
+
 	index_type: int = 1
 	index_type_ast_expr: int = 4
 	index_versionMinorMinimum: int = 2
@@ -243,8 +279,8 @@ def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)
 		.query("attributeKind == '_field'")
 		[listColumns]
-		.pipe(_sortCaseInsensitive, listColumns[sliceString] + listColumns[sliceNonString], listColumns[sliceNonString], [True] * len(listColumns[sliceString]) + [False] * len(listColumns[sliceNonString]))
-		.drop_duplicates(listColumns[slice_drop_duplicates], keep='last')
+		.pipe(_sortCaseInsensitive, sortBy, caseInsensitive, ascending)
+		.drop_duplicates(drop_duplicates, keep='last')
 		.reset_index(drop=True)
 	)
 
@@ -276,15 +312,18 @@ def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	listColumnsHARDCODED: list[str] = ['ClassDefIdentifier', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args', 'listFunctionDef_args', 'kwarg_annotationIdentifier', 'listDefaults', 'classAs_astAttribute', 'listCall_keyword',]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
-	sliceString: slice = slice(0, 1)
-	sliceNonString: slice = slice(1, 3)
-	slice_drop_duplicates: slice = slice(0, 3)
+
+	sortBy: list[str] = listColumns[0:3]
+	caseInsensitive: list[bool] = [True, False, False]
+	ascending: list[bool] = caseInsensitive.copy()
+	drop_duplicates: list[str] = sortBy.copy()
+
 	index_versionMinorMinimum: int = 2
 
 	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)
 		[listColumns]
-		.pipe(_sortCaseInsensitive, listColumns[sliceString] + listColumns[sliceNonString], listColumns[sliceNonString], [True] * len(listColumns[sliceString]) + [False] * len(listColumns[sliceNonString]))
-		.drop_duplicates(listColumns[slice_drop_duplicates])
+		.pipe(_sortCaseInsensitive, sortBy, caseInsensitive, ascending)
+		.drop_duplicates(drop_duplicates)
 		.reset_index(drop=True)
 	)
 	dataframe.rename(columns = {listColumns[index_versionMinorMinimum]: 'versionMinorMinimum'}, inplace=True)
@@ -305,15 +344,19 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'ClassDefIdentifier', 'versionMinorMinimumAttribute', 'classAs_astAttribute', 'TypeAlias_hasDOTIdentifier',]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
-	sliceString: slice = slice(0, 3)
-	sliceNonString: slice = slice(3, 4)
-	slice_drop_duplicates: slice = slice(0, None)
+
+	sortBy: list[str] = listColumns[0:4]
+	caseInsensitive: list[bool] = [True, True, True, False]
+	ascending: list[bool] = caseInsensitive.copy()
+	drop_duplicates: list[str] = sortBy.copy()
+
 	index_versionMinorMinimum: int = 3
+
 	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)
 		.query("attributeKind == '_field'")
 		[listColumns]
-		.pipe(_sortCaseInsensitive, listColumns[sliceString] + listColumns[sliceNonString], listColumns[sliceNonString], [True] * len(listColumns[sliceString]) + [False] * len(listColumns[sliceNonString]))
-		.drop_duplicates(listColumns[slice_drop_duplicates], keep='last')
+		.pipe(_sortCaseInsensitive, sortBy, caseInsensitive, ascending)
+		.drop_duplicates(drop_duplicates, keep='last')
 		.reset_index(drop=True)
 	)
 	dataframe.rename(columns = {listColumns[index_versionMinorMinimum]: 'versionMinorMinimum'}, inplace=True)
@@ -334,17 +377,7 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 	dataframe[['list4TypeAlias_value', 'hashable_list4TypeAlias_value']] = dataframe.apply(makeColumn_list4TypeAlias_value, axis='columns', result_type='expand') # pyright: ignore[reportArgumentType]
 	dataframe.drop_duplicates(subset=['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimum', 'hashable_list4TypeAlias_value'], inplace=True)
 
-	dataframe = dataframe.sort_values('versionMinorMinimum', ascending=False).groupby('attribute')[dataframe.columns].apply(
-		lambda group: group if group['TypeAlias_hasDOTSubcategory'].nunique() == 1 else pandas.concat([
-			group,
-			group.drop_duplicates(subset='TypeAlias_hasDOTSubcategory', keep='last')[['versionMinorMinimum']].drop_duplicates().assign(
-				attribute=group['attribute'].iloc[0],
-				TypeAlias_hasDOTSubcategory="No",
-				TypeAlias_hasDOTIdentifier=group['TypeAlias_hasDOTIdentifier'].iloc[0],
-				list4TypeAlias_value="No"
-			)
-		]) # pyright: ignore[reportArgumentType, reportCallIssue]
-	).reset_index(drop=True)
+	dataframe = dataframe.sort_values('versionMinorMinimum', ascending=False).groupby('attribute')[dataframe.columns].apply( lambda group: group if group['TypeAlias_hasDOTSubcategory'].nunique() == 1 else pandas.concat([ group, group.drop_duplicates(subset='TypeAlias_hasDOTSubcategory', keep='last')[['versionMinorMinimum']].drop_duplicates().assign( attribute=group['attribute'].iloc[0], TypeAlias_hasDOTSubcategory="No", TypeAlias_hasDOTIdentifier=group['TypeAlias_hasDOTIdentifier'].iloc[0], list4TypeAlias_value="No" ) ]) ).reset_index(drop=True) # pyright: ignore
 
 	def MakeName4TypeAlias(subcategoryName: str):
 		return Make.Name(subcategoryName)
@@ -378,7 +411,18 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 
 def updateDataframe() -> None:
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
-	columnsHashable: list[str] = []
+
+	# Set dtypes for existing columns
+	dataframe = dataframe.astype({
+		'ClassDefIdentifier': 'string',
+		'versionMajorPythonInterpreter': 'int64',
+		'versionMinorPythonInterpreter': 'int64',
+		'versionMicroPythonInterpreter': 'int64',
+		'base': 'string'
+	})
+	# Initialize hashable columns metadata
+	dataframe.attrs['hashable'] = ['ClassDefIdentifier', 'versionMajorPythonInterpreter', 'versionMinorPythonInterpreter', 'versionMicroPythonInterpreter', 'base',]
+	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter',]
 
 	# columns: reorder; drop columns, but they might be recreated later in the flow.
 	# dataframe = dataframe[_columns]
@@ -391,14 +435,6 @@ def updateDataframe() -> None:
 	# 'versionMinorPythonInterpreter',
 	# 'versionMicroPythonInterpreter',
 	# 'base',
-
-	columnsHashable.extend([
-		'ClassDefIdentifier',
-		'versionMajorPythonInterpreter',
-		'versionMinorPythonInterpreter',
-		'versionMicroPythonInterpreter',
-		'base',
-	])
 
 	ImaSearchContext: typeshed_client.SearchContext = typeshed_client.get_search_context(typeshed=pathRoot_typeshed)
 	astModule_astStub: ast.Module = parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file('ast', search_context=ImaSearchContext)))
@@ -473,9 +509,10 @@ def updateDataframe() -> None:
 		return dataframeTarget['match_args']
 
 	dataframe['match_args'] = dataframe[['ClassDefIdentifier', 'versionMinorPythonInterpreter']].apply(get_match_argsByVersionGuard, axis='columns')
-	columnsHashable.extend(['match_args'])
+	dataframe.attrs['hashable'].extend(['match_args'])
+	dataframe.attrs['drop_duplicates'].extend(['match_args'])
 
-	dataframe = _sortCaseInsensitive(dataframe, ['ClassDefIdentifier', 'versionMinorPythonInterpreter'], ['versionMinorPythonInterpreter'], [True, False])
+	dataframe.pipe(_sortCaseInsensitive, ['ClassDefIdentifier', 'versionMinorPythonInterpreter'], [True, False], [True, False])
 	# Assign 'match_args' from 'versionMinorPythonInterpreter' < your version.
 	dataframe['match_args'] = dataframe.groupby('ClassDefIdentifier')['match_args'].bfill()
 	# # Because Python 3.9 does not have `__match_args__`, Assign 'match_args' from 'versionMinorPythonInterpreter' > your version.
@@ -488,8 +525,8 @@ def updateDataframe() -> None:
 		return bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(Make.Module(cast(list[ast.stmt], dictionaryClassDef[ClassDefIdentifier].decorator_list))))
 
 	dataframe['deprecated'] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name='deprecated')
+	dataframe.attrs['hashable'].extend(['deprecated'])
 	dataframe['deprecated'] = dataframe['ClassDefIdentifier'].apply(amIDeprecated)
-	columnsHashable.extend(['deprecated'])
 
 	def newRowsFrom_match_args(dataframeTarget: pandas.DataFrame) -> pandas.DataFrame:
 		dataframeTarget = dataframeTarget[dataframeTarget['match_args'] != ()]
@@ -524,24 +561,50 @@ def updateDataframe() -> None:
 		return dataframeTarget
 
 	dataframe = cast(pandas.DataFrame, pandas.concat([dataframe, newRowsFrom_match_args(dataframe)], ignore_index=True, axis='rows')) # pyright: ignore[reportArgumentType, reportCallIssue]
-	columnsHashable.extend(['attribute', 'attributeKind', 'type'])
+	# `(function) extend: Any` because concat sucks
+	dataframe.attrs['hashable'].extend(['attribute', 'attributeKind', 'type'])
+	dataframe.attrs['drop_duplicates'].extend(['attribute'])
 	dataframe['type'] = dataframe[['ClassDefIdentifier', 'attribute']].apply(tuple, axis='columns').map(type__ClassDefIdentifier_attribute).fillna(dataframe['type'])
-	dataframe.drop_duplicates(subset=columnsHashable, inplace=True)
+	dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], inplace=True, keep='last')
 
-	# TODO get class _Attributes, and get the key names and annotations
-	# lineno: int
-	# col_offset: int
-	# end_lineno: _EndPositionT
-	# end_col_offset: _EndPositionT
+	def pythonCode2expr(string: str) -> Any:
+		astModule: ast.Module = ast.parse(string)
+		ast_expr: ast.expr = raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
+		return ast_expr
 
-	# _attribute_ast_expr = NodeTourist(ClassIsAndAttribute.valueIs(ast.Subscript, IfThis.isNameIdentifier('Unpack')), Then.extractIt(DOT.slice)).captureLastMatch(dictionaryClassDef[ClassDefIdentifier]) # pyright: ignore[reportArgumentType]
-	# if _attribute_ast_expr:
-	# 	if Be.Name(_attribute_ast_expr):
-	# 		_attributes = int | None
-	# 	elif Be.Subscript(_attribute_ast_expr):
-	# 		_attributes = int
-	# else:
-	# 	_attributes = None
+	def newRows_attributes(dataframeTarget: pandas.DataFrame) -> pandas.DataFrame: # pyright: ignore[reportUnusedFunction]
+		_attribute_ast_expr = NodeTourist(ClassIsAndAttribute.valueIs(ast.Subscript, IfThis.isNameIdentifier('Unpack')), Then.extractIt(DOT.slice) # pyright: ignore[reportArgumentType]
+								).captureLastMatch(dictionaryClassDef[cast(str, dataframeTarget['ClassDefIdentifier'])])
+		if _attribute_ast_expr:
+			if Be.Name(_attribute_ast_expr):
+				_attributes = int | None
+			elif Be.Subscript(_attribute_ast_expr):
+				_attributes = int
+		else:
+			_attributes = None
+
+		dataframeTarget['attributeKind'] = "_attribute"
+		# TODO get class _Attributes, and get the key names and annotations
+		# lineno: int
+		# col_offset: int
+		# end_lineno: _EndPositionT
+		# end_col_offset: _EndPositionT
+		dictionary_Attributes: dict[str, ast.expr] = {}
+		findThis: Callable[[ast.AST], TypeIs[ast.AnnAssign] | bool] = ClassIsAndAttribute.targetIs(ast.AnnAssign, Be.Name)
+		doThat: Callable[[ast.AST], dict[Any, Any]] = Then.updateKeyValueIn(DOT.target(DOT.id), DOT.annotation, dictionary_Attributes) # pyright: ignore[reportUnknownArgumentType, reportArgumentType, reportCallIssue]
+		NodeTourist[ast.AnnAssign, dict[Any, Any]](findThis, doThat).visit(dictionaryClassDef[cast(str, dataframeTarget['ClassDefIdentifier'])])
+		Make.ClassDef(name='_Attributes', bases=[ast.Name('TypedDict'), ast.Subscript(value=ast.Name('Generic'), slice=ast.Name('_EndPositionT'))]
+			, body=[
+			Make.AnnAssign(target=ast.Name('lineno', ast.Store()), annotation=ast.Name('int'))
+			, Make.AnnAssign(target=ast.Name('col_offset', ast.Store()), annotation=ast.Name('int'))
+			, Make.AnnAssign(target=ast.Name('end_lineno', ast.Store()), annotation=ast.Name('_EndPositionT'))
+			, Make.AnnAssign(target=ast.Name('end_col_offset', ast.Store()), annotation=ast.Name('_EndPositionT'))
+			]
+		)
+		return dataframeTarget
+
+	# dataframe = cast(pandas.DataFrame, pandas.concat([dataframe, newRows_attributes(dataframe)], ignore_index=True, axis='rows')) # pyright: ignore[reportArgumentType, reportCallIssue]
+	# dataframe.drop_duplicates(subset=dataframe.attrs['hashable'], inplace=True)
 
 	# Create 'attributeRename'
 	dataframe['attributeRename'] = pandas.Series(data=dataframe['attribute'], index=dataframe.index, dtype=str, name='attributeRename', copy=True)
@@ -566,10 +629,13 @@ def updateDataframe() -> None:
 		return Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
 	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].astype(str).map(makeColumn_classAs_astAttribute)
 
-	def pythonCode2expr(string: str) -> Any:
-		astModule: ast.Module = ast.parse(string)
-		ast_expr: ast.expr = raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
-		return ast_expr
+	# Create 'list2Sequence' based on 'type' and 'astSuperClasses'
+	dataframe['list2Sequence'] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name='list2Sequence')
+	containsListSuperClass = pandas.Series(data=False, index=dataframe.index, dtype=bool)
+	for ClassDefIdentifier in settingsManufacturing.astSuperClasses.keys():
+		containsListSuperClass |= dataframe['type'].str.contains('list', regex=False, na=False) & dataframe['type'].str.contains(ClassDefIdentifier, regex=False, na=False)
+	dataframe.loc[containsListSuperClass, 'list2Sequence'] = True
+	del containsListSuperClass
 
 	# Create 'type_ast_expr' based on columns 'type' and 'list2Sequence'
 	dataframe.loc[dataframe['list2Sequence'], 'type_ast_expr'] = dataframe['type'].str.replace("list", "Sequence").apply(pythonCode2expr)
@@ -577,7 +643,7 @@ def updateDataframe() -> None:
 	dataframe.loc[dataframe['type'] == "No", 'type_ast_expr'] = "No"
 
 	# Create 'type_astSuperClasses' with TypeVar substitutions
-	dataframe['type_astSuperClasses'] = dataframe['type'].replace({f"ast.{key}": value for key, value in settingsManufacturing.astSuperClasses.items()}, regex=True)
+	dataframe['type_astSuperClasses'] = dataframe['type'].replace({f"ast.{ClassDefIdentifier}": identifierTypeVar for ClassDefIdentifier, identifierTypeVar in settingsManufacturing.astSuperClasses.items()}, regex=True)
 	# Create 'type_astSuperClasses_ast_expr'
 	dataframe['type_astSuperClasses_ast_expr'] = numpy.where(dataframe['type_astSuperClasses'] == 'No', 'No', dataframe['type_astSuperClasses'].apply(pythonCode2expr))
 

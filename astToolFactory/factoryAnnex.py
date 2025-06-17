@@ -230,7 +230,7 @@ class dataTypeVariables(TypedDict):
 
 typeVariables: dict[str, dataTypeVariables] = {
 	'个': {'tuple_keyword': [('covariant', True)]},
-	'个return': {'tuple_keyword': [('covariant', True)]},
+	'归个': {'tuple_keyword': [('covariant', True)]},
 }
 
 for astSuperClass, identifierTypeVariable in settingsManufacturing.astSuperClasses.items():

@@ -128,18 +128,25 @@ def make_astTypes(**keywordArguments: Any) -> None:
 
 def makeTool_dump() -> None:
 	ingredientsFunction: IngredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule('ast'), 'dump')
+
 	astConstant: ast.Constant = Make.Constant('ast.')
-	findThis: Callable[[ast.AST], TypeIs[ast.MatchSingleton | ast.Constant | ast.Assign | ast.Attribute | ast.AugAssign | ast.Await | ast.DictComp | ast.Expr | ast.FormattedValue | ast.keyword | ast.MatchValue | ast.NamedExpr | ast.Starred | ast.Subscript | ast.TypeAlias | ast.YieldFrom | ast.AnnAssign | ast.Return | ast.Yield] | bool] = (
-		ClassIsAndAttribute.valueIs(
-		ast.Attribute, IfThis.isAttributeNamespaceIdentifier('node', '__class__'))) # pyright: ignore[reportArgumentType]
-	def doThatPrepend(node: ast.Attribute) -> ast.AST:
-		return Make.Add.join([astConstant, cast(ast.expr, node)])
-	prepend_ast = NodeChanger(findThis, doThatPrepend)
-	findThis = IfThis.isFunctionDefIdentifier('_format')
-	def doThat(node: ast.FunctionDef) -> ast.AST:
+
+	findThisPrepend: Callable[[ast.AST], TypeIs[ast.Attribute] | bool] = (ClassIsAndAttribute.valueIs(ast.Attribute, IfThis.isAttributeNamespaceIdentifier('node', '__class__'))) # pyright: ignore[reportArgumentType]
+
+	def doThatPrepend(node: ast.Attribute) -> ast.expr:
+		return Make.Add.join([astConstant, node])
+
+	prepend_ast: NodeChanger[ast.Attribute, ast.expr] = NodeChanger(findThisPrepend, doThatPrepend)
+
+	def doThat(node: ast.FunctionDef) -> ast.expr:
 		return prepend_ast.visit(node)
+
+	findThis: Callable[[ast.AST], TypeIs[ast.FunctionDef] | bool] = IfThis.isFunctionDefIdentifier('_format')
+	# Nested NodeChanger: find the correct function, then find the statements to replace.
 	NodeChanger(findThis, doThat).visit(ingredientsFunction.astFunctionDef)
+
 	pathFilename = PurePosixPath(settingsManufacturing.pathPackage, '_dumpFunctionDef' + settingsManufacturing.fileExtension)
+
 	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsManufacturing.identifierPackage)
 
 def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
@@ -173,52 +180,37 @@ def makeToolClassIsAndAttribute(identifierToolClass: str, **keywordArguments: An
 	global ast_stmt, guardVersion, versionMinorMinimum
 	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
 
-	for identifierTypeOfNode, overloadDefinition, canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsClassIsAndAttribute(identifierToolClass, **keywordArguments):
-		# Construct the parameters for `Make.FunctionDef`.
-		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
-		decorator_list: list[ast.expr] = [astName_staticmethod]
-
-		workhorse_returnsAnnotation: ast.expr = Make.BitOr.join([Make.Subscript(Make.Name('TypeIs'), slice=astNameTypeOfNode), Make.Name('bool')])
-
-		if overloadDefinition:
+	for identifierTypeOfNode, _overloadDefinition, canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsClassIsAndAttribute(identifierToolClass, **keywordArguments):
+		if _overloadDefinition:
 			continue
-			decorator_list.append(astName_overload)
-			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
-		else:
-			# Create the body of the function, which is a workhorse function.
-			listAntecedentConditions: list[ast.expr] = [Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), Make.Name('astClass')])]
+		identifierTypeVar: str = '是'
+		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeVar)
 
-			if canBeNone:
-				ops: list[ast.cmpop]= [ast.IsNot()]
-				comparators: list[ast.expr]=[Make.Constant(None)]
-				if canBeNone == 'list':
-					ops: list[ast.cmpop]= [ast.NotEq()]
-					comparators: list[ast.expr]=[Make.List([Make.Constant(None)])]
-				listAntecedentConditions.append(Make.Compare(Make.Attribute(Make.Name('node'), attribute), ops=ops, comparators=comparators))
+		listAntecedentConditions: list[ast.expr] = [Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), Make.Name('astClass')])]
+		if canBeNone:
+			ops: list[ast.cmpop]= [ast.IsNot()]
+			comparators: list[ast.expr]=[Make.Constant(None)]
+			if canBeNone == 'list':
+				ops: list[ast.cmpop]= [ast.NotEq()]
+				comparators: list[ast.expr]=[Make.List(comparators)]
+			listAntecedentConditions.append(Make.Compare(Make.Attribute(Make.Name('node'), attribute), ops=ops, comparators=comparators))
+		listAntecedentConditions.append(Make.Call(Make.Name('attributeCondition'), listParameters=[Make.Attribute(Make.Name('node'), attribute)]))
 
-			listAntecedentConditions.append(Make.Call(Make.Name('attributeCondition'), listParameters=[Make.Attribute(Make.Name('node'), attribute)]))
-
-			body = [
-				Make.FunctionDef('workhorse'
-					, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
-					, body=[Make.Return(Make.And.join(listAntecedentConditions))]
-					, returns=workhorse_returnsAnnotation)
-				, Make.Return(Make.Name('workhorse'))
-			]
-
-		returns: ast.expr = Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')]), workhorse_returnsAnnotation]))
-
-		annotation: ast.expr = (Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.BitOr.join(list_ast_expr)]), Make.Name('bool')])))
-
-		# Create the overload or implementation of the function.
 		ast_stmt = Make.FunctionDef(attribute + 'Is'
 				, argumentSpecification=Make.arguments(list_arg=[
 					Make.arg('astClass', annotation=Make.Subscript(Make.Name('type'), astNameTypeOfNode)),
-					Make.arg('attributeCondition', annotation=annotation)
+					Make.arg('attributeCondition', Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.BitOr.join(list_ast_expr)]), Make.Name('bool')])))
 				])
-				, body=body
-				, decorator_list=decorator_list
-				, returns=returns
+				, body=[Make.FunctionDef('workhorse'
+						, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', (workhorseArgumentAnnotation:=Make.Attribute(Make.Name('ast'), 'AST')))])
+						, body=[Make.Return(Make.And.join(listAntecedentConditions))]
+						, returns=(workhorse_returnsAnnotation := Make.BitOr.join([Make.Subscript(Make.Name('TypeIs'), slice=astNameTypeOfNode), Make.Name('bool')]))
+						)
+					, Make.Return(Make.Name('workhorse'))
+				]
+				, decorator_list=[astName_staticmethod]
+				, returns=Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([workhorseArgumentAnnotation]), workhorse_returnsAnnotation]))
+				, type_params=[Make.TypeVar(identifierTypeVar, Make.Name(identifierTypeOfNode))]
 			)
 
 		if guardVersion:
@@ -229,7 +221,6 @@ def makeToolClassIsAndAttribute(identifierToolClass: str, **keywordArguments: An
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom('astToolkit', [Make.alias('*')])
 		, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
-		, Make.ImportFrom('typing', [Make.alias(identifier) for identifier in ['overload']])
 		, Make.ImportFrom('typing_extensions', [Make.alias(identifier) for identifier in ['TypeIs']])
 		, Make.Import('ast')
 		, Make.Import('sys')
