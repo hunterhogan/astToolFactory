@@ -11,11 +11,11 @@ docstrings: dict[str, dict[str, ast.Expr]] = defaultdict(lambda: defaultdict(lam
 docstringWarning = Make.Expr(Make.Constant("""This file is generated automatically, so changes to this file will be lost."""))
 
 def getMoreDocstrings():
-	import astToolFactory.documentation.documentationBe  # pyright: ignore[reportUnusedImport]
-	import astToolFactory.documentation.documentationClassIsAndAttribute  # pyright: ignore[reportUnusedImport]
-	import astToolFactory.documentation.documentationDOT  # pyright: ignore[reportUnusedImport]
-	import astToolFactory.documentation.documentationGrab  # pyright: ignore[reportUnusedImport]
-	import astToolFactory.documentation.documentationMake  # pyright: ignore[reportUnusedImport]
+	import astToolFactory.warehouse.documentationBe  # pyright: ignore[reportUnusedImport]
+	import astToolFactory.warehouse.documentationClassIsAndAttribute  # pyright: ignore[reportUnusedImport]
+	import astToolFactory.warehouse.documentationDOT  # pyright: ignore[reportUnusedImport]
+	import astToolFactory.warehouse.documentationGrab  # pyright: ignore[reportUnusedImport]
+	import astToolFactory.warehouse.documentationMake  # pyright: ignore[reportUnusedImport]
 
 diminutive2etymology: dict[str, str] = {
 	'AnnAssign': '***Ann***otated ***Assign***ment',

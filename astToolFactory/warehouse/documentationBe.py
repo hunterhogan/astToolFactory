@@ -11,8 +11,24 @@ from astToolkit import identifierDotAttribute, Make
 from itertools import chain
 import ast
 
+"""
+    class _alias:
+
+        def __call__(self, node: ast.AST) -> TypeIs[ast.alias]:
+            return isinstance(node, ast.alias)
+
+        @staticmethod
+        def asnameIs(attributeCondition: Callable[[str | None], bool]) -> Callable[[ast.AST], TypeIs[ast.alias] | bool]:
+            def workhorse(node: ast.AST) -> TypeIs[ast.alias] | bool:
+                return isinstance(node, ast.alias) and node.asname is not None and attributeCondition(node.asname)
+            return workhorse
+
+    alias = _alias()
+
+"""
+
 identifierToolClass: str = 'Be'
-ImaIndentMethod: str = ' ' * 8
+ImaIndent4aMethod: str = ' ' * 8
 
 docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]] = Make.Expr(Make.Constant(
     """A comprehensive suite of functions for AST class identification and type narrowing.
@@ -91,7 +107,7 @@ for astClass in [C for C in [AST,*chain(*map(lambda c:c.__subclasses__(), [AST,C
     ImaDocstring += f" {' | '.join(matchesClass)}."
 
     if (hasAttributes := astClass._fields):
-        ImaDocstring += f"\n{ImaIndentMethod}It has attributes {', '.join([f'`{attribute}`' for attribute in hasAttributes])}."
+        ImaDocstring += f"\n{ImaIndent4aMethod}It has attributes {', '.join([f'`{attribute}`' for attribute in hasAttributes])}."
         # ImaDocstring += f"\n{ImaIndentMethod}`class` `{astClassDefIdentifier}` has attributes {', '.join([f'`{attribute}`' for attribute in hasAttributes])}."
 
     indexConjunction: int = (
@@ -101,7 +117,7 @@ for astClass in [C for C in [AST,*chain(*map(lambda c:c.__subclasses__(), [AST,C
     )
 
     if indexConjunction:
-        ImaDocstring += f"\n{ImaIndentMethod}This `class` is associated with"
+        ImaDocstring += f"\n{ImaIndent4aMethod}This `class` is associated with"
         if associatedKeywords:
             ImaDocstring += f" Python keywords {associatedKeywords}"
             if indexConjunction > 2:
@@ -121,7 +137,7 @@ for astClass in [C for C in [AST,*chain(*map(lambda c:c.__subclasses__(), [AST,C
 
     parentClass: identifierDotAttribute = f"`ast.{astClass.__base__.__name__}`" # pyright: ignore[reportOptionalMemberAccess]
 
-    ImaDocstring += f"\n{ImaIndentMethod}It is a subclass of {parentClass}."
+    ImaDocstring += f"\n{ImaIndent4aMethod}It is a subclass of {parentClass}."
 
     """Not to be confused with"""
 

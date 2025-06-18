@@ -1909,7 +1909,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]]['MatchStar'] 
 
         Parameters
         ----------
-        name : str | None
+        name : str | None = None
             Optional identifier to bind the remaining sequence elements. When `None`, the remaining elements are matched but not captured.
 
         Returns
