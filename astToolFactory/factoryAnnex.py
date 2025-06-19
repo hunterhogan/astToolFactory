@@ -231,8 +231,9 @@ class dataTypeVariables(TypedDict):
 typeVariables: dict[str, dataTypeVariables] = {
 	'个': {'tuple_keyword': [('covariant', True)]},
 	'归个': {'tuple_keyword': [('covariant', True)]},
+	'文件': {'tuple_keyword': [('covariant', True)]},
+	'文义': {'tuple_keyword': [('covariant', True)]}
 }
-
 for astSuperClass, identifierTypeVariable in settingsManufacturing.astSuperClasses.items():
 	typeVariables[identifierTypeVariable] = {
 		'bound': Make.Attribute(Make.Name('ast'), astSuperClass),

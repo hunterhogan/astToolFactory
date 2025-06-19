@@ -97,8 +97,8 @@ def getDataframe(*indices: str, **keywordArguments: Any) -> pandas.DataFrame:
 
 	return dataframe
 
-def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, int, ast.expr]]:
-	listColumnsHARDCODED: list[str] = ['ClassDefIdentifier', 'versionMinorMinimumClass', 'classAs_astAttribute']
+def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, int, ast.expr, list[tuple[str, ast.expr]]]]:
+	listColumnsHARDCODED: list[str] = ['ClassDefIdentifier', 'versionMinorMinimumClass', 'classAs_astAttribute', 'listTupleAttributes']
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
 
@@ -118,7 +118,7 @@ def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tup
 	return dataframe.to_records(index=False).tolist()
 
 def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[ast.expr], int, int]]:
-	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'TypeAlias_hasDOTIdentifier', 'canBeNone',]
+	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'type', 'TypeAlias_hasDOTIdentifier', 'canBeNone',]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
 
@@ -147,23 +147,23 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 
 	elementsTarget: list[str] = ['identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'guardVersion', 'versionMinorMinimum']
 
-	dataframe['identifierTypeOfNode'] = dataframe['TypeAlias_hasDOTSubcategory'].where(
-		dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
-		, dataframe['TypeAlias_hasDOTIdentifier']
-	)
-	dataframe['overloadDefinition'] = dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
-	dataframe['list_ast_expr'] = dataframe['type_ast_expr'].apply(lambda srsly: [srsly]) # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
+	# dataframe['identifierTypeOfNode'] = dataframe['TypeAlias_hasDOTSubcategory'].where(
+	# 	dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
+	# 	, dataframe['TypeAlias_hasDOTIdentifier']
+	# )
+	# dataframe['overloadDefinition'] = dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
+	# dataframe['list_ast_expr'] = dataframe['type_ast_expr'].apply(lambda srsly: [srsly]) # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
 
-	currentColumns: list[str] = ['TypeAlias_hasDOTIdentifier', 'identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'versionMinorMinimum',]
-	dataframe = dataframe[currentColumns]
+	# currentColumns: list[str] = ['TypeAlias_hasDOTIdentifier', 'identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'versionMinorMinimum',]
+	# dataframe = dataframe[currentColumns]
 
-	#idk
+	# #idk
 
-	byColumn: str = 'identifierTypeOfNode'
-	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
+	# byColumn: str = 'identifierTypeOfNode'
+	# dataframe = _makeColumn_guardVersion(dataframe, byColumn)
 
-	dataframe = dataframe[elementsTarget]
-	return dataframe.to_records(index=False).tolist()
+	# dataframe = dataframe[elementsTarget]
+	# return dataframe.to_records(index=False).tolist()
 
 
 	dataframe['overloadDefinition'] = dataframe.groupby('attribute').transform('size') > 1
@@ -187,12 +187,7 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 		)
 		[dataframe.columns]
 	)
-	dataframe = (
-		pandas.concat([dataframe, dataframeImplementationFunctionDefinitions], ignore_index=True) # pyright: ignore[reportCallIssue, reportArgumentType]
-		.assign(__sequence_in_group=lambda df: df.groupby('attribute').cumcount())
-		.sort_values(['attribute', '__sequence_in_group'], kind='stable')
-		.drop(columns='__sequence_in_group')
-	)
+	dataframe = cast(pandas.DataFrame, ( pandas.concat([dataframe, dataframeImplementationFunctionDefinitions], ignore_index=True) .assign(__sequence_in_group=lambda df: df.groupby('attribute').cumcount()) .sort_values(['attribute', '__sequence_in_group'], kind='stable') .drop(columns='__sequence_in_group') )) # pyright: ignore[reportCallIssue, reportArgumentType, reportUnknownMemberType, reportUnknownLambdaType]
 	del dataframeImplementationFunctionDefinitions
 
 	dataframe['identifierTypeOfNode'] = dataframe['TypeAlias_hasDOTSubcategory'].where(
@@ -655,6 +650,9 @@ def updateDataframe() -> None:
 			& (dataframe['versionMinorMinimum_match_args'] == cast(int, dataframeTarget['versionMinorMinimum_match_args']))
 		]
 
+		matchingRows_listTupleAttributes = matchingRows[matchingRows['attributeKind'] == "_field"].copy()
+		dataframeTarget['listTupleAttributes'] = matchingRows_listTupleAttributes.drop_duplicates(subset='attribute')[['attribute', 'type_ast_expr']].apply(tuple, axis='columns').tolist()
+
 		matchingRows['attribute'] = pandas.Categorical(matchingRows['attribute'], categories=matchingRows['match_args'].iloc[0], ordered=True)
 
 		matchingRows_listCall_keyword: pandas.DataFrame = matchingRows[matchingRows['move2keywordArguments'] != "No"].copy(deep=True)
@@ -678,8 +676,8 @@ def updateDataframe() -> None:
 		matchingRows_listCall_keyword['Call_keyword'] = matchingRows_listCall_keyword.apply(make_keyword, axis='columns')
 		dataframeTarget['listCall_keyword'] = matchingRows_listCall_keyword['Call_keyword'].tolist()
 
-		return dataframeTarget['listFunctionDef_args'], dataframeTarget['listDefaults'], dataframeTarget['listCall_keyword']
-	dataframe[['listFunctionDef_args', 'listDefaults', 'listCall_keyword']] = dataframe.apply(make3Columns4ClassMake, axis='columns', result_type='expand') # pyright: ignore[reportArgumentType]
+		return dataframeTarget['listFunctionDef_args'], dataframeTarget['listDefaults'], dataframeTarget['listCall_keyword'], dataframeTarget['listTupleAttributes']
+	dataframe[['listFunctionDef_args', 'listDefaults', 'listCall_keyword', 'listTupleAttributes']] = dataframe.apply(make3Columns4ClassMake, axis='columns', result_type='expand') # pyright: ignore[reportArgumentType]
 
 	dataframe.to_pickle(settingsManufacturing.pathFilenameDataframeAST)
 

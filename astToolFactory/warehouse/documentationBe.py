@@ -12,19 +12,15 @@ from itertools import chain
 import ast
 
 """
-    class _alias:
-
-        def __call__(self, node: ast.AST) -> TypeIs[ast.alias]:
-            return isinstance(node, ast.alias)
-
-        @staticmethod
-        def asnameIs(attributeCondition: Callable[[str | None], bool]) -> Callable[[ast.AST], TypeIs[ast.alias] | bool]:
-            def workhorse(node: ast.AST) -> TypeIs[ast.alias] | bool:
-                return isinstance(node, ast.alias) and node.asname is not None and attributeCondition(node.asname)
-            return workhorse
-
-    alias = _alias()
-
+class _ClassDefIdentifier:
+    def __call__(self, node: ast.AST) -> TypeIs[ast.ClassDefIdentifier]:
+        return isinstance(node, ast.ClassDefIdentifier)
+    @staticmethod
+    def attributeIs(attributeCondition: Callable[[type_ast_expr], bool]) -> Callable[[ast.AST], TypeIs[ast.ClassDefIdentifier] | bool]:
+        def workhorse(node: ast.AST) -> TypeIs[ast.ClassDefIdentifier] | bool:
+            return isinstance(node, ast.ClassDefIdentifier) and attributeCondition(node.attribute)
+        return workhorse
+ClassDefIdentifier = _ClassDefIdentifier()
 """
 
 identifierToolClass: str = 'Be'
@@ -106,9 +102,8 @@ for astClass in [C for C in [AST,*chain(*map(lambda c:c.__subclasses__(), [AST,C
 
     ImaDocstring += f" {' | '.join(matchesClass)}."
 
-    if (hasAttributes := astClass._fields):
-        ImaDocstring += f"\n{ImaIndent4aMethod}It has attributes {', '.join([f'`{attribute}`' for attribute in hasAttributes])}."
-        # ImaDocstring += f"\n{ImaIndentMethod}`class` `{astClassDefIdentifier}` has attributes {', '.join([f'`{attribute}`' for attribute in hasAttributes])}."
+    # if (hasAttributes := astClass._fields):
+    #     ImaDocstring += f"\n{ImaIndent4aMethod}It has attributes {', '.join([f'`{attribute}`' for attribute in hasAttributes])}."
 
     indexConjunction: int = (
         bool(associatedDelimiters := map2PythonDelimiters.get(ClassDefIdentifier, None))

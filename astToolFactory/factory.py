@@ -17,7 +17,7 @@ from astToolkit.transformationTools import write_astModule
 from collections.abc import Callable
 from isort import code as isort_code
 from pathlib import PurePosixPath
-from typing import Any, cast, TypedDict, TypeIs
+from typing import Any, TypedDict, TypeIs
 from Z0Z_tools import writeStringToHere
 import ast
 import autoflake
@@ -138,7 +138,7 @@ def makeTool_dump() -> None:
 
 	prepend_ast: NodeChanger[ast.Attribute, ast.expr] = NodeChanger(findThisPrepend, doThatPrepend)
 
-	def doThat(node: ast.FunctionDef) -> ast.expr:
+	def doThat(node: ast.FunctionDef) -> ast.expr | Any:
 		return prepend_ast.visit(node)
 
 	findThis: Callable[[ast.AST], TypeIs[ast.FunctionDef] | bool] = IfThis.isFunctionDefIdentifier('_format')
@@ -152,24 +152,75 @@ def makeTool_dump() -> None:
 def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
 
-	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute in getElementsBe(identifierToolClass, **keywordArguments):
-		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
-			, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Name('ast.AST'))])
-			, body=[docstrings[identifierToolClass][ClassDefIdentifier], Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), classAs_astAttribute]))]
-			, decorator_list=[astName_staticmethod]
-			, returns=Make.Subscript(Make.Name('TypeIs'), slice=classAs_astAttribute))
+	# NOTE test values
+	# listTupleAttributes = [('asname', Make.Name('type_ast_expr'))]
 
-		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
-			ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
-						, ops=[ast.GtE()]
-						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-					, body=[ast_stmt]
+	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute, listTupleAttributes in getElementsBe(identifierToolClass, **keywordArguments):
+		if not listTupleAttributes:
+			ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
+				, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', annotation=Make.Name('ast.AST'))])
+				, body=[docstrings[identifierToolClass][ClassDefIdentifier], Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), classAs_astAttribute]))]
+				, decorator_list=[astName_staticmethod]
+				, returns=Make.Subscript(Make.Name('TypeIs'), slice=classAs_astAttribute))
+
+			if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
+				ast_stmt = Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
+							, ops=[ast.GtE()]
+							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+						, body=[ast_stmt]
+					)
+
+			list4ClassDefBody.append(ast_stmt)
+		else:
+
+			list4subClassDefBody: list[ast.stmt] = [
+				Make.FunctionDef('__call__'
+					, Make.arguments(list_arg=[Make.arg('self'), Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
+					, body=[Make.Return(Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), classAs_astAttribute]))]
+					, returns=Make.Subscript(Make.Name('TypeIs'), slice=classAs_astAttribute)
 				)
+			]
 
-		list4ClassDefBody.append(ast_stmt)
+			for attribute, type_ast_expr in listTupleAttributes:
+
+				list4subClassDefBody.append(Make.FunctionDef(attribute + 'Is'
+					, Make.arguments(list_arg=[Make.arg('attributeCondition'
+									, annotation=Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([type_ast_expr]), Make.Name('bool')])))])
+					, body=[Make.FunctionDef('workhorse'
+							, Make.arguments(list_arg=[Make.arg('node', annotation=Make.Attribute(Make.Name('ast'), 'AST'))])
+							, body=[Make.Return(Make.BoolOp(Make.And()
+									, values=[Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), classAs_astAttribute])
+											, Make.Call(Make.Name('attributeCondition'), listParameters=[Make.Attribute(Make.Name('node'), attribute)])]))
+							]
+							, returns=Make.BinOp(left=Make.Subscript(Make.Name('TypeIs'), slice=classAs_astAttribute), op=Make.BitOr(), right=Make.Name('bool')))
+						, Make.Return(Make.Name('workhorse'))
+					]
+					, decorator_list=[astName_staticmethod]
+					, returns=Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Attribute(Make.Name('ast'), 'AST')])
+											, Make.BinOp(left=Make.Subscript(Make.Name('TypeIs'), slice=classAs_astAttribute)
+														, op=Make.BitOr(), right=Make.Name('bool'))]))
+				)
+			)
+
+			list_ast_stmt: list[ast.stmt] = [
+				Make.ClassDef(f'_{ClassDefIdentifier}', body=list4subClassDefBody)
+				, Make.Assign([Make.Name(ClassDefIdentifier, context=Make.Store())], value=Make.Call(Make.Name(f'_{ClassDefIdentifier}')))
+				, docstrings[identifierToolClass][ClassDefIdentifier]
+			]
+
+			if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
+				list_ast_stmt = [Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info')
+							, ops=[ast.GtE()]
+							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+						, body=list_ast_stmt
+					)]
+
+			list4ClassDefBody.extend(list_ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom('typing_extensions', [Make.alias('TypeIs')])
+		, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
+		, Make.ImportFrom('astToolkit', [Make.alias('ConstantValueType')])
 		, Make.Import('ast')
 		, Make.Import('sys')
 	]
@@ -188,11 +239,11 @@ def makeToolClassIsAndAttribute(identifierToolClass: str, **keywordArguments: An
 
 		listAntecedentConditions: list[ast.expr] = [Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), Make.Name('astClass')])]
 		if canBeNone:
-			ops: list[ast.cmpop]= [ast.IsNot()]
-			comparators: list[ast.expr]=[Make.Constant(None)]
+			ops: list[ast.cmpop] = [ast.IsNot()]
+			comparators: list[ast.expr] = [Make.Constant(None)]
 			if canBeNone == 'list':
-				ops: list[ast.cmpop]= [ast.NotEq()]
-				comparators: list[ast.expr]=[Make.List(comparators)]
+				ops = [ast.NotEq()]
+				comparators = [Make.List(comparators)]
 			listAntecedentConditions.append(Make.Compare(Make.Attribute(Make.Name('node'), attribute), ops=ops, comparators=comparators))
 		listAntecedentConditions.append(Make.Call(Make.Name('attributeCondition'), listParameters=[Make.Attribute(Make.Name('node'), attribute)]))
 
@@ -405,10 +456,10 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 	list4ModuleBody: list[ast.stmt] = [*ledgerOfImports.makeList_ast()]
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def write_theSSOT():
+def write_theSSOT() -> None:
 	writeModule(astModule_theSSOT, '_theSSOT')
 
-def manufactureTools(settingsManufacturing: ManufacturedPackageSettings):
+def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None:
 	"""Reminder: `_makeGuardVersion` relies on global identifiers, so don't use concurrency."""
 	make_astTypes()
 	makeToolBe(settingsManufacturing.identifiers['Be'])

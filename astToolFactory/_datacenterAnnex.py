@@ -45,6 +45,7 @@ _columns: list[str] = [
 	'list2Sequence',
     'type_astSuperClasses',
     'type_astSuperClasses_ast_expr',
+    'listTupleAttributes',
 ]
 
 """
