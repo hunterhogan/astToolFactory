@@ -16,7 +16,7 @@ from astToolkit import (
 	NodeChanger, NodeTourist, parsePathFilename2astModule, Then,
 )
 from astToolkit.transformationTools import makeDictionaryClassDef
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any, cast, Literal, TypeIs
 from Z0Z_tools import raiseIfNone
@@ -117,7 +117,7 @@ def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tup
 
 	return dataframe.to_records(index=False).tolist()
 
-def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[ast.expr], int, int]]:
+def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[ast.expr], int, int]]:
 	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'type', 'TypeAlias_hasDOTIdentifier', 'canBeNone',]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
@@ -232,9 +232,6 @@ def getElementsClassIsAndAttribute(identifierToolClass: str, **keywordArguments:
 
 	dataframe = dataframe[elementsTarget]
 	return list(dataframe.to_records(index=False))
-
-def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[ast.expr], int, int]]:
-	return getElementsClassIsAndAttribute(identifierToolClass, **keywordArguments)
 
 def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:
 	listColumnsHARDCODED: list[str] = ['attribute', 'type_astSuperClasses', 'versionMinorMinimumAttribute', 'TypeAlias_hasDOTIdentifier', 'type_astSuperClasses_ast_expr', ]
@@ -564,9 +561,9 @@ def updateDataframe() -> None:
 		# end_lineno: _EndPositionT
 		# end_col_offset: _EndPositionT
 		dictionary_Attributes: dict[str, ast.expr] = {}
-		findThis: Callable[[ast.AST], TypeIs[ast.AnnAssign] | bool] = ClassIsAndAttribute.targetIs(ast.AnnAssign, Be.Name)
-		doThat: Callable[[ast.AST], dict[Any, Any]] = Then.updateKeyValueIn(DOT.target(DOT.id), DOT.annotation, dictionary_Attributes) # pyright: ignore[reportUnknownArgumentType, reportArgumentType, reportCallIssue]
-		NodeTourist[ast.AnnAssign, dict[Any, Any]](findThis, doThat).visit(dictionaryClassDef[cast(str, dataframeTarget['ClassDefIdentifier'])])
+		findThis: Callable[[ast.AST], TypeIs[ast.AnnAssign] | bool] = Be.AnnAssign.targetIs(Be.Name)
+		doThat: Callable[[ast.AnnAssign], Mapping[str, ast.expr]] = Then.updateKeyValueIn(DOT.target(DOT.id), DOT.annotation, dictionary_Attributes)
+		NodeTourist[ast.AnnAssign, Mapping[str, ast.expr]](findThis, doThat).visit(dictionaryClassDef[cast(str, dataframeTarget['ClassDefIdentifier'])])
 		Make.ClassDef(name='_Attributes', bases=[ast.Name('TypedDict'), ast.Subscript(value=ast.Name('Generic'), slice=ast.Name('_EndPositionT'))]
 			, body=[
 			Make.AnnAssign(target=ast.Name('lineno', ast.Store()), annotation=ast.Name('int'))

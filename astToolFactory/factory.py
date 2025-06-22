@@ -1,7 +1,7 @@
 from astToolFactory import (
-	astName_overload, astName_staticmethod, astName_typing_TypeAlias, getElementsBe, getElementsClassIsAndAttribute,
-	getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call,
-	ManufacturedPackageSettings, settingsManufacturing,
+	astName_overload, astName_staticmethod, astName_typing_TypeAlias, getElementsBe, getElementsDOT, getElementsGrab,
+	getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
+	settingsManufacturing,
 )
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
@@ -227,61 +227,6 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolClassIsAndAttribute(identifierToolClass: str, **keywordArguments: Any) -> None:
-	global ast_stmt, guardVersion, versionMinorMinimum
-	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
-
-	for identifierTypeOfNode, _overloadDefinition, canBeNone, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsClassIsAndAttribute(identifierToolClass, **keywordArguments):
-		if _overloadDefinition:
-			continue
-		identifierTypeVar: str = '是'
-		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeVar)
-
-		listAntecedentConditions: list[ast.expr] = [Make.Call(Make.Name('isinstance'), listParameters=[Make.Name('node'), Make.Name('astClass')])]
-		if canBeNone:
-			ops: list[ast.cmpop] = [ast.IsNot()]
-			comparators: list[ast.expr] = [Make.Constant(None)]
-			if canBeNone == 'list':
-				ops = [ast.NotEq()]
-				comparators = [Make.List(comparators)]
-			listAntecedentConditions.append(Make.Compare(Make.Attribute(Make.Name('node'), attribute), ops=ops, comparators=comparators))
-		listAntecedentConditions.append(Make.Call(Make.Name('attributeCondition'), listParameters=[Make.Attribute(Make.Name('node'), attribute)]))
-
-		ast_stmt = Make.FunctionDef(attribute + 'Is'
-				, argumentSpecification=Make.arguments(list_arg=[
-					Make.arg('astClass', annotation=Make.Subscript(Make.Name('type'), astNameTypeOfNode)),
-					Make.arg('attributeCondition', Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.BitOr.join(list_ast_expr)]), Make.Name('bool')])))
-				])
-				, body=[Make.FunctionDef('workhorse'
-						, argumentSpecification=Make.arguments(list_arg=[Make.arg('node', (workhorseArgumentAnnotation:=Make.Attribute(Make.Name('ast'), 'AST')))])
-						, body=[Make.Return(Make.And.join(listAntecedentConditions))]
-						, returns=(workhorse_returnsAnnotation := Make.BitOr.join([Make.Subscript(Make.Name('TypeIs'), slice=astNameTypeOfNode), Make.Name('bool')]))
-						)
-					, Make.Return(Make.Name('workhorse'))
-				]
-				, decorator_list=[astName_staticmethod]
-				, returns=Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([workhorseArgumentAnnotation]), workhorse_returnsAnnotation]))
-				, type_params=[Make.TypeVar(identifierTypeVar, Make.Name(identifierTypeOfNode))]
-			)
-
-		if guardVersion:
-			_makeGuardVersion()
-		if ast_stmt is not None: # pyright: ignore[reportUnnecessaryComparison]
-			list4ClassDefBody.append(ast_stmt)
-
-	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom('astToolkit', [Make.alias('*')])
-		, Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')])
-		, Make.ImportFrom('typing_extensions', [Make.alias(identifier) for identifier in ['TypeIs']])
-		, Make.Import('ast')
-		, Make.Import('sys')
-		, Make.If(Make.Compare(Make.Attribute(Make.Name('sys'), 'version_info'), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]),
-			[Make.ImportFrom('astToolkit', [Make.alias('hasDOTdefault_value', 'hasDOTdefault_value')])]
-		)
-	]
-
-	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
-
 def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	global ast_stmt, guardVersion, versionMinorMinimum
 	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
@@ -463,7 +408,6 @@ def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None
 	"""Reminder: `_makeGuardVersion` relies on global identifiers, so don't use concurrency."""
 	make_astTypes()
 	makeToolBe(settingsManufacturing.identifiers['Be'])
-	makeToolClassIsAndAttribute(settingsManufacturing.identifiers['ClassIsAndAttribute'])
 	makeToolDOT(settingsManufacturing.identifiers['DOT'])
 	makeToolGrab(settingsManufacturing.identifiers['Grab'])
 	makeToolMake(settingsManufacturing.identifiers['Make'])

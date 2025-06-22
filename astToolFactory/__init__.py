@@ -16,10 +16,8 @@ from astToolFactory._snippets import (
 	keywordKeywordArguments4Call as keywordKeywordArguments4Call,
 )
 
-# change to _datacenter to obfuscate the source of the data: it could change
 from astToolFactory._datacenter import (
 	getElementsBe as getElementsBe,
-	getElementsClassIsAndAttribute as getElementsClassIsAndAttribute,
 	getElementsDOT as getElementsDOT,
 	getElementsGrab as getElementsGrab,
 	getElementsMake as getElementsMake,
