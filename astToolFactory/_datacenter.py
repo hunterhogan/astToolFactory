@@ -117,8 +117,8 @@ def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tup
 
 	return dataframe.to_records(index=False).tolist()
 
-def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str | bool, str, list[ast.expr], int, int]]:
-	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'type', 'TypeAlias_hasDOTIdentifier', 'canBeNone',]
+def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str, list[ast.expr], int, int]]:
+	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'type', 'TypeAlias_hasDOTIdentifier',]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
 
@@ -145,7 +145,7 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 
 	del listColumns
 
-	elementsTarget: list[str] = ['identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'guardVersion', 'versionMinorMinimum']
+	elementsTarget: list[str] = ['identifierTypeOfNode', 'overloadDefinition', 'attribute', 'list_ast_expr', 'guardVersion', 'versionMinorMinimum']
 
 	# dataframe['identifierTypeOfNode'] = dataframe['TypeAlias_hasDOTSubcategory'].where(
 	# 	dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
@@ -154,7 +154,7 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 	# dataframe['overloadDefinition'] = dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
 	# dataframe['list_ast_expr'] = dataframe['type_ast_expr'].apply(lambda srsly: [srsly]) # pyright: ignore[reportUnknownLambdaType, reportUnknownArgumentType]
 
-	# currentColumns: list[str] = ['TypeAlias_hasDOTIdentifier', 'identifierTypeOfNode', 'overloadDefinition', 'canBeNone', 'attribute', 'list_ast_expr', 'versionMinorMinimum',]
+	# currentColumns: list[str] = ['TypeAlias_hasDOTIdentifier', 'identifierTypeOfNode', 'overloadDefinition', 'attribute', 'list_ast_expr', 'versionMinorMinimum',]
 	# dataframe = dataframe[currentColumns]
 
 	# #idk
@@ -164,7 +164,6 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 
 	# dataframe = dataframe[elementsTarget]
 	# return dataframe.to_records(index=False).tolist()
-
 
 	dataframe['overloadDefinition'] = dataframe.groupby('attribute').transform('size') > 1
 	dataframeImplementationFunctionDefinitions: pandas.DataFrame = (
@@ -183,7 +182,6 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 			TypeAlias_hasDOTSubcategory="No",
 			type_ast_expr="No",
 			type="No",
-			canBeNone="Not calculated"
 		)
 		[dataframe.columns]
 	)
@@ -194,23 +192,6 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 		dataframe['overloadDefinition'], dataframe['TypeAlias_hasDOTIdentifier']
 	)
 	dataframe.drop(columns=['TypeAlias_hasDOTIdentifier', 'TypeAlias_hasDOTSubcategory',], inplace=True)
-	def makeColumn_canBeNone(dataframeTarget: pandas.DataFrame) -> str | bool:
-		matchingRows = dataframe[
-			(dataframe['attribute'] == dataframeTarget['attribute']) &
-			(dataframe['canBeNone'] != "Not calculated") &
-			(dataframe['versionMinorMinimum'] <= dataframeTarget['versionMinorMinimum'])
-		]['canBeNone']
-
-		if (matchingRows == False).all():  # noqa: E712
-			return False
-		elif any(matchingRows.apply(lambda x: isinstance(x, str))): # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
-			return cast(str, matchingRows.loc[matchingRows.apply(lambda x: isinstance(x, str))].iloc[0]) # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
-		elif (matchingRows == True).any():  # noqa: E712
-			return True
-		else:
-			return "Not calculated"
-
-	dataframe.loc[dataframe['canBeNone'] == "Not calculated", 'canBeNone'] = dataframe[dataframe['canBeNone'] == "Not calculated"].apply(makeColumn_canBeNone, axis='columns')
 
 	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
 		if bool(dataframeTarget['overloadDefinition']):
@@ -383,6 +364,9 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 def updateDataframe() -> None:
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
 
+	# columns: reorder; drop columns, but they might be recreated later in the flow.
+	# dataframe = dataframe[_columns]
+
 	# Set dtypes for existing columns
 	dataframe = dataframe.astype({
 		'ClassDefIdentifier': 'string',
@@ -394,9 +378,6 @@ def updateDataframe() -> None:
 	# Initialize hashable columns metadata
 	dataframe.attrs['hashable'] = ['ClassDefIdentifier', 'versionMajorPythonInterpreter', 'versionMinorPythonInterpreter', 'versionMicroPythonInterpreter', 'base',]
 	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter',]
-
-	# columns: reorder; drop columns, but they might be recreated later in the flow.
-	# dataframe = dataframe[_columns]
 
 	# TODO Columns to create using the Python Interpreter,
 	# from version 3.settingsManufacturing.versionMinor_astMinimumSupported
@@ -562,7 +543,7 @@ def updateDataframe() -> None:
 		# end_col_offset: _EndPositionT
 		dictionary_Attributes: dict[str, ast.expr] = {}
 		findThis: Callable[[ast.AST], TypeIs[ast.AnnAssign] | bool] = Be.AnnAssign.targetIs(Be.Name)
-		doThat: Callable[[ast.AnnAssign], Mapping[str, ast.expr]] = Then.updateKeyValueIn(DOT.target(DOT.id), DOT.annotation, dictionary_Attributes)
+		doThat: Callable[[ast.AnnAssign], Mapping[str, ast.expr]] = Then.updateKeyValueIn(DOT.target(DOT.id), DOT.annotation, dictionary_Attributes) # pyright: ignore[reportArgumentType, reportCallIssue]
 		NodeTourist[ast.AnnAssign, Mapping[str, ast.expr]](findThis, doThat).visit(dictionaryClassDef[cast(str, dataframeTarget['ClassDefIdentifier'])])
 		Make.ClassDef(name='_Attributes', bases=[ast.Name('TypedDict'), ast.Subscript(value=ast.Name('Generic'), slice=ast.Name('_EndPositionT'))]
 			, body=[
@@ -590,11 +571,6 @@ def updateDataframe() -> None:
 	dataframe['defaultValue'] = dataframe['attribute'].map(defaultValue__attribute).fillna(dataframe['defaultValue'])
 	dataframe['defaultValue'] = dataframe[['ClassDefIdentifier', 'attribute']].apply(tuple, axis='columns').map(defaultValue__ClassDefIdentifier_attribute).fillna(dataframe['defaultValue'])
 	dataframe['defaultValue'] = dataframe[['type', 'attribute']].apply(tuple, axis='columns').map(defaultValue__type_attribute).fillna(dataframe['defaultValue'])
-
-	dataframe['canBeNone'] = pandas.Series(data=False, index=dataframe.index, dtype=object, name='canBeNone')
-	dataframe.loc[dataframe['type'].str.contains(' | None', regex=False, na=False), 'canBeNone'] = True
-	dataframe.loc[dataframe['type'].str.contains(' | None', regex=False, na=False) & dataframe['type'].str.contains('list', regex=False, na=False), 'canBeNone'] = "list"
-	dataframe.loc[dataframe['type'] == "No", 'canBeNone'] = "No"
 
 	def makeColumn_classAs_astAttribute(ClassDefIdentifier:str) -> ast.expr:
 		return Make.Attribute(Make.Name('ast'), ClassDefIdentifier)

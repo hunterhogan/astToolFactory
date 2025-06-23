@@ -24,7 +24,6 @@ _columns: list[str] = [
 
 	# columns computed from sources per row
 	'classAs_astAttribute',
-	'canBeNone',
 	'type_ast_expr',
 	'ast_arg',
 	'TypeAlias_hasDOTIdentifier',
