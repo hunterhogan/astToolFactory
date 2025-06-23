@@ -1,0 +1,10 @@
+[lint.flake8-import-conventions.aliases]
+numpy = "numpy"
+pandas = "pandas"
+
+[lint.flake8-import-conventions.banned-aliases]
+numpy = ["np"]
+pandas = ["pd"]
+
+[format]
+indent-style = "tab"

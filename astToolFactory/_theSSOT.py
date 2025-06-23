@@ -64,7 +64,6 @@ Z0Z_PackageToManufacturePath = Z0Z_pathRoot / PackageToManufactureIdentifier / P
 dictionaryIdentifiers: dict[str, str] = {
 	'Be': 'Be',
 	'boolopJoinMethod': '_boolopJoinMethod',
-	'ClassIsAndAttribute': 'ClassIsAndAttribute',
 	'DOT': 'DOT',
 	'Grab': 'Grab',
 	'Make': 'Make',

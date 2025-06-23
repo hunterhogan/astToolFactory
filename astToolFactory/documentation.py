@@ -1,7 +1,11 @@
 """A warehouse for docstrings added to manufactured ast tools.
+
 NOTE Use special indentation in this file.
 	1. The generated files use spaces, not tabs, so use spaces here.
-	2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
+	2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code.
+		So, indent one or two levels as appropriate.
+
+"""
 from astToolkit import Make
 from collections import defaultdict
 import ast
@@ -10,12 +14,12 @@ docstrings: dict[str, dict[str, ast.Expr]] = defaultdict(lambda: defaultdict(lam
 
 docstringWarning = Make.Expr(Make.Constant("""This file is generated automatically, so changes to this file will be lost."""))
 
-def getMoreDocstrings():
-	import astToolFactory.warehouse.documentationBe  # pyright: ignore[reportUnusedImport]
-	import astToolFactory.warehouse.documentationClassIsAndAttribute  # pyright: ignore[reportUnusedImport]
-	import astToolFactory.warehouse.documentationDOT  # pyright: ignore[reportUnusedImport]
-	import astToolFactory.warehouse.documentationGrab  # pyright: ignore[reportUnusedImport]
-	import astToolFactory.warehouse.documentationMake  # pyright: ignore[reportUnusedImport]
+def getMoreDocstrings() -> None:
+	"""Missing docstring in public function."""
+	import astToolFactory.warehouse.documentationBe  # pyright: ignore[reportUnusedImport]  # noqa: PLC0415
+	import astToolFactory.warehouse.documentationDOT  # pyright: ignore[reportUnusedImport]  # noqa: PLC0415
+	import astToolFactory.warehouse.documentationGrab  # pyright: ignore[reportUnusedImport]  # noqa: PLC0415
+	import astToolFactory.warehouse.documentationMake  # pyright: ignore[reportUnusedImport]  # noqa: PLC0415
 
 diminutive2etymology: dict[str, str] = {
 	'AnnAssign': '***Ann***otated ***Assign***ment',
