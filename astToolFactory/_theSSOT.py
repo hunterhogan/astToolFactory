@@ -1,6 +1,8 @@
 """Primary: settings for this package.
+
 Secondary: settings for manufacturing.
-Tertiary: hardcoded values until I implement a dynamic solution."""
+Tertiary: hardcoded values until I implement a dynamic solution.
+"""
 from copy import deepcopy
 from importlib import import_module as importlib_import_module
 from inspect import getfile as inspect_getfile

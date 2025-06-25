@@ -1,7 +1,10 @@
 """A warehouse for docstrings added to manufactured ast tools.
+
 NOTE Use special indentation in this file.
     1. The generated files use spaces, not tabs, so use spaces here.
-    2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So, indent one or two levels as appropriate."""
+    2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So,
+        indent one or two levels as appropriate.
+"""
 from ast import AST, Constant
 from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import (
@@ -10,18 +13,6 @@ from astToolFactory.documentation import (
 from astToolkit import identifierDotAttribute, Make
 from itertools import chain
 import ast
-
-"""
-class _ClassDefIdentifier:
-    def __call__(self, node: ast.AST) -> TypeIs[ast.ClassDefIdentifier]:
-        return isinstance(node, ast.ClassDefIdentifier)
-    @staticmethod
-    def attributeIs(attributeCondition: Callable[[type_ast_expr], bool]) -> Callable[[ast.AST], TypeIs[ast.ClassDefIdentifier] | bool]:
-        def workhorse(node: ast.AST) -> TypeIs[ast.ClassDefIdentifier] | bool:
-            return isinstance(node, ast.ClassDefIdentifier) and attributeCondition(node.attribute)
-        return workhorse
-ClassDefIdentifier = _ClassDefIdentifier()
-"""
 
 identifierToolClass: str = 'Be'
 ImaIndent4aMethod: str = ' ' * 8
@@ -84,7 +75,7 @@ docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManuf
 """
     ClassDefIdentifier: str = 'For'
 """
-for astClass in [C for C in [AST,*chain(*map(lambda c:c.__subclasses__(), [AST,Constant,*AST.__subclasses__()]))] if issubclass(C,AST)]:
+for astClass in [C for C in [AST,*chain(*(c.__subclasses__() for c in [AST,Constant,*AST.__subclasses__()]))] if issubclass(C,AST)]:
 
     ClassDefIdentifier: str = astClass.__name__
     astClassDefIdentifier: identifierDotAttribute = 'ast.' + ClassDefIdentifier
@@ -95,12 +86,12 @@ for astClass in [C for C in [AST,*chain(*map(lambda c:c.__subclasses__(), [AST,C
 
     ImaDocstring += " matches"
 
-    matchesClass: list[identifierDotAttribute] = [f"`class` `{astClassDefIdentifier}`"] + sorted([f"`ast.{subclass.__name__}`" for subclass in astClass.__subclasses__() if issubclass(subclass, ast.AST)], key=lambda element: element.lower())
+    matchesClass: list[identifierDotAttribute] = list({f"`class` `{astClassDefIdentifier}`", *sorted([f"`ast.{subclass.__name__}`" for subclass in astClass.__subclasses__() if issubclass(subclass, ast.AST)], key=lambda element: element.lower())})
 
     if len(matchesClass) > 1:
         ImaDocstring += " any of"
 
-    ImaDocstring += f" {' | '.join(matchesClass)}."
+    ImaDocstring += f" {' | '.join(matchesClass)}.\n"
 
     # if (hasAttributes := astClass._fields):
     #     ImaDocstring += f"\n{ImaIndent4aMethod}It has attributes {', '.join([f'`{attribute}`' for attribute in hasAttributes])}."
@@ -111,20 +102,21 @@ for astClass in [C for C in [AST,*chain(*map(lambda c:c.__subclasses__(), [AST,C
         + bool(associatedOperators := map2PythonOperators.get(ClassDefIdentifier, None))
     )
 
+    two = 2
     if indexConjunction:
         ImaDocstring += f"\n{ImaIndent4aMethod}This `class` is associated with"
         if associatedKeywords:
             ImaDocstring += f" Python keywords {associatedKeywords}"
-            if indexConjunction > 2:
+            if indexConjunction > two:
                 ImaDocstring += ","
-            elif indexConjunction == 2:
+            elif indexConjunction == two:
                 ImaDocstring += " and"
                 indexConjunction -= 1
         if associatedDelimiters:
             ImaDocstring += f" Python delimiters '{associatedDelimiters}'"
-            if indexConjunction > 2:
+            if indexConjunction > two:
                 ImaDocstring += ", and"
-            elif indexConjunction == 2:
+            elif indexConjunction == two:
                 ImaDocstring += " and"
         if associatedOperators:
             ImaDocstring += f" Python operators '{associatedOperators}'"
@@ -132,14 +124,8 @@ for astClass in [C for C in [AST,*chain(*map(lambda c:c.__subclasses__(), [AST,C
 
     parentClass: identifierDotAttribute = f"`ast.{astClass.__base__.__name__}`" # pyright: ignore[reportOptionalMemberAccess]
 
-    ImaDocstring += f"\n{ImaIndent4aMethod}It is a subclass of {parentClass}."
+    ImaDocstring += f"\n{ImaIndent4aMethod}It is a subclass of {parentClass}.\n{ImaIndent4aMethod}"
 
     """Not to be confused with"""
 
     docstrings[settingsManufacturing.identifiers[identifierToolClass]][ClassDefIdentifier] = Make.Expr(Make.Constant(ImaDocstring))
-
-
-
-# if __name__ == '__main__':
-#     print(ImaDocstring)
-

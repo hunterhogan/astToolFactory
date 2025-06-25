@@ -8,3 +8,20 @@ pandas = ["pd"]
 
 [format]
 indent-style = "tab"
+
+
+# [tool.ruff]
+# line-length = 140
+# target-version = "py312"
+
+# [tool.ruff.lint]
+# # Enable specific rule groups
+# select = ["E", "W", "F", "I", "N", "D", "UP", "S", "B", "A", "C4", "T20", "PL"]
+
+# [tool.ruff.lint.per-file-ignores]
+# # Allow intentional re-export aliases in __init__.py files
+# "__init__.py" = ["PLC0414", "E501", "D104"]
+
+# [tool.ruff.lint.pydocstyle]
+# convention = "numpy"
+

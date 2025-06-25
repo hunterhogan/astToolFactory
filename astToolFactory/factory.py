@@ -10,7 +10,7 @@ for the toolkit's code generation process.
 from astToolFactory import (
 	astName_overload, astName_staticmethod, astName_typing_TypeAlias, getElementsBe, getElementsDOT, getElementsGrab,
 	getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
-	settingsManufacturing,
+	settingsManufacturing, settingsPackage,
 )
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
@@ -19,14 +19,14 @@ from astToolFactory.factoryAnnex import (
 	listHandmade_astTypes, listOverloads_keyword, listOverloadsTypeAlias,
 )
 from astToolkit import (
-	astModuleToIngredientsFunction, Be, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports, Make, NodeChanger,
-	parseLogicalPath2astModule,
+	astModuleToIngredientsFunction, Be, extractClassDef, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
+	Make, NodeChanger, parseLogicalPath2astModule,
 )
 from astToolkit.transformationTools import write_astModule
 from isort import code as isort_code
 from pathlib import PurePosixPath
 from typing import Any, TypedDict
-from Z0Z_tools import writeStringToHere
+from Z0Z_tools import raiseIfNone, writeStringToHere
 import ast
 import autoflake
 
@@ -101,7 +101,7 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	pythonSource: str = ast.unparse(astModule)
 	if "Make" in moduleIdentifier:
 		# type ignore only works on hasDOTtype_comment, right?
-		# TODO update docs
+		# TODO update docs  # noqa: ERA001, FIX002, TD003
 
 		listTypeIgnore: list[ast.TypeIgnore] = []
 		lineno: int = 0
@@ -464,6 +464,59 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 
+def makeToolFind(identifierToolClass: str, **keywordArguments: Any) -> None:
+	"""Find."""
+	list4ClassDefBody: list[ast.stmt] = [
+		docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
+	]
+
+	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute, _listTupleAttributes in getElementsBe(
+		identifierToolClass, **keywordArguments
+	):
+		ast_stmt: ast.stmt = Make.FunctionDef(
+			ClassDefIdentifier,
+			argumentSpecification=Make.arguments(list_arg=[Make.arg("self"), Make.arg("node", annotation=Make.Name("ast.AST"))]),
+			body=[
+				docstrings[identifierToolClass][ClassDefIdentifier],
+				Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute])),
+			],
+			returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute),
+		)
+
+		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
+			ast_stmt = Make.If(
+				Make.Compare(
+					Make.Attribute(Make.Name("sys"), "version_info"),
+					ops=[Make.GtE()],
+					comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])],
+				),
+				body=[ast_stmt],
+			)
+
+		list4ClassDefBody.append(ast_stmt)
+
+	# NOTE A temporary system during prototype development.
+	identifierToolClassOVERRIDE: str = "Find"
+	identifierToolClass = identifierToolClassOVERRIDE
+	moduleIdentifier = '_prototype' + identifierToolClass
+
+	astModule: ast.Module = parseLogicalPath2astModule(f"{settingsPackage.identifierPackage}.{moduleIdentifier}")
+	astClassDef: ast.ClassDef = raiseIfNone(extractClassDef(astModule, identifierToolClass))
+	ledgerOfImports = LedgerOfImports(astModule)
+	del astModule
+
+	ledgerOfImports.walkThis(ast.parse("""from astToolkit import ConstantValueType
+from collections.abc import Callable, Sequence
+from typing_extensions import TypeIs
+import ast"""))
+
+	astClassDef.body.extend(list4ClassDefBody)
+
+	astModule = Make.Module([*ledgerOfImports.makeList_ast(), astClassDef])
+
+	writeModule(astModule, moduleIdentifier)
+
+
 def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write the Grab tool class for the AST toolkit.
 
@@ -566,7 +619,7 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 
-def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
+def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # noqa: C901, PLR0912
 	"""Generate and write the Make tool class for the AST toolkit.
 
 	(AI generated docstring)
@@ -719,6 +772,7 @@ def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None
 	make_astTypes()
 	makeToolBe(settingsManufacturing.identifiers["Be"])
 	makeToolDOT(settingsManufacturing.identifiers["DOT"])
+	makeToolFind(settingsManufacturing.identifiers["Be"])
 	makeToolGrab(settingsManufacturing.identifiers["Grab"])
 	makeToolMake(settingsManufacturing.identifiers["Make"])
 	makeTool_dump()
