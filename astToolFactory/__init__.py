@@ -1,3 +1,4 @@
+"""astToolFactory manufactures ast tools for astToolkit."""
 from astToolFactory._theSSOT import (
 	listPyrightErrors as listPyrightErrors,
 	ManufacturedPackageSettings as ManufacturedPackageSettings,
@@ -7,6 +8,7 @@ from astToolFactory._theSSOT import (
 )
 
 from astToolFactory._snippets import (
+	astASTastAttribute as astASTastAttribute,
 	astName_overload as astName_overload,
 	astName_staticmethod as astName_staticmethod,
 	astName_typing_TypeAlias as astName_typing_TypeAlias,

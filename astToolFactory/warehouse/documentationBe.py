@@ -14,10 +14,11 @@ from astToolkit import identifierDotAttribute, Make
 from itertools import chain
 import ast
 
-identifierToolClass: str = 'Be'
 ImaIndent4aMethod: str = ' ' * 8
+identifierToolClass: str = 'Be'
+identifierClass = identifierMethod = settingsManufacturing.identifiers[identifierToolClass]
 
-docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]] = Make.Expr(Make.Constant(
+docstrings[identifierClass][identifierMethod] = Make.Expr(Make.Constant(
     """A comprehensive suite of functions for AST class identification and type narrowing.
 
     `class` `Be` has a method for each `ast.AST` subclass, also called "node type", to perform type
@@ -86,15 +87,12 @@ for astClass in [C for C in [AST,*chain(*(c.__subclasses__() for c in [AST,Const
 
     ImaDocstring += " matches"
 
-    matchesClass: list[identifierDotAttribute] = list({f"`class` `{astClassDefIdentifier}`", *sorted([f"`ast.{subclass.__name__}`" for subclass in astClass.__subclasses__() if issubclass(subclass, ast.AST)], key=lambda element: element.lower())})
+    matchesClasses: list[identifierDotAttribute] = list({f"`class` `{astClassDefIdentifier}`", *sorted([f"`ast.{subclass.__name__}`" for subclass in astClass.__subclasses__() if issubclass(subclass, ast.AST)], key=lambda element: element.lower())})
 
-    if len(matchesClass) > 1:
+    if len(matchesClasses) > 1:
         ImaDocstring += " any of"
 
-    ImaDocstring += f" {' | '.join(matchesClass)}.\n"
-
-    # if (hasAttributes := astClass._fields):
-    #     ImaDocstring += f"\n{ImaIndent4aMethod}It has attributes {', '.join([f'`{attribute}`' for attribute in hasAttributes])}."
+    ImaDocstring += f" {' | '.join(matchesClasses)}.\n"
 
     indexConjunction: int = (
         bool(associatedDelimiters := map2PythonDelimiters.get(ClassDefIdentifier, None))
@@ -128,4 +126,4 @@ for astClass in [C for C in [AST,*chain(*(c.__subclasses__() for c in [AST,Const
 
     """Not to be confused with"""
 
-    docstrings[settingsManufacturing.identifiers[identifierToolClass]][ClassDefIdentifier] = Make.Expr(Make.Constant(ImaDocstring))
+    docstrings[identifierClass][ClassDefIdentifier] = Make.Expr(Make.Constant(ImaDocstring))

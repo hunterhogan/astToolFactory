@@ -12,7 +12,7 @@ import ast
 
 docstrings: dict[str, dict[str, ast.Expr]] = defaultdict(lambda: defaultdict(lambda: Make.Expr(Make.Constant(''))))
 
-docstringWarning = Make.Expr(Make.Constant("""This file is generated automatically, so changes to this file will be lost."""))
+docstringWarning = Make.Expr(Make.Constant("""Automatically generated file, so changes may be overwritten."""))
 
 def getMoreDocstrings() -> None:
 	"""Missing docstring in public function."""
