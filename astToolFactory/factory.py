@@ -36,7 +36,6 @@ class GuardIfThen(TypedDict):
 	test: ast.expr
 	body: list[ast.stmt]
 
-
 # NOTE These are Global identifiers used by multiple functions to simplify using the `_makeGuardVersion` function.
 # If the separate functions converge enough, I can combine them into one function and remove this suboptimal system.
 dictionaryGuardVersion: dict[int, GuardIfThen] = {}
@@ -44,7 +43,6 @@ ast_stmt: ast.stmt | None = None
 guardVersion: int = 0
 versionMinorMinimum: int = 0
 # END global identifiers
-
 
 def _makeGuardVersion() -> None:
 	"""Construct version guards for AST toolkit code generation.
@@ -79,7 +77,6 @@ def _makeGuardVersion() -> None:
 		ast_stmt = orElse
 		dictionaryGuardVersion.clear()
 
-
 def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	"""Write an AST module to disk, handling type ignores and formatting.
 
@@ -101,7 +98,7 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	pythonSource: str = ast.unparse(astModule)
 	if "Make" in moduleIdentifier:
 		# type ignore only works on hasDOTtype_comment, right?
-		# TODO update docs  # noqa: ERA001, FIX002, TD003
+		# TODO update docs  # noqa: ERA001
 
 		listTypeIgnore: list[ast.TypeIgnore] = []
 		lineno: int = 0
@@ -132,7 +129,6 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	pythonSource = isort_code(code=pythonSource, **settingsManufacturing.isort_code)  # pyright: ignore[reportArgumentType]
 	pathFilenameModule = PurePosixPath(settingsManufacturing.pathPackage, moduleIdentifier + settingsManufacturing.fileExtension)
 	writeStringToHere(pythonSource, pathFilenameModule)
-
 
 def writeClass(
 	classIdentifier: str,
@@ -165,7 +161,6 @@ def writeClass(
 		Make.Module([docstringWarning, *list4ModuleBody, Make.ClassDef(classIdentifier, body=list4ClassDefBody)]),
 		moduleIdentifier,
 	)
-
 
 def make_astTypes(**keywordArguments: Any) -> None:
 	"""Generate and write the AST types module.
@@ -219,7 +214,6 @@ def make_astTypes(**keywordArguments: Any) -> None:
 
 	writeModule(astModule, "_astTypes")
 
-
 def makeTool_dump() -> None:
 	"""Generate and write the dump tool for the AST toolkit.
 
@@ -244,7 +238,6 @@ def makeTool_dump() -> None:
 	pathFilename = PurePosixPath(settingsManufacturing.pathPackage, "_dumpFunctionDef" + settingsManufacturing.fileExtension)
 
 	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsManufacturing.identifierPackage)
-
 
 def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write the Be tool class for the AST toolkit.
@@ -401,7 +394,6 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-
 def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write the DOT tool class for the AST toolkit.
 
@@ -464,7 +456,6 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
-
 
 def makeToolFind(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Find."""
@@ -548,7 +539,6 @@ import ast""")
 	astModule = Make.Module([*ledgerOfImports.makeList_ast(), astClassDef])
 
 	writeModule(astModule, moduleIdentifier)
-
 
 def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write the Grab tool class for the AST toolkit.
@@ -650,7 +640,6 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
-
 
 def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # noqa: C901, PLR0912
 	"""Generate and write the Make tool class for the AST toolkit.
@@ -773,7 +762,6 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 	list4ModuleBody: list[ast.stmt] = [*ledgerOfImports.makeList_ast()]
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-
 def write_theSSOT() -> None:
 	"""Write the SSOT module to disk.
 
@@ -785,7 +773,6 @@ def write_theSSOT() -> None:
 
 	"""
 	writeModule(astModule_theSSOT, "_theSSOT")
-
 
 def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None:
 	"""Manufacture all AST toolkit tools and write generated modules.
@@ -810,7 +797,6 @@ def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None
 	makeToolMake(settingsManufacturing.identifiers["Make"])
 	makeTool_dump()
 	write_theSSOT()
-
 
 if __name__ == "__main__":
 	manufactureTools(settingsManufacturing)
