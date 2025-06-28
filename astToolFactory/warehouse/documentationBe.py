@@ -19,9 +19,9 @@ identifierToolClass: str = 'Be'
 identifierClass = identifierMethod = settingsManufacturing.identifiers[identifierToolClass]
 
 docstrings[identifierClass][identifierMethod] = Make.Expr(Make.Constant(
-    """A comprehensive suite of functions for AST class identification and type narrowing.
+    f"""A comprehensive suite of functions for AST class identification and type narrowing.
 
-    `class` `Be` has a method for each `ast.AST` subclass, also called "node type", to perform type
+    `class` `{identifierToolClass}` has a method for each `ast.AST` subclass, also called "node type", to perform type
     checking while enabling compile-time type narrowing through `TypeIs` annotations. This tool
     forms the foundation of type-safe AST analysis and transformation throughout astToolkit.
 
@@ -40,36 +40,39 @@ docstrings[identifierClass][identifierMethod] = Make.Expr(Make.Constant(
     this class are commonly used as building blocks in `IfThis` predicates and directly as
     `findThis` parameters in visitor classes.
 
-    Parameters:
+    Parameters
+    ----------
+    node: ast.AST
+        AST node to test for specific type membership
 
-        node: AST node to test for specific type membership
+    Returns
+    -------
+    typeIs: TypeIs
+        `TypeIs` enabling both runtime validation and static type narrowing
 
-    Returns:
+    Examples
+    --------
+    Type-safe node processing with automatic type narrowing:
 
-        typeIs: `TypeIs` enabling both runtime validation and static type narrowing
+    ```python
+        if {identifierToolClass}.FunctionDef(node):
+            functionName = node.name  # Type-safe access to name attribute parameterCount =
+            len(node.args.args)
+    ```
 
-    Examples:
+    Using type guards in visitor patterns:
 
-        Type-safe node processing with automatic type narrowing:
+    ```python
+        NodeTourist({identifierToolClass}.Return, Then.extractIt(DOT.value)).visit(functionNode)
+    ```
 
-        ```python
-            if Be.FunctionDef(node):
-                functionName = node.name  # Type-safe access to name attribute parameterCount =
-                len(node.args.args)
-        ```
+    Type-safe access to attributes of specific node types:
 
-        Using type guards in visitor patterns:
+    ```python
+        if {identifierToolClass}.Call(node) and {identifierToolClass}.Name(node.func):
+            callableName = node.func.id  # Type-safe access to function name
+    ```
 
-        ```python
-            NodeTourist(Be.Return, Then.extractIt(DOT.value)).visit(functionNode)
-        ```
-
-        Type-safe access to attributes of specific node types:
-
-        ```python
-            if Be.Call(node) and Be.Name(node.func):
-                callableName = node.func.id  # Type-safe access to function name
-        ```
     """
 ))
 

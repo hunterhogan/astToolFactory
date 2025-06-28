@@ -13,8 +13,7 @@ identifierToolClass: str = 'Grab'
 identifierClass = identifierMethod = settingsManufacturing.identifiers[identifierToolClass]
 
 docstrings[identifierClass][identifierMethod] = Make.Expr(Make.Constant(
-    """
-    Modify specific attributes of AST nodes while preserving the node structure.
+    """Modify specific attributes of AST nodes while preserving the node structure.
 
     The Grab class provides static methods that create transformation functions to modify specific attributes of AST
     nodes. Unlike DOT which provides read-only access, Grab allows for targeted modifications of node attributes without
