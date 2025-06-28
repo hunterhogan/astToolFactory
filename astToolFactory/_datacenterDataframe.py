@@ -143,6 +143,8 @@ def updateDataframe() -> None:  # noqa: C901, PLR0915
 
 	# Fill missing 'match_args' values with empty tuple
 	dataframe["match_args"] = dataframe["match_args"].apply(lambda x: () if pandas.isna(x) else x) # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
+	# dataframe["match_args"] = dataframe["match_args"].fillna(())  # noqa: ERA001
+	# TypeError: "value" parameter must be a scalar or dict, but you passed a "tuple"  # noqa: ERA001
 
 	def amIDeprecated(ClassDefIdentifier: str) -> bool:
 		return bool(NodeTourist(IfThis.isCallIdentifier("deprecated"), doThat=Then.extractIt).captureLastMatch(Make.Module(cast("list[ast.stmt]", dictionaryClassDef[ClassDefIdentifier].decorator_list))))
