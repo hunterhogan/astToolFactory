@@ -24,7 +24,6 @@ if typing_extensions.TYPE_CHECKING:
 - A column is a data structure: no intermediate columns.
 - No `for`, no `iterrows`, no loops, no loops hidden in comprehension.
 - No `zip`.
-- No new functions.
 - No new classes.
 - No helper dataframes, no helper functions, no helper classes.
 - Use idiomatic pandas.
@@ -135,8 +134,9 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 	elementsTarget: list[str] = ["identifierTypeOfNode", "overloadDefinition", "attribute", "list_ast_expr", "guardVersion", "versionMinorMinimum"]
 
 	dataframe["overloadDefinition"] = dataframe.groupby("attribute").transform("size") > 1
-	dataframeImplementationFunctionDefinitions: pandas.DataFrame = (
-		dataframe[dataframe["overloadDefinition"]]
+	dataframe = pandas.concat([
+		dataframe,
+		(dataframe[dataframe["overloadDefinition"]]
 		.groupby("attribute")["versionMinorMinimum"]
 		.unique()
 		.explode()
@@ -147,13 +147,8 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 			TypeAlias_hasDOTSubcategory="No",
 			type_ast_expr="No",
 			type="No",
-		)[dataframe.columns]
-	)
-	dataframe = cast("pandas.DataFrame", (pandas.concat([dataframe, dataframeImplementationFunctionDefinitions], ignore_index=True)
-									.assign(__sequence_in_group=lambda df: df.groupby("attribute").cumcount())
-									.sort_values(["attribute", "__sequence_in_group"], kind="stable")
-									.drop(columns="__sequence_in_group")))
-	del dataframeImplementationFunctionDefinitions
+		)[dataframe.columns])
+	], ignore_index=True).sort_values("attribute", kind="stable")
 
 	dataframe["identifierTypeOfNode"] = dataframe["TypeAlias_hasDOTSubcategory"].where(dataframe["overloadDefinition"], dataframe["TypeAlias_hasDOTIdentifier"])
 	dataframe = dataframe.drop(columns=["TypeAlias_hasDOTIdentifier", "TypeAlias_hasDOTSubcategory"])
@@ -182,53 +177,6 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 
 	dataframe = dataframe[elementsTarget]
 	return dataframe.to_records(index=False).tolist()
-
-def getElementsDOT2(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str, list[ast.expr], int, int]]:  # noqa: ARG001
-	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimumAttribute", "type_ast_expr", "type", "TypeAlias_hasDOTIdentifier"]
-	listColumns: list[str] = listColumnsHARDCODED
-	del listColumnsHARDCODED
-
-	sortBy: list[str] = listColumns[0:3]
-	caseInsensitive: list[bool] = [True, True, False]
-	ascending: list[bool] = caseInsensitive.copy()
-	drop_duplicates: list[str] = listColumns[0:2]
-
-	index_type_ast_expr: int = 3
-	index_versionMinorMinimum: int = 2
-
-	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)
-			.query("attributeKind == '_field'")
-			.pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending)[listColumns]
-			.drop_duplicates(drop_duplicates, keep="last")
-			.reset_index(drop=True)
-	)
-
-	dataframe = dataframe.rename(columns={
-			listColumns[index_type_ast_expr]: "type_ast_expr",
-			listColumns[index_versionMinorMinimum]: "versionMinorMinimum",
-	})
-
-	del listColumns
-
-	elementsTarget: list[str] = ["identifierTypeOfNode", "overloadDefinition", "attribute", "list_ast_expr", "guardVersion", "versionMinorMinimum"]
-	# Above here is standardized
-
-	dataframe['identifierTypeOfNode'] = dataframe['TypeAlias_hasDOTSubcategory'].where(
-		dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
-		, dataframe['TypeAlias_hasDOTIdentifier']
-	)
-	dataframe['overloadDefinition'] = dataframe['attribute'].map(dataframe['attribute'].value_counts()) > 1
-	dataframe['list_ast_expr'] = dataframe['type_ast_expr'].apply(lambda srsly: [srsly])
-
-	#idk
-
-	# Below here is standardized
-	byColumn: str = 'identifierTypeOfNode'
-	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
-
-	dataframe = dataframe[elementsTarget]
-	return dataframe.to_records(index=False).tolist()
-
 
 def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:  # noqa: ARG001
 	listColumnsHARDCODED: list[str] = ["attribute", "type_astSuperClasses", "versionMinorMinimumAttribute", "TypeAlias_hasDOTIdentifier", "type_astSuperClasses_ast_expr"]

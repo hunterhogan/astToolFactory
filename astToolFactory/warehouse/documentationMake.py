@@ -139,7 +139,7 @@ docstrings[identifierClass]['join_boolop'] = Make.Expr(Make.Constant(
             Both produce the same AST structure but the join() method eliminates the manual construction.
             Handles single expressions and empty sequences gracefully.
 
-        """
+            """
 ))
 
 docstrings[identifierClass]['_operatorJoinMethod'] = Make.Expr(Make.Constant(
@@ -208,7 +208,7 @@ docstrings[identifierClass]['join_operator'] = Make.Expr(Make.Constant(
             Both produce the same AST structure but the join() method eliminates the manual nesting.
             Handles single expressions and empty iterables gracefully.
 
-        """
+            """
 ))
 
 docstrings[identifierClass]['alias'] = Make.Expr(Make.Constant(
@@ -264,7 +264,7 @@ docstrings[identifierClass]['AnnAssign'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['arg'] = Make.Expr(Make.Constant(
-        f"""Function parameter AST object representing individual arguments in function signatures.
+        f"""Make a function parameter AST object representing individual arguments in function signatures.
 
         (AI generated docstring)
 
@@ -292,7 +292,7 @@ docstrings[identifierClass]['arg'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['arguments'] = Make.Expr(Make.Constant(
-        f"""Function signature AST object containing all parameter specifications.
+        f"""Make a function signature AST object containing all parameter specifications.
 
         (AI generated docstring)
 
@@ -350,7 +350,7 @@ docstrings[identifierClass]['Assert'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['AST'] = Make.Expr(Make.Constant(
-        f"""Base AST ({diminutive2etymology['AST']}) node object representing the abstract syntax tree foundation.
+        f"""Make a base AST ({diminutive2etymology['AST']}) node object representing the abstract syntax tree foundation.
 
         (AI generated docstring)
 
@@ -362,14 +362,16 @@ docstrings[identifierClass]['AST'] = Make.Expr(Make.Constant(
         Most users seeking AST node creation should use the specific factory methods for
         concrete node types rather than this base AST constructor.
 
-        Returns:
-            baseNode: The fundamental AST object from which all other nodes inherit.
+        Returns
+        -------
+        baseNode : ast.AST
+            The fundamental AST object from which all other nodes inherit.
 
         """
 ))
 
 docstrings[identifierClass]['Assign'] = Make.Expr(Make.Constant(
-        """Assignment AST `object` for variable assignments without type annotations.
+        """Make an assignment AST `object` for variable assignments without type annotations.
 
         (AI generated docstring)
 
@@ -423,8 +425,7 @@ docstrings[identifierClass]['AsyncFor'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['AsyncFunctionDef'] = Make.Expr(Make.Constant(
-        f"""Asynchronous function definition AST object for `async def` ({diminutive2etymology['async']}
-        {diminutive2etymology['def']}) declarations.
+        f"""Asynchronous function definition AST object for `async def` ({diminutive2etymology['async']} {diminutive2etymology['def']}) declarations.
 
         (AI generated docstring)
 
@@ -560,7 +561,7 @@ docstrings[identifierClass]['Await'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['BinOp'] = Make.Expr(Make.Constant(
-        f"""Binary operation AST `object` representing operators between two expressions.
+        f"""Make a binary operation AST `object` representing operators between two expressions.
 
         (AI generated docstring)
 
@@ -586,7 +587,7 @@ docstrings[identifierClass]['BinOp'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['boolop'] = Make.Expr(Make.Constant(
-        f"""Base boolean operator abstract class for logical operations.
+        f"""Make a base boolean operator abstract class for logical operations.
 
         (AI generated docstring)
 
@@ -598,15 +599,16 @@ docstrings[identifierClass]['boolop'] = Make.Expr(Make.Constant(
         Most users seeking boolean operation creation should use the specific operator
         classes or `Make.BoolOp()` rather than this abstract base constructor.
 
-        Returns:
-            baseBooleanOperator: The fundamental boolean operator object from which
-                concrete operators inherit.
+        Returns
+        -------
+        baseBooleanOperator : ast.boolop
+            ({diminutive2etymology['boolop']}) AST `object` representing a base boolean operator.
 
         """
 ))
 
 docstrings[identifierClass]['BoolOp'] = Make.Expr(Make.Constant(
-        f"""Boolean operation AST `object` for logical operations with multiple operands.
+        f"""Make a boolean operation AST `object` for logical operations with multiple operands.
 
         (AI generated docstring)
 
@@ -646,7 +648,7 @@ docstrings[identifierClass]['Break'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Call'] = Make.Expr(Make.Constant(
-        """Function call AST `object` representing function invocation with arguments.
+        """Make a function call AST `object` representing function invocation with arguments.
 
         (AI generated docstring)
 
@@ -672,7 +674,7 @@ docstrings[identifierClass]['Call'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['ClassDef'] = Make.Expr(Make.Constant(
-        f"""Class definition AST object for `class` declarations with inheritance and metadata.
+        f"""Make a class definition AST object for `class` declarations with inheritance and metadata.
 
         (AI generated docstring)
 
@@ -717,8 +719,7 @@ docstrings[identifierClass]['ClassDef'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['cmpop'] = Make.Expr(Make.Constant(
-        f"""`class` `ast.cmpop`, {diminutive2etymology['cmpop']}, is the parent (or "base") class of all
-        comparison operator classes used in `ast.Compare`.
+        f"""`class` `ast.cmpop`, {diminutive2etymology['cmpop']}, is the parent (or "base") class of all comparison operator classes used in `ast.Compare`.
 
         It is the abstract parent for: `ast.Eq`, `ast.NotEq`, `ast.Lt`, `ast.LtE`, `ast.Gt`,
         `ast.GtE`, `ast.Is`, `ast.IsNot`, `ast.In`, `ast.NotIn`. This factory method makes a generic
@@ -735,7 +736,7 @@ docstrings[identifierClass]['cmpop'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Compare'] = Make.Expr(Make.Constant(
-        f"""Comparison AST `object` for chained comparison operations.
+        f"""Make a comparison AST `object` for chained comparison operations.
 
         (AI generated docstring)
 
@@ -785,7 +786,7 @@ docstrings[identifierClass]['Compare'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['comprehension'] = Make.Expr(Make.Constant(
-        f"""Comprehension clause AST object for `for` clauses in list/set/dict comprehensions.
+        f"""Make a comprehension clause AST object for `for` clauses in list/set/dict comprehensions.
 
         (AI generated docstring)
 
@@ -813,7 +814,7 @@ docstrings[identifierClass]['comprehension'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Constant'] = Make.Expr(Make.Constant(
-        """Constant value AST `object` for literal values in Python code.
+        """Make a constant value AST `object` for literal values in Python code.
 
         (AI generated docstring)
 
@@ -854,7 +855,7 @@ docstrings[identifierClass]['Continue'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Del'] = Make.Expr(Make.Constant(
-        f"""Delete context for removing expressions from memory.
+        f"""Make a delete context for removing expressions from memory.
 
         (AI generated docstring)
 
@@ -899,7 +900,7 @@ docstrings[identifierClass]['Delete'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Dict'] = Make.Expr(Make.Constant(
-        f"""Dictionary literal AST `object` with key-value pairs.
+        f"""Make a dictionary literal AST `object` with key-value pairs.
 
         (AI generated docstring)
 
@@ -923,7 +924,7 @@ docstrings[identifierClass]['Dict'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['DictComp'] = Make.Expr(Make.Constant(
-        f"""Dictionary comprehension AST `object` for dynamic dictionary construction.
+        f"""Make a dictionary comprehension AST `object` for dynamic dictionary construction.
 
         (AI generated docstring)
 
@@ -1110,7 +1111,7 @@ docstrings[identifierClass]['Expression'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['For'] = Make.Expr(Make.Constant(
-        f"""For loop AST `object` for iterating over iterable expressions.
+        f"""Make a for loop AST `object` for iterating over iterable expressions.
 
         (AI generated docstring)
 
@@ -1139,7 +1140,7 @@ docstrings[identifierClass]['For'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['FormattedValue'] = Make.Expr(Make.Constant(
-        f"""Formatted value AST `object` for f-string interpolation components.
+        f"""Make a formatted value AST `object` for f-string interpolation components.
 
         The `ast.FormattedValue` `object` represents individual expressions within f-string
         literals, including format specifications and conversion options. It handles the
@@ -1163,7 +1164,7 @@ docstrings[identifierClass]['FormattedValue'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['FunctionDef'] = Make.Expr(Make.Constant(
-        f"""Function definition AST object for standard `def` declarations with typing support.
+        f"""Make a function definition AST object for standard `def` declarations with typing support.
 
         (AI generated docstring)
 
@@ -1235,7 +1236,7 @@ docstrings[identifierClass]['FunctionType'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['GeneratorExp'] = Make.Expr(Make.Constant(
-        f"""Generator expression object for memory-efficient iteration.
+        f"""Make a generator expression object for memory-efficient iteration.
 
         The `ast.GeneratorExp` ({diminutive2etymology['GeneratorExp']}) object represents generator
         expressions that create iterator objects without constructing intermediate collections. It
@@ -1309,7 +1310,7 @@ docstrings[identifierClass]['GtE'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['If'] = Make.Expr(Make.Constant(
-        f"""Conditional statement AST `object` for branching execution paths.
+        f"""Make a conditional statement AST `object` for branching execution paths.
 
         (AI generated docstring)
 
@@ -1368,7 +1369,7 @@ docstrings[identifierClass]['If'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['IfExp'] = Make.Expr(Make.Constant(
-        f"""Conditional expression AST `object` for inline if-else operations.
+        f"""Make a conditional expression AST `object` for inline if-else operations.
 
         (AI generated docstring)
 
@@ -1450,7 +1451,7 @@ docstrings[identifierClass]['Import'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['ImportFrom'] = Make.Expr(Make.Constant(
-        f"""From-import statement AST `object` for selective module imports.
+        f"""Make a from-import statement AST `object` for selective module imports.
 
         (AI generated docstring)
 
@@ -1517,7 +1518,7 @@ docstrings[identifierClass]['Interactive'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Invert'] = Make.Expr(Make.Constant(
-        """Bitwise complement operator representing Python '`~`' operator.
+        """Make a bitwise complement operator representing Python '`~`' operator.
 
         (AI generated docstring)
 
@@ -1570,8 +1571,7 @@ docstrings[identifierClass]['Is'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['IsNot'] = Make.Expr(Make.Constant(
-        """'IsNot', meaning 'Is Not identical to', is the `object` representation of Python keywords
-        '`is not`'.
+        """'IsNot', meaning 'Is Not identical to', is the `object` representation of Python keywords '`is not`'.
 
         `class` `ast.IsNot` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator',
         and only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***.
@@ -1608,7 +1608,7 @@ docstrings[identifierClass]['IsNot'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['JoinedStr'] = Make.Expr(Make.Constant(
-        f"""Joined string AST `object` for f-string literal construction.
+        f"""Make a joined string AST `object` for f-string literal construction.
 
         (AI generated docstring)
 
@@ -1630,7 +1630,7 @@ docstrings[identifierClass]['JoinedStr'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['keyword'] = Make.Expr(Make.Constant(
-        """Keyword argument AST object for named parameters in function calls.
+        """Make a keyword argument AST object for named parameters in function calls.
 
         (AI generated docstring)
 
@@ -1666,7 +1666,7 @@ docstrings[identifierClass]['keyword'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Lambda'] = Make.Expr(Make.Constant(
-        f"""Lambda function AST `object` for anonymous function expressions.
+        f"""Make a lambda function AST `object` for anonymous function expressions.
 
         (AI generated docstring)
 
@@ -1690,7 +1690,7 @@ docstrings[identifierClass]['Lambda'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['List'] = Make.Expr(Make.Constant(
-        """List literal AST `object` with ordered element collection.
+        """Make a list literal AST `object` with ordered element collection.
 
         (AI generated docstring)
 
@@ -1714,7 +1714,7 @@ docstrings[identifierClass]['List'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['ListComp'] = Make.Expr(Make.Constant(
-        f"""List comprehension AST `object` for dynamic list construction.
+        f"""Make a list comprehension AST `object` for dynamic list construction.
 
         (AI generated docstring)
 
@@ -1738,7 +1738,7 @@ docstrings[identifierClass]['ListComp'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Load'] = Make.Expr(Make.Constant(
-        """Load context for reading expression values.
+        """Make a load context for reading expression values.
 
         (AI generated docstring)
 
@@ -1785,7 +1785,7 @@ docstrings[identifierClass]['LtE'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Match'] = Make.Expr(Make.Constant(
-        f"""Match statement AST object for pattern matching with multiple cases.
+        f"""Make a match statement AST object for pattern matching with multiple cases.
 
         (AI generated docstring)
 
@@ -1809,7 +1809,7 @@ docstrings[identifierClass]['Match'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['match_case'] = Make.Expr(Make.Constant(
-        f"""Match case clause AST object for individual cases in `match` statements.
+        f"""Make a match case clause AST object for individual cases in `match` statements.
 
         (AI generated docstring)
 
@@ -2051,7 +2051,7 @@ docstrings[identifierClass]['mod'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Module'] = Make.Expr(Make.Constant(
-        f"""Module AST object representing complete Python modules with statements and type ignores.
+        f"""Make a module AST object representing complete Python modules with statements and type ignores.
 
         (AI generated docstring)
 
@@ -2090,7 +2090,7 @@ docstrings[identifierClass]['Module'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Name'] = Make.Expr(Make.Constant(
-        f"""Name AST `object` for variable and identifier references.
+        f"""Make a name AST `object` for variable and identifier references.
 
         (AI generated docstring)
 
@@ -2114,7 +2114,7 @@ docstrings[identifierClass]['Name'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['NamedExpr'] = Make.Expr(Make.Constant(
-        f"""Named expression AST `object` for assignment expressions (walrus operator).
+        f"""Make a named expression AST `object` for assignment expressions (walrus operator).
 
         (AI generated docstring)
 
@@ -2174,7 +2174,7 @@ docstrings[identifierClass]['Nonlocal'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Not'] = Make.Expr(Make.Constant(
-        """Logical negation operator representing Python keyword '`not`'.
+        """Make a logical negation operator representing Python keyword '`not`'.
 
         (AI generated docstring)
 
@@ -2208,8 +2208,7 @@ docstrings[identifierClass]['NotEq'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['NotIn'] = Make.Expr(Make.Constant(
-        """'NotIn', meaning 'is Not ***In***cluded in' or 'does Not have membership In', is the
-        `object` representation of Python keywords '`not in`'.
+        """'NotIn', meaning 'is Not ***In***cluded in' or 'does Not have membership In', is the `object` representation of Python keywords '`not in`'.
 
         `class` `ast.NotIn` is a subclass of `ast.cmpop`, '***c***o***mp***arison ***op***erator',
         and only used in `class` `ast.Compare`, parameter '`ops`', ***op***erator***s***. The Python
@@ -2242,27 +2241,27 @@ docstrings[identifierClass]['operator'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['ParamSpec'] = Make.Expr(Make.Constant(
-        f"""Parameter specification type parameter for generic callable types.
+            f"""Make a parameter specification type parameter for generic callable types.
 
-        (AI generated docstring)
+            (AI generated docstring)
 
-        The `ast.ParamSpec` ({diminutive2etymology['ParamSpec']}) object represents parameter
-        specification type parameters used in generic callable types. Captures both positional and
-        keyword argument signatures for type-safe function composition and higher-order functions.
+            The `ast.ParamSpec` ({diminutive2etymology['ParamSpec']}) object represents parameter
+            specification type parameters used in generic callable types. Captures both positional and
+            keyword argument signatures for type-safe function composition and higher-order functions.
 
-        Parameters
-        ----------
-        name : str
-            Type parameter name as string identifier.
-        default_value : ast.expr | None = None
-            Optional default type expression (Python 3.13+).
+            Parameters
+            ----------
+            name : str
+                Type parameter name as string identifier.
+            default_value : ast.expr | None = None
+                Optional default type expression (Python 3.13+).
 
-        Returns
-        -------
-        parameterSpecification : ast.ParamSpec
-            AST object representing a parameter specification type parameter.
+            Returns
+            -------
+            parameterSpecification : ast.ParamSpec
+                AST object representing a parameter specification type parameter.
 
-        """
+            """
 ))
 
 docstrings[identifierClass]['Pass'] = Make.Expr(Make.Constant(
@@ -2324,7 +2323,7 @@ docstrings[identifierClass]['Raise'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Return'] = Make.Expr(Make.Constant(
-        """Return statement AST object for function value returns and early exits.
+        """Make a return statement AST object for function value returns and early exits.
 
         (AI generated docstring)
 
@@ -2346,7 +2345,7 @@ docstrings[identifierClass]['Return'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Set'] = Make.Expr(Make.Constant(
-        """Set literal AST `object` for unordered unique element collections.
+        """Make a set literal AST `object` for unordered unique element collections.
 
         (AI generated docstring)
 
@@ -2368,7 +2367,7 @@ docstrings[identifierClass]['Set'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['SetComp'] = Make.Expr(Make.Constant(
-        f"""Set comprehension AST `object` for dynamic set construction.
+        f"""Make a set comprehension AST `object` for dynamic set construction.
 
         (AI generated docstring)
 
@@ -2392,7 +2391,7 @@ docstrings[identifierClass]['SetComp'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Slice'] = Make.Expr(Make.Constant(
-        f"""Slice AST `object` for sequence slicing operations.
+        f"""Make a slice AST `object` for sequence slicing operations.
 
         (AI generated docstring)
 
@@ -2418,7 +2417,7 @@ docstrings[identifierClass]['Slice'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Starred'] = Make.Expr(Make.Constant(
-        """Starred expression AST `object` for unpacking operations.
+        """Make a starred expression AST `object` for unpacking operations.
 
         (AI generated docstring)
 
@@ -2455,16 +2454,20 @@ docstrings[identifierClass]['stmt'] = Make.Expr(Make.Constant(
         f"""`class` `ast.stmt` ({diminutive2etymology['stmt']}) is the base class for all statement nodes.
 
         Parameters
-            **keywordArguments: positional attributes.
+        ----------
+        **keywordArguments : ast_attributes
+            Positional attributes.
 
         Returns
-            nodeStmt: The constructed statement node
+        -------
+        nodeStmt : ast.stmt
+            The constructed statement node.
 
         """
 ))
 
 docstrings[identifierClass]['Store'] = Make.Expr(Make.Constant(
-        """Store context for assigning values to expressions.
+        """Make a store context for assigning values to expressions.
 
         (AI generated docstring)
 
@@ -2488,7 +2491,7 @@ docstrings[identifierClass]['Store'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Subscript'] = Make.Expr(Make.Constant(
-        """Subscript AST `object` for indexing and slicing operations.
+        """Make a subscript AST `object` for indexing and slicing operations.
 
         (AI generated docstring)
 
@@ -2513,7 +2516,7 @@ docstrings[identifierClass]['Subscript'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Try'] = Make.Expr(Make.Constant(
-        f"""Try-except statement AST `object` for exception handling and resource cleanup.
+        f"""Make a try-except statement AST `object` for exception handling and resource cleanup.
 
         (AI generated docstring)
 
@@ -2544,7 +2547,7 @@ docstrings[identifierClass]['Try'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['TryStar'] = Make.Expr(Make.Constant(
-        f"""Try-except* statement AST `object` for exception group handling.
+        f"""Make a try-except* statement AST `object` for exception group handling.
 
         (AI generated docstring)
 
@@ -2575,7 +2578,7 @@ docstrings[identifierClass]['TryStar'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Tuple'] = Make.Expr(Make.Constant(
-        """Tuple literal AST `object` for ordered immutable collections.
+        """Make a tuple literal AST `object` for ordered immutable collections.
 
         (AI generated docstring)
 
@@ -2620,7 +2623,7 @@ docstrings[identifierClass]['type_param'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['TypeAlias'] = Make.Expr(Make.Constant(
-        f"""Type alias definition AST object for `type` statement declarations.
+        f"""Make a type alias definition AST object for `type` statement declarations.
 
         (AI generated docstring)
 
@@ -2646,7 +2649,7 @@ docstrings[identifierClass]['TypeAlias'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['TypeIgnore'] = Make.Expr(Make.Constant(
-        f"""Type ignore comment AST object for `# type: ignore` directives.
+        f"""Make a type ignore comment AST object for `# type: ignore` directives.
 
         (AI generated docstring)
 
@@ -2682,53 +2685,53 @@ docstrings[identifierClass]['TypeIgnore'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['TypeVar'] = Make.Expr(Make.Constant(
-        f"""Type variable parameter for generic types with optional bounds and defaults.
+            f"""Make a type variable parameter for generic types with optional bounds and defaults.
 
-        (AI generated docstring)
+            (AI generated docstring)
 
-        The `ast.TypeVar` ({diminutive2etymology['TypeVar']}) object represents type variable parameters used in generic
-        classes, functions, and type aliases. Supports type bounds, constraints,
-        and default values for flexible generic programming.
+            The `ast.TypeVar` ({diminutive2etymology['TypeVar']}) object represents type variable parameters used in generic
+            classes, functions, and type aliases. Supports type bounds, constraints,
+            and default values for flexible generic programming.
 
-        Parameters
-        ----------
-        name : str
-            Type variable name as string identifier.
-        bound : ast.expr | None = None
-            Optional type expression constraining allowed types.
-        default_value : ast.expr | None = None
-            Optional default type expression (Python 3.13+).
+            Parameters
+            ----------
+            name : str
+                Type variable name as string identifier.
+            bound : ast.expr | None = None
+                Optional type expression constraining allowed types.
+            default_value : ast.expr | None = None
+                Optional default type expression (Python 3.13+).
 
-        Returns
-        -------
-        typeVariable : ast.TypeVar
-            AST object representing a type variable with optional constraints.
+            Returns
+            -------
+            typeVariable : ast.TypeVar
+                AST object representing a type variable with optional constraints.
 
-        """
+            """
 ))
 
 docstrings[identifierClass]['TypeVarTuple'] = Make.Expr(Make.Constant(
-        f"""Type variable tuple for variadic generic types.
+            f"""Make a type variable tuple for variadic generic types.
 
-        (AI generated docstring)
+            (AI generated docstring)
 
-        The `ast.TypeVarTuple` ({diminutive2etymology['TypeVarTuple']}) object represents type variable tuples used for
-        variadic generic types that accept variable numbers of type arguments.
-        Enables generic types that work with arbitrary-length type sequences.
+            The `ast.TypeVarTuple` ({diminutive2etymology['TypeVarTuple']}) object represents type variable tuples used for
+            variadic generic types that accept variable numbers of type arguments.
+            Enables generic types that work with arbitrary-length type sequences.
 
-        Parameters
-        ----------
-        name : str
-            Type variable tuple name as string identifier.
-        default_value : ast.expr | None = None
-            Optional default type tuple expression (Python 3.13+).
+            Parameters
+            ----------
+            name : str
+                Type variable tuple name as string identifier.
+            default_value : ast.expr | None = None
+                Optional default type tuple expression (Python 3.13+).
 
-        Returns
-        -------
-        typeVariableTuple : ast.TypeVarTuple
-            AST object representing a variadic type variable.
+            Returns
+            -------
+            typeVariableTuple : ast.TypeVarTuple
+                AST object representing a variadic type variable.
 
-        """
+            """
 ))
 
 docstrings[identifierClass]['UAdd'] = Make.Expr(Make.Constant(
@@ -2816,7 +2819,7 @@ docstrings[identifierClass]['USub'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['While'] = Make.Expr(Make.Constant(
-        f"""While loop AST `object` for condition-based iteration.
+        f"""Make a while loop AST `object` for condition-based iteration.
 
         (AI generated docstring)
 
@@ -2844,7 +2847,7 @@ docstrings[identifierClass]['While'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['With'] = Make.Expr(Make.Constant(
-        """Context manager statement AST `object` for resource management and cleanup.
+        """Make a context manager statement AST `object` for resource management and cleanup.
 
         (AI generated docstring)
 
@@ -2869,7 +2872,7 @@ docstrings[identifierClass]['With'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['withitem'] = Make.Expr(Make.Constant(
-        f"""Context manager item AST object for individual items in `with` statements.
+        f"""Make a context manager item AST object for individual items in `with` statements.
 
         (AI generated docstring)
 
@@ -2893,7 +2896,7 @@ docstrings[identifierClass]['withitem'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Yield'] = Make.Expr(Make.Constant(
-        f"""Yield expression AST `object` for generator function values.
+        f"""Make a yield expression AST `object` for generator function values.
 
         (AI generated docstring)
 
@@ -2915,7 +2918,7 @@ docstrings[identifierClass]['Yield'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['YieldFrom'] = Make.Expr(Make.Constant(
-        f"""Yield from expression AST `object` for delegating to sub-generators.
+        f"""Make a yield from expression AST `object` for delegating to sub-generators.
 
         (AI generated docstring)
 

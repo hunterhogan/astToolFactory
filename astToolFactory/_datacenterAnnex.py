@@ -1,3 +1,4 @@
+from typing import Any, cast
 from astToolkit import Make
 import ast
 
@@ -28,6 +29,7 @@ _columns: list[str] = [
 	'ast_arg',
 	'TypeAlias_hasDOTIdentifier',
 	'TypeAlias_hasDOTSubcategory',
+	'Call_keyword',
 
 	# columns computed from sources per group
 	'versionMinorMinimumClass',
@@ -158,6 +160,45 @@ defaultValue__ClassDefIdentifier_attribute: dict[tuple[str, str], ast.expr] = {
     ('While', 'orelse'): Make.List(),
     ('Yield', 'value'): Make.Constant(None),
 }
+
+# defaultValue_ast_arg_Call_keyword__attribute: dict[str, tuple[Any, ...]] = {
+#     'bases': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'cases': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'decorator_list': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'defaults': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'elts': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'finalbody': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'keywords': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'kwd_attrs': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'kwd_patterns': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'kwonlyargs': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'patterns': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'posonlyargs': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     'type_ignores': (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+# }
+
+# defaultValue_ast_arg_Call_keyword__ClassDefIdentifier_attribute: dict[tuple[str, str], tuple[Any, ...]] = {
+#     ('arguments', 'args'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('AsyncFor', 'orelse'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('AsyncFunctionDef', 'body'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('AsyncFunctionDef', 'type_params'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('Call', 'args'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('ClassDef', 'body'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('ClassDef', 'type_params'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('Dict', 'values'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('ExceptHandler', 'body'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('For', 'orelse'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('FunctionDef', 'body'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('FunctionDef', 'type_params'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('If', 'orelse'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('match_case', 'body'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('MatchMapping', 'keys'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('Try', 'orelse'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('TryStar', 'orelse'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+#     ('While', 'orelse'): (Make.Constant(None), Make.arg(cast("str", dataframe["attributeRename"]), annotation=cast("ast.expr", dataframe["type"].str.replace("$", " | None", regex=True).apply(_pythonCode2expr))), _make_keywordOrList),
+# }
+    # 'kw_defaults': Make.List([Make.Constant(None)]),
+    # ('Dict', 'keys'): Make.List([Make.Constant(None)]),
 
 defaultValue__type_attribute: dict[tuple[str, str], ast.expr] = {
 	('int | None', 'end_col_offset'): Make.Constant(None),
