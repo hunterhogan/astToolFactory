@@ -7,11 +7,11 @@ from copy import deepcopy
 from importlib import import_module as importlib_import_module
 from inspect import getfile as inspect_getfile
 from pathlib import Path
-from tomli import load as tomli_load
+from tomli import loads as tomli_loads
 import dataclasses
 
 """Eliminate hardcoding"""
-listPyrightErrorsHARDCODED: list[str] = ['args', 'body', 'keys', 'kw_defaults', 'name', 'names', 'op', 'orelse', 'target', 'value',]
+listPyrightErrorsHARDCODED: list[str] = ['args', 'body', 'keys', 'kw_defaults', 'name', 'names', 'op', 'orelse', 'target', 'value']
 listPyrightErrors: list[str] = listPyrightErrorsHARDCODED
 # TODO Can I dynamically set this by reading it from typeshed or somewhere else?
 # The value will change once a year
@@ -19,8 +19,8 @@ versionMinor_astMinimumSupportedHARDCODED = 9
 pathRelativeRoot_typeshedHARDCODED: Path = Path('typings/stdlib')
 
 try:
-	identifierPackagePACKAGING: str = tomli_load(Path("pyproject.toml").open('rb'))["project"]["name"]
-except Exception:
+	identifierPackagePACKAGING: str = tomli_loads(Path("../pyproject.toml").read_text())["project"]["name"]
+except Exception:  # noqa: BLE001
 	identifierPackagePACKAGING = "astToolFactory"
 
 def getPathPackageINSTALLING() -> Path:
