@@ -9,19 +9,20 @@ from astToolFactory._datacenterAnnex import (
 	defaultValue__ClassDefIdentifier_attribute, defaultValue__type_attribute, move2keywordArguments__attribute,
 	move2keywordArguments__attributeKind, type__ClassDefIdentifier_attribute,
 )
+from astToolFactory.cpython import getDictionary_match_args
 from astToolkit import (
 	Be, ConstantValueType as _ConstantValue, DOT, dump, identifierDotAttribute, IfThis, Make, NodeChanger, NodeTourist,
 	parsePathFilename2astModule, Then,
 )
 from astToolkit.transformationTools import makeDictionaryClassDef
 from collections.abc import Callable, Mapping, Sequence
+from functools import cache
 from typing import Any, cast, Literal, TypeIs
 from Z0Z_tools import raiseIfNone
 import ast
 import numpy
 import pandas
 import typeshed_client
-from functools import cache
 
 """Use idiomatic pandas.
 - No `lambda`, except `key=lambda`.
@@ -49,77 +50,18 @@ def _get_astModule_astStub() -> ast.Module:
 	ImaSearchContext: typeshed_client.SearchContext = typeshed_client.get_search_context(typeshed=pathRoot_typeshed)
 	return parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file("ast", search_context=ImaSearchContext)))
 
-def _get_match_argsByVersionGuard(dataframeTarget: pandas.DataFrame) -> pandas.Series:
-	def filterByVersion(node: ast.AST, *, orelse: bool = False) -> TypeIs[ast.If] | bool:
-		return (Be.If(node)
-			and Be.Compare(node.test)
-			and IfThis.isAttributeNamespaceIdentifier("sys", "version_info")(node.test.left)
-			and Be.Tuple(node.test.comparators[0])
-			and IfThis.isConstant_value(dataframeTarget["versionMinorPythonInterpreter"] + int(orelse))(node.test.comparators[0].elts[1]))
-
-	def findThis_body(node: ast.AST) -> TypeIs[ast.If] | bool:
-		return (filterByVersion(node, orelse=False)
-			and IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier("__match_args__"))(cast("ast.If", node).body[0]))
-
-	def findThis_orelse(node: ast.AST) -> TypeIs[ast.If] | bool:
-		return (filterByVersion(node, orelse=True)
-				and cast("ast.If", node).orelse
-				and IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier("__match_args__"))(cast("ast.If", node).orelse[0])) # pyright: ignore[reportReturnType]
-
-	def getNaked_match_args() -> list[ast.stmt] | None:
-		dictionaryIdentifier2astIf: dict[str, ast.If] = _getDictionaryIdentifier2astIf()
-		body: list[ast.stmt] | None = None
-		if ((nodeIf := dictionaryIdentifier2astIf.get(cast("str", dataframeTarget["ClassDefIdentifier"])))
-			# `node` is an `ast.If` node. dataframeTarget['ClassDefIdentifier'] is in `ast.If.body`.  # noqa: ERA001
-		and filterByVersion(nodeIf, orelse=False)):
-			# And, version == dataframeTarget['versionMinorPythonInterpreter']  # noqa: ERA001
-			def findThis_match_args(node: ast.AST) -> TypeIs[ast.ClassDef] | bool:
-				return (IfThis.isClassDefIdentifier(cast("str", dataframeTarget["ClassDefIdentifier"]))(node)
-				# look for dataframeTarget['ClassDefIdentifier'] and return match_args or None  # noqa: ERA001
-					and IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier("__match_args__"))(cast("ast.ClassDef", node).body[0]))
-
-			body = NodeTourist(findThis_match_args, Then.extractIt(cast("Callable[[ast.ClassDef], list[ast.stmt]]", DOT.body))).captureLastMatch(nodeIf)
-		return body
-
-	dictionaryClassDef: dict[str, ast.ClassDef] = makeDictionaryClassDef(_get_astModule_astStub())
-	body: list[ast.stmt] | None = NodeTourist(findThis_body
-									, Then.extractIt(cast("Callable[[ast.If], list[ast.stmt]]", DOT.body))
-									).captureLastMatch(dictionaryClassDef[cast("str", dataframeTarget["ClassDefIdentifier"])])
-
-	dataframeTarget["match_args"] = None
-
-	if body:
-		dataframeTarget["match_args"] = literal_eval(cast("ast.Assign", body[0]).value)
-	else:
-		orelse: list[ast.stmt] | None = NodeTourist(findThis_orelse
-										, Then.extractIt(cast("Callable[[ast.If], list[ast.stmt]]", DOT.orelse))
-										).captureLastMatch(dictionaryClassDef[cast("str", dataframeTarget["ClassDefIdentifier"])])
-		if orelse:
-			dataframeTarget["match_args"] = literal_eval(cast("ast.Assign", orelse[0]).value)
-		else:
-			naked_match_args: list[ast.stmt] | None = getNaked_match_args()
-			if naked_match_args:
-				dataframeTarget["match_args"] = literal_eval(cast("ast.Assign", naked_match_args[0]).value)
-	return dataframeTarget["match_args"]
-
 def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dictionaryClassDef: dict[str, ast.ClassDef] = makeDictionaryClassDef(_get_astModule_astStub())
-
-	dataframe["match_args"] = dataframe[["ClassDefIdentifier", "versionMinorPythonInterpreter"]].apply(_get_match_argsByVersionGuard, axis="columns")
+	match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated = getDictionary_match_args()
+	dataframe["match_args"] = (dataframe[["ClassDefIdentifier", "versionMinorPythonInterpreter", "deprecated"]]
+							.apply(tuple, axis="columns")
+							.map(match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated)
+							.fillna(dataframe["match_args"]))
+	"""NOTE deprecated classes are not defined in asdl and they do not have match_args in ast.pyi. The match_args values in the dataframe
+	for deprecated classes were created manually. If the dataframe were reset or eliminated, there is not currently a process to
+	recreate the match_args for deprecated classes."""
 	dataframe.attrs["drop_duplicates"].extend(["match_args"])
 
-	dataframe.pipe(_sortCaseInsensitive, ["ClassDefIdentifier", "versionMinorPythonInterpreter"], caseInsensitive=[True, False], ascending=[True, False])
-
-	# Assign 'match_args' from 'versionMinorPythonInterpreter' < your version.
-	dataframe["match_args"] = dataframe.groupby("ClassDefIdentifier")["match_args"].bfill()
-	# Because Python 3.9 does not have `__match_args__`, Assign 'match_args' from 'versionMinorPythonInterpreter' > your version.
-	dataframe["match_args"] = dataframe.groupby("ClassDefIdentifier")["match_args"].ffill()
-
-	# Fill missing 'match_args' values with empty tuple
-	dataframe["match_args"] = dataframe["match_args"].apply(lambda x: () if pandas.isna(x) else x) # pyright: ignore[reportUnknownArgumentType, reportUnknownLambdaType]
-	# dataframe["match_args"] = dataframe["match_args"].fillna(())  # noqa: ERA001
-	# TypeError: "value" parameter must be a scalar or dict, but you passed a "tuple"  # noqa: ERA001
-
+	dictionaryClassDef: dict[str, ast.ClassDef] = makeDictionaryClassDef(_get_astModule_astStub())
 	def amIDeprecated(ClassDefIdentifier: str) -> bool:
 		return bool(NodeTourist(IfThis.isCallIdentifier("deprecated"), doThat=Then.extractIt).captureLastMatch(Make.Module(cast("list[ast.stmt]", dictionaryClassDef[ClassDefIdentifier].decorator_list))))
 
@@ -201,21 +143,10 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		)
 		return dataframeTarget
 
-	# dataframe = pandas.concat(objs=[dataframe, newRows_attributes(dataframe)], axis="index", ignore_index=True)
-	# dataframe = dataframe.drop_duplicates(subset=dataframe.attrs["drop_duplicates"])
+	# dataframe = pandas.concat(objs=[dataframe, newRows_attributes(dataframe)], axis="index", ignore_index=True)  # noqa: ERA001
+	# dataframe = dataframe.drop_duplicates(subset=dataframe.attrs["drop_duplicates"])  # noqa: ERA001
 
 	return dataframe
-
-def _getDictionaryIdentifier2astIf() -> dict[str, ast.If]:
-	astModule_astStub = _get_astModule_astStub()
-	list_astIf_sys_version_info: list[ast.If] = []
-	NodeTourist(Be.If.testIs(Be.Compare.leftIs(IfThis.isAttributeNamespaceIdentifier("sys", "version_info")))
-		, doThat=Then.appendTo(list_astIf_sys_version_info)
-		).visit(astModule_astStub)
-	dictionaryIdentifier2astIf: dict[str, ast.If] = {}
-	for astIf in list_astIf_sys_version_info:
-		NodeTourist(Be.ClassDef, Then.updateKeyValueIn(DOT.name, lambda _node: astIf, dictionaryIdentifier2astIf)).visit(astIf)  # noqa: B023
-	return dictionaryIdentifier2astIf
 
 def _make_astAttribute(ClassDefIdentifier: str) -> ast.expr:
 	return Make.Attribute(Make.Name("ast"), ClassDefIdentifier)
@@ -230,62 +161,37 @@ def _make_keywordOrList(dataframeTarget: pandas.DataFrame) -> Any:
 	keywordValue = Make.Or.join([keywordValue, Make.List()])
 	return Make.keyword(cast("str", dataframeTarget["attribute"]), keywordValue)
 
- 
-# def _make3Columns4ClassMakePlus1Column(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-# 	def workhorse(dataframeTarget: pandas.DataFrame):
-# 		dataframeTarget["attribute"] = pandas.Categorical(
-# 			dataframeTarget["attribute"]
-# 			, categories=dataframeTarget["match_args"].iloc[0]
-# 			, ordered=True
-# 		)
+def _make3Columns4ClassMakePlus1Column(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	def make3Columns4ClassMakePlus1Column(dataframeTarget: pandas.DataFrame) -> tuple[pandas.Series, pandas.Series, pandas.Series, pandas.Series]:
+		matchingRows: pandas.DataFrame = dataframe[(dataframe["ClassDefIdentifier"] == cast("str", dataframeTarget["ClassDefIdentifier"]))
+									& (dataframe["versionMinorMinimum_match_args"] == cast("int", dataframeTarget["versionMinorMinimum_match_args"]))]
 
-# 		maskTupleAttributes = dataframeTarget["attributeKind"] == "_field"
-# 		maskFunctionDef_args = dataframeTarget["move2keywordArguments"] == False  # noqa: E712
-# 		maskDefaults = dataframeTarget["defaultValue"] != "No"
-# 		maskCall_keyword = (dataframeTarget["move2keywordArguments"] != "No") & (dataframeTarget["move2keywordArguments"] != "Unpack")
+		matchingRows_listTupleAttributes = matchingRows[matchingRows["attributeKind"] == "_field"].copy()
+		dataframeTarget["listTupleAttributes"] = matchingRows_listTupleAttributes.drop_duplicates(subset="attribute")[["attribute", "type_ast_expr"]].apply(tuple, axis="columns").tolist()
 
-# 		listByColumns = ["ClassDefIdentifier", "versionMinorMinimum_match_args"]
-# 		drop_duplicates = [*listByColumns, "attribute"]
+		matchingRows["attribute"] = pandas.Categorical(matchingRows["attribute"], categories=matchingRows["match_args"].iloc[0], ordered=True)
 
-# 		dataframeTarget["listTupleAttributes"] = (
-# 			dataframeTarget[maskTupleAttributes]
-# 			.drop_duplicates(subset=drop_duplicates)
-# 			.groupby(listByColumns)
-# 			[["attribute", "type_ast_expr"]]
-# 			.transform(list)
-# 			.groupby(level=0)
-# 			.first()
-# 		)
+		matchingRows_listCall_keyword: pandas.DataFrame = matchingRows[matchingRows["move2keywordArguments"] != "No"].copy(deep=True)
+		matchingRows = matchingRows[matchingRows["move2keywordArguments"] == False].sort_values("attribute")  # noqa: E712
+		matchingRows_listDefaults = matchingRows[matchingRows["defaultValue"] != "No"].copy(deep=True)
 
-# 		dataframeTarget["listFunctionDef_args"] = (
-# 			dataframeTarget[maskFunctionDef_args]
-# 			.drop_duplicates(subset=drop_duplicates)
-# 			.sort_values("attribute")
-# 			.groupby(listByColumns)
-# 			["ast_arg"]
-# 			.transform(list)
-# 		)
+		dataframeTarget["listFunctionDef_args"] = matchingRows.drop_duplicates(subset="attribute")["ast_arg"].tolist()
+		dataframeTarget["listDefaults"] = matchingRows_listDefaults.drop_duplicates(subset="attribute")["defaultValue"].tolist()
 
-# 		dataframeTarget["listDefaults"] = (
-# 			dataframeTarget[maskFunctionDef_args & maskDefaults]
-# 			.drop_duplicates(subset=drop_duplicates)
-# 			.groupby(listByColumns)
-# 			["defaultValue"]
-# 			.transform(list)
-# 		)
+		matchingRows_listCall_keyword = matchingRows_listCall_keyword[matchingRows_listCall_keyword["move2keywordArguments"] != "Unpack"].drop_duplicates(subset="attribute").sort_values("attribute")
 
-# 		dataframeTarget["listCall_keyword"] = (
-# 			dataframeTarget[maskCall_keyword]
-# 			.drop_duplicates(subset=drop_duplicates)
-# 			.sort_values("attribute")
-# 			.groupby(listByColumns)
-# 			["Call_keyword"]
-# 			.transform(list)
-# 		)
+		dataframeTarget["listCall_keyword"] = matchingRows_listCall_keyword["Call_keyword"].tolist()
 
-# 	dataframe[["listFunctionDef_args", "listDefaults", "listCall_keyword", "listTupleAttributes"]] = dataframe.apply(workhorse, axis="columns", result_type="expand")
+		return (
+			dataframeTarget["listFunctionDef_args"],
+			dataframeTarget["listDefaults"],
+			dataframeTarget["listCall_keyword"],
+			dataframeTarget["listTupleAttributes"],
+		)
 
-# 	return dataframe
+	dataframe[["listFunctionDef_args", "listDefaults", "listCall_keyword", "listTupleAttributes"]] = dataframe.apply(make3Columns4ClassMakePlus1Column, axis="columns", result_type="expand")
+
+	return dataframe
 
 def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	def makeColumn_ast_arg(dataframeTarget: pandas.DataFrame) -> Any:
@@ -385,7 +291,7 @@ def updateDataframe() -> None:
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
 
 	# columns: reorder; drop columns, but they might be recreated later in the flow.  # noqa: ERA001
-	# dataframe = dataframe[_columns]
+	# dataframe = dataframe[_columns]  # noqa: ERA001
 
 	# Set dtypes for existing columns
 	dataframe = dataframe.astype({
@@ -408,7 +314,7 @@ def updateDataframe() -> None:
 	# 'base',
 
 	# TODO finish `_getDataFromStubFile`
-	# dataframe = _getDataFromStubFile(dataframe)
+	dataframe = _getDataFromStubFile(dataframe)
 
 	dataframe = _makeColumn_attributeRename(dataframe)
 	dataframe = _makeColumn_move2keywordArguments(dataframe)
