@@ -51,7 +51,7 @@ def _get_astModule_astStub() -> ast.Module:
 	return parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file("ast", search_context=ImaSearchContext)))
 
 def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated = getDictionary_match_args()
+	match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated: dict[tuple[str, int, Literal[False]], tuple[str, ...]] = getDictionary_match_args()
 	dataframe["match_args"] = (dataframe[["ClassDefIdentifier", "versionMinorPythonInterpreter", "deprecated"]]
 							.apply(tuple, axis="columns")
 							.map(match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated)
@@ -77,12 +77,20 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		dataframeTarget["attributeKind"] = "_field"
 
 		def get_type_ast_expr(dddataframeee: pandas.DataFrame) -> tuple[pandas.Series, pandas.Series]:
+			attribute: str = cast("str", dddataframeee["attribute"])
+			if attribute == 'n':
+				# TODO remove when `ast.Num` is updated
+				attribute = 'value'
 			getAnnotation = NodeTourist[ast.AnnAssign, ast.expr](
-				Be.AnnAssign.targetIs(IfThis.isNameIdentifier(cast("str", dddataframeee["attribute"]))),
+				Be.AnnAssign.targetIs(IfThis.isNameIdentifier(attribute)),
 				Then.extractIt(DOT.annotation),
 			)
 
-			type_ast_expr: ast.expr = raiseIfNone(getAnnotation.captureLastMatch(dictionaryClassDef[cast("str", dddataframeee["ClassDefIdentifier"])]))
+			ClassDefIdentifier: str = cast("str", dddataframeee["ClassDefIdentifier"])
+			if ClassDefIdentifier == 'NameConstant':
+				ClassDefIdentifier = 'Constant'
+
+			type_ast_expr: ast.expr = raiseIfNone(getAnnotation.captureLastMatch(dictionaryClassDef[ClassDefIdentifier]))
 
 			type_ast_expr = NodeChanger(Be.Subscript.valueIs(IfThis.isNameIdentifier("Literal")), Then.replaceWith(Make.Name("bool"))).visit(type_ast_expr)
 
@@ -160,6 +168,41 @@ def _make_keywordOrList(dataframeTarget: pandas.DataFrame) -> Any:
 			keywordValue = Make.Call(Make.Name("list"), [keywordValue])
 	keywordValue = Make.Or.join([keywordValue, Make.List()])
 	return Make.keyword(cast("str", dataframeTarget["attribute"]), keywordValue)
+
+def _make4ColumnsOfLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	dictionaryFunctionDef_args: dict[tuple[str, int], list[ast.arg]] = {}
+	dictionaryDefaults: dict[tuple[str, int], list[ast.expr]] = {}
+	dictionaryCall_keyword: dict[tuple[str, int], list[ast.keyword]] = {}
+	dictionaryTupleAttributes: dict[tuple[str, int], list[tuple[str, ast.expr]]] = {}
+
+	for (ClassDefIdentifier, versionMinorMinimum_match_args), dataframeGroupBy in dataframe.groupby(["ClassDefIdentifier", "versionMinorMinimum_match_args"]):
+		groupKey: tuple[str, int] = (ClassDefIdentifier, versionMinorMinimum_match_args)
+
+		dataframeGroupBy = dataframeGroupBy[dataframeGroupBy["attributeKind"] == "_field"]  # noqa: PLW2901
+
+		dictionaryTupleAttributes[groupKey] = (dataframeGroupBy.copy().drop_duplicates(subset="attribute")
+											.sort_values('attribute')[["attribute", "type_ast_expr"]]
+											.apply(tuple, axis="columns").tolist())
+
+		match_argsCategoricalSort: tuple[str, ...] = dataframeGroupBy["match_args"].iloc[0]
+		dataframeGroupBy["attribute"] = pandas.Categorical(dataframeGroupBy["attribute"], categories=match_argsCategoricalSort, ordered=True)
+		dataframeGroupBy: pandas.DataFrame = dataframeGroupBy.sort_values("attribute")  # noqa: PLW2901
+
+		dictionaryFunctionDef_args[groupKey] = (dataframeGroupBy[dataframeGroupBy["move2keywordArguments"] == False]  # noqa: E712
+										.copy().drop_duplicates(subset="attribute")["ast_arg"].tolist())
+
+		dictionaryDefaults[groupKey] = (dataframeGroupBy[dataframeGroupBy["defaultValue"] != "No"]
+									.copy().drop_duplicates(subset="attribute")["defaultValue"].tolist())
+
+		dictionaryCall_keyword[groupKey] = dataframeGroupBy[(dataframeGroupBy["move2keywordArguments"] != "No")
+			& (dataframeGroupBy["move2keywordArguments"] != "Unpack")].drop_duplicates(subset="attribute")["Call_keyword"].tolist()
+
+	dataframe[["listFunctionDef_args"]] = dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]].apply(tuple, axis="columns").map(dictionaryFunctionDef_args).fillna([])
+	dataframe[["listDefaults"]] = dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]].apply(tuple, axis="columns").map(dictionaryDefaults).fillna([])
+	dataframe[["listCall_keyword"]] = dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]].apply(tuple, axis="columns").map(dictionaryCall_keyword).fillna([])
+	dataframe[["listTupleAttributes"]] = dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]].apply(tuple, axis="columns").map(dictionaryTupleAttributes).fillna([])
+
+	return dataframe
 
 def _make3Columns4ClassMakePlus1Column(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	def make3Columns4ClassMakePlus1Column(dataframeTarget: pandas.DataFrame) -> tuple[pandas.Series, pandas.Series, pandas.Series, pandas.Series]:
@@ -331,7 +374,8 @@ def updateDataframe() -> None:
 	dataframe = _makeColumn_versionMinorMinimumAttribute(dataframe)
 	dataframe = _makeColumn_versionMinorMinimumClass(dataframe)
 	dataframe = _makeColumnCall_keyword(dataframe)
-	dataframe = _make3Columns4ClassMakePlus1Column(dataframe)
+	dataframe = _make4ColumnsOfLists(dataframe)
+	# dataframe = _make3Columns4ClassMakePlus1Column(dataframe)
 
 	dataframe.to_pickle(settingsManufacturing.pathFilenameDataframeAST)
 
