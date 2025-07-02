@@ -99,7 +99,7 @@ def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tup
 	ascending: list[bool] = caseInsensitive.copy()
 	drop_duplicates: list[str] = sortBy.copy()
 
-	dataframe: pandas.DataFrame = getDataframe(**keywordArguments)[listColumns].drop_duplicates(drop_duplicates, keep="last").pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending).reset_index(drop=True)
+	dataframe: pandas.DataFrame = getDataframe(**keywordArguments)[listColumns].drop_duplicates(drop_duplicates).pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending).reset_index(drop=True)
 	del listColumns
 
 	return dataframe.to_records(index=False).tolist()
@@ -234,7 +234,9 @@ def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[t
 
 	index_versionMinorMinimum: int = 2
 
-	dataframe: pandas.DataFrame = getDataframe(**keywordArguments)[listColumns].pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending).drop_duplicates(drop_duplicates).reset_index(drop=True)
+	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)[listColumns]
+					.pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending)
+					.drop_duplicates(drop_duplicates).reset_index(drop=True))
 	dataframe = dataframe.rename(columns={listColumns[index_versionMinorMinimum]: "versionMinorMinimum"})
 	del listColumns
 

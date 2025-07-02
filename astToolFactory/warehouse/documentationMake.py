@@ -1324,9 +1324,9 @@ docstrings[identifierClass]['If'] = Make.Expr(Make.Constant(
             The boolean expression that determines which branch to execute.
         body : Sequence[ast.stmt]
             Sequence of statements executed when the test expression evaluates to True.
-        orelse : Sequence[ast.stmt] = []
-            ({diminutive2etymology['orElse']}) Optional statements executed when the test expression evaluates
-            to False.
+        orElse : Sequence[ast.stmt] = []
+            ({diminutive2etymology['orElse']}) Optional statements executed when the test expression evaluates to False. This
+            parameter corresponds with `ast.If.orelse` ({diminutive2etymology['orelse']}).
 
         Returns
         -------
@@ -1369,43 +1369,42 @@ docstrings[identifierClass]['If'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['IfExp'] = Make.Expr(Make.Constant(
-        f"""Make a conditional expression AST `object` for inline if-else operations.
+        f"""Make a 'ChooseThis `if` ConditionIsTrue `else` ChooseThat' conditional expression.
 
-        (AI generated docstring)
-
-        The `ast.IfExp` ({diminutive2etymology['IfExp']}) `object` represents conditional
-        expressions using the ternary operator syntax `value_if_true if condition else
-        value_if_false`. It provides inline conditional logic without full if-statement structures.
+        The `ast.IfExp` ({diminutive2etymology['IfExp']}) `object` represents inline conditional
+        expressions using the ternary operator syntax `execute_if_true if condition else
+        execute_if_false`.
 
         Parameters
         ----------
         test : ast.expr
-            The condition expression to evaluate for truthiness.
+            The `True`/`False` condition expression.
         body : ast.expr
-            Expression to return when the condition is true.
+            If `test` is `True`, the interpreter executes this singular expression.
         orElse : ast.expr
-            ({diminutive2etymology['orElse']}) Expression to return when the condition is false.
+            ({diminutive2etymology['orElse']}) If `test` is `False`, the interpreter executes this singular expression. This
+            parameter corresponds with `ast.IfExp.orelse` ({diminutive2etymology['orelse']}).
 
         Returns
         -------
         conditionalExpression : ast.IfExp
-            AST `object` representing an inline conditional expression.
+            `ast.AST` ({diminutive2etymology['AST']}) `object` representing an inline conditional expression.
 
         Examples
         --------
         ```python
-        # Creates AST equivalent to: `"sunny" if weather > 70 else "cloudy"`
-        weatherDescription = Make.IfExp(
-            test=Make.Compare(Make.Name('weather'), [Make.Gt()], [Make.Constant(70)]),
-            body=Make.Constant("sunny"),
-            orElse=Make.Constant("cloudy")
+        # To create the `ast.AST` representation of `maxVolume if amplified else defaultVolume`:
+        Make.IfExp(
+            test = Make.Name('amplified'),
+            body = Make.Name('maxVolume'),
+            orElse = Make.Name('defaultVolume')
         )
 
-        # Creates AST equivalent to: `maxVolume if amplified else defaultVolume`
-        volumeLevel = Make.IfExp(
-            test=Make.Name('amplified'),
-            body=Make.Name('maxVolume'),
-            orElse=Make.Name('defaultVolume')
+        # To create the `ast.AST` representation of `"sunny" if weather > 70 else "cloudy"`:
+        Make.IfExp(
+            test = Make.Compare(Make.Name('weather'), [ Make.Gt() ], [ Make.Constant(70) ]),
+            body = Make.Constant("sunny"),
+            orElse = Make.Constant("cloudy")
         )
         ```
 
