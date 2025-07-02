@@ -900,7 +900,7 @@ docstrings[identifierClass]['Delete'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Dict'] = Make.Expr(Make.Constant(
-        f"""Make a dictionary literal AST `object` with key-value pairs.
+        f"""Combine `keys` and `values` into an AST ({diminutive2etymology['AST']}) representation of the Python built-in `class` `dict` ({diminutive2etymology['dict']}).
 
         (AI generated docstring)
 

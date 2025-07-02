@@ -8,9 +8,9 @@ for the toolkit's code generation process.
 """
 
 from astToolFactory import (
-	astASTastAttribute, astName_overload, astName_staticmethod, astName_typing_TypeAlias, getElementsBe, getElementsDOT,
-	getElementsGrab, getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
-	settingsManufacturing, settingsPackage,
+	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, astName_typing_TypeAlias,
+	getElementsBe, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call,
+	ManufacturedPackageSettings, settingsManufacturing, settingsPackage,
 )
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
@@ -270,10 +270,20 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 			list4ClassDefBody.append(ast_stmt)
 		else:
-			list4subClassDefBody: list[ast.stmt] = [Make.FunctionDef("__call__", Make.arguments(list_arg=[Make.arg("self"), Make.arg("node", annotation=astASTastAttribute)]), body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))], returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute))]
+			list4subClassDefBody: list[ast.stmt] = [Make.FunctionDef("__call__"
+				, Make.arguments(list_arg=[Make.arg("self"), Make.arg("node", annotation=astASTastAttribute)])
+				, body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
+				, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute))]
 
 			for attribute, type_ast_expr in listTupleAttributes:
-				list4subClassDefBody.append(Make.FunctionDef(attribute + "Is", Make.arguments(list_arg=[Make.arg("attributeCondition", annotation=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([type_ast_expr]), Make.Name("bool")])))]), body=[Make.FunctionDef("workhorse", Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)]), body=[Make.Return(Make.BoolOp(Make.And(), values=[Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]), Make.Call(Make.Name("attributeCondition"), listParameters=[Make.Attribute(Make.Name("node"), attribute)]),]))], returns=Make.BinOp(left=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute), op=Make.BitOr(), right=Make.Name("bool"))), Make.Return(Make.Name("workhorse")),], decorator_list=[astName_staticmethod], returns=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([astASTastAttribute]), Make.BinOp(left=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute), op=Make.BitOr(), right=Make.Name("bool"))]))))
+				list4subClassDefBody.append(Make.FunctionDef(attribute + "Is"
+					, Make.arguments(list_arg=[Make.arg("attributeCondition", annotation=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([type_ast_expr]), Make.Name("bool")])))])
+					, body=[Make.FunctionDef("workhorse"
+							, Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)])
+							, body=[Make.Return(Make.BoolOp(Make.And(), values=[Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]), Make.Call(Make.Name("attributeCondition"), listParameters=[Make.Attribute(Make.Name("node"), attribute)])]))]
+							, returns=Make.BinOp(left=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute), op=Make.BitOr(), right=Make.Name("bool")))
+						, Make.Return(Make.Name("workhorse"))], decorator_list=[astName_staticmethod]
+					, returns=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([astASTastAttribute]), Make.BinOp(left=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute), op=Make.BitOr(), right=Make.Name("bool"))]))))
 
 			list_ast_stmt: list[ast.stmt] = [
 				Make.ClassDef(f"_{ClassDefIdentifier}", body=list4subClassDefBody)
@@ -365,12 +375,13 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 def makeToolFind(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Find."""
 	list4ClassDefBody: list[ast.stmt] = [
-		# docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
+		docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
 	]
 
 	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute, _listTupleAttributes in getElementsBe(
 		identifierToolClass, **keywordArguments
 	):
+		"""With workhorse
 		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 			, Make.arguments(list_arg=[Make.arg("self")])
 			, body=[
@@ -382,11 +393,24 @@ def makeToolFind(identifierToolClass: str, **keywordArguments: Any) -> None:
 					, returns=Make.Subscript(Make.Name("tuple"), slice=Make.Tuple([Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute), astASTastAttribute]))
 				)
 				, Make.Assign([Make.Name("dontMutateMyQueue", Make.Store())]
-					, value=Make.List([Make.Starred(Make.Attribute(Make.Name("self"), "queueOfGotten_attr")), Make.Name("workhorse")])
+					, value=Make.List([Make.Starred(Make.Attribute(Make.Name("self"), "queueOfTruth")), Make.Name("workhorse")])
 				)
 				, Make.Return(Make.Call(Make.Name("Find"), listParameters=[Make.Name("dontMutateMyQueue")]))
 			]
 			, returns=Make.Constant("Find")
+		)
+		"""
+
+		ast_stmt: ast.stmt = Make.FunctionDef(
+			ClassDefIdentifier
+			, Make.arguments(list_arg=[Make.arg("cls"), Make.arg("node", annotation=astASTastAttribute)])
+			, body=[
+				docstrings[identifierToolClass][ClassDefIdentifier]
+				,
+				Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))
+			]
+			, decorator_list=[astName_classmethod]
+			, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute)
 		)
 
 		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:

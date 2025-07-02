@@ -1,3 +1,4 @@
+from astToolFactory import column__value
 from astToolkit import Make
 from typing import NamedTuple
 import ast
@@ -11,12 +12,12 @@ _columns: list[str] = [
 	'versionMicroPythonInterpreter',
 	'base',
 
-	# stdlib/ast.pyi
+	# getDictionary_match_args and stdlib/ast.pyi
 	'deprecated',
 	'match_args',
 	'attribute',
 	'attributeKind',
-	'type',
+	'attributeType',
 
 	# Purely a human choice
 	'attributeRename',
@@ -52,175 +53,142 @@ _columns: list[str] = [
 """
 NOTE How to construct an identifier for a dictionary to update the dataframe:
 Use the actual column names, case sensitive.
-columnLHS__columnRHS: dict[str, str] = {}
-columnLHS__columnRHS_columnRHSn: dict[tuple[str, bool], str] = {}
+columnLHS__columnRHS: dict = {}
+columnLHS__columnRHS_columnRHSn: dict = {}
 Convert punctuation to underscores:
 `_` -> `,`
 `__` -> `=`
-The dictionaries are used in statement like these:
-dataframe['columnLHS'] = dataframe['columnRHS'].map(columnLHS__columnRHS).fillna(dataframe['columnLHS'])
-dataframe['columnLHS'] = dataframe[['columnRHS', 'columnRHSn']].apply(tuple, axis='columns').map(columnLHS__columnRHS_columnRHSn).fillna(dataframe['columnLHS'])
-"""
-
-"""
-dataframe = dataframe[dataframe['deprecated'].apply(str).str.contains("False", regex=False, na=False, case=False)]
 """
 
 class __attribute(NamedTuple):
 	attribute: str
+
+class __attributeKind(NamedTuple):
+	attributeKind: str
+
 class __ClassDefIdentifier_attribute(NamedTuple):
 	ClassDefIdentifier: str
 	attribute: str
 
-attributeRename__attribute: dict[str, str] = {
-	'arg': 'Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo',
-	'asname': 'asName',
-	'attr': 'attribute',
-	'ctx': 'context',
-	'elt': 'element',
-	'elts': 'listElements',
-	'func': 'callee',
-	'keywords': 'list_keyword',
-	'module': 'dotModule',
-	'orelse': 'orElse',
+class __attributeType_attribute(NamedTuple):
+	attributeType: str
+	attribute: str
+
+attributeRename__attribute: dict[__attribute, column__value] = {
+	__attribute('arg'): column__value('attributeRename', 'Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'),
+	__attribute('asname'): column__value('attributeRename', 'asName'),
+	__attribute('attr'): column__value('attributeRename', 'attribute'),
+	__attribute('ctx'): column__value('attributeRename', 'context'),
+	__attribute('elt'): column__value('attributeRename', 'element'),
+	__attribute('elts'): column__value('attributeRename', 'listElements'),
+	__attribute('func'): column__value('attributeRename', 'callee'),
+	__attribute('keywords'): column__value('attributeRename', 'list_keyword'),
+	__attribute('module'): column__value('attributeRename', 'dotModule'),
+	__attribute('orelse'): column__value('attributeRename', 'orElse'),
 }
 
-attributeRename__ClassDefIdentifier_attribute: dict[tuple[str, str], str] = {
-	('arguments', 'args'): 'list_arg',
-	('AsyncFunctionDef', 'args'): 'argumentSpecification',
-	('Call', 'args'): 'listParameters',
-	('FunctionDef', 'args'): 'argumentSpecification',
-	('ImportFrom', 'names'): 'list_alias',
-	('Lambda', 'args'): 'argumentSpecification',
+attributeRename__ClassDefIdentifier_attribute: dict[__ClassDefIdentifier_attribute, column__value] = {
+	__ClassDefIdentifier_attribute('arguments', 'args'): column__value('attributeRename', 'list_arg'),
+	__ClassDefIdentifier_attribute('AsyncFunctionDef', 'args'): column__value('attributeRename', 'argumentSpecification'),
+	__ClassDefIdentifier_attribute('Call', 'args'): column__value('attributeRename', 'listParameters'),
+	__ClassDefIdentifier_attribute('FunctionDef', 'args'): column__value('attributeRename', 'argumentSpecification'),
+	__ClassDefIdentifier_attribute('ImportFrom', 'names'): column__value('attributeRename', 'list_alias'),
+	__ClassDefIdentifier_attribute('Lambda', 'args'): column__value('attributeRename', 'argumentSpecification'),
 }
 
-defaultValue__attribute: dict[str, ast.expr] = {
-	'asname': Make.Constant(None),
-	'bases': Make.List(),
-	'bound': Make.Constant(None),
-	'cases': Make.List(),
-	'cause': Make.Constant(None),
-	'ctx': Make.Call(Make.Attribute(Make.Name('ast'), 'Load')),
-	'decorator_list': Make.List(),
-	'default_value': Make.Constant(None),
-	'defaults': Make.List(),
-	'elts': Make.List(),
-	'exc': Make.Constant(None),
-	'finalbody': Make.List(),
-	'format_spec': Make.Constant(None),
-	'guard': Make.Constant(None),
-	'is_async': Make.Constant(0),
-	'keywords': Make.List(),
-	'kind': Make.Constant(None),
-	'kw_defaults': Make.List([Make.Constant(None)]),
-	'kwarg': Make.Constant(None),
-	'kwd_attrs': Make.List(),
-	'kwd_patterns': Make.List(),
-	'kwonlyargs': Make.List(),
-	'level': Make.Constant(0),
-	'lower': Make.Constant(None),
-	'msg': Make.Constant(None),
-	'optional_vars': Make.Constant(None),
-	'patterns': Make.List(),
-	'posonlyargs': Make.List(),
-	'rest': Make.Constant(None),
-	'simple': Make.Call(Make.Name('int'), [Make.Call(Make.Name('isinstance'), [Make.Name('target'), Make.Attribute(Make.Name('ast'), 'Name')])]),
-	'step': Make.Constant(None),
-	'type': Make.Constant(None),
-	'type_comment': Make.Constant(None),
-	'type_ignores': Make.List(),
-	'upper': Make.Constant(None),
-	'vararg': Make.Constant(None),
+attributeType__ClassDefIdentifier_attribute: dict[__ClassDefIdentifier_attribute, column__value] = {
+	__ClassDefIdentifier_attribute('Constant', 'value'): column__value('attributeType', "ConstantValueType"),
 }
 
-defaultValue__ClassDefIdentifier_attribute: dict[tuple[str, str], ast.expr] = {
-	('AnnAssign', 'value'): Make.Constant(None),
-	('arg', 'annotation'): Make.Constant(None),
-	('arguments', 'args'): Make.List(),
-	('AsyncFor', 'orelse'): Make.List(),
-	('AsyncFunctionDef', 'args'): Make.Call(Make.Attribute(Make.Name('ast'), 'arguments')),
-	('AsyncFunctionDef', 'body'): Make.List(),
-	('AsyncFunctionDef', 'returns'): Make.Constant(None),
-	('AsyncFunctionDef', 'type_params'): Make.List(),
-	('Call', 'args'): Make.List(),
-	('ClassDef', 'body'): Make.List(),
-	('ClassDef', 'type_params'): Make.List(),
-	('Dict', 'keys'): Make.List([Make.Constant(None)]),
-	('Dict', 'values'): Make.List(),
-	('ExceptHandler', 'body'): Make.List(),
-	('ExceptHandler', 'name'): Make.Constant(None),
-	('For', 'orelse'): Make.List(),
-	('FunctionDef', 'args'): Make.Call(Make.Attribute(Make.Name('ast'), 'arguments')),
-	('FunctionDef', 'body'): Make.List(),
-	('FunctionDef', 'returns'): Make.Constant(None),
-	('FunctionDef', 'type_params'): Make.List(),
-	('If', 'orelse'): Make.List(),
-	('match_case', 'body'): Make.List(),
-	('MatchAs', 'name'): Make.Constant(None),
-	('MatchAs', 'pattern'): Make.Constant(None),
-	('MatchMapping', 'keys'): Make.List(),
-	('MatchStar', 'name'): Make.Constant(None),
-	('Return', 'value'): Make.Constant(None),
-	('Try', 'orelse'): Make.List(),
-	('TryStar', 'orelse'): Make.List(),
-	('While', 'orelse'): Make.List(),
-	('Yield', 'value'): Make.Constant(None),
+defaultValue__attribute: dict[__attribute, column__value] = {
+	__attribute('asname'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('bound'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('cause'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('default_value'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('exc'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('format_spec'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('guard'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('is_async'): column__value('defaultValue', Make.Constant(0)),
+	__attribute('kind'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('kwarg'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('level'): column__value('defaultValue', Make.Constant(0)),
+	__attribute('lower'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('msg'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('optional_vars'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('rest'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('simple'): column__value('defaultValue', Make.Call(Make.Name('int'), [Make.Call(Make.Name('isinstance'), [Make.Name('target'), Make.Attribute(Make.Name('ast'), 'Name')])])),
+	__attribute('step'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('type'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('type_comment'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('upper'): column__value('defaultValue', Make.Constant(None)),
+	__attribute('vararg'): column__value('defaultValue', Make.Constant(None)),
 }
 
-LISTdefaultValue_ast_arg_Call_keyword__attribute: list[__attribute] = [
-	__attribute('bases'),
-	__attribute('cases'),
-	__attribute('decorator_list'),
-	__attribute('defaults'),
-	__attribute('elts'),
-	__attribute('finalbody'),
-	__attribute('keywords'),
-	__attribute('kwd_attrs'),
-	__attribute('kwd_patterns'),
-	__attribute('kwonlyargs'),
-	__attribute('patterns'),
-	__attribute('posonlyargs'),
-	__attribute('type_ignores'),
-]
-
-LISTdefaultValue_ast_arg_Call_keyword__ClassDefIdentifier_attribute: list[__ClassDefIdentifier_attribute] = [
-	__ClassDefIdentifier_attribute('arguments', 'args'),
-	__ClassDefIdentifier_attribute('AsyncFor', 'orelse'),
-	__ClassDefIdentifier_attribute('AsyncFunctionDef', 'body'),
-	__ClassDefIdentifier_attribute('AsyncFunctionDef', 'type_params'),
-	__ClassDefIdentifier_attribute('Call', 'args'),
-	__ClassDefIdentifier_attribute('ClassDef', 'body'),
-	__ClassDefIdentifier_attribute('ClassDef', 'type_params'),
-	__ClassDefIdentifier_attribute('Dict', 'values'),
-	__ClassDefIdentifier_attribute('ExceptHandler', 'body'),
-	__ClassDefIdentifier_attribute('For', 'orelse'),
-	__ClassDefIdentifier_attribute('FunctionDef', 'body'),
-	__ClassDefIdentifier_attribute('FunctionDef', 'type_params'),
-	__ClassDefIdentifier_attribute('If', 'orelse'),
-	__ClassDefIdentifier_attribute('match_case', 'body'),
-	__ClassDefIdentifier_attribute('MatchMapping', 'keys'),
-	__ClassDefIdentifier_attribute('Try', 'orelse'),
-	__ClassDefIdentifier_attribute('TryStar', 'orelse'),
-	__ClassDefIdentifier_attribute('While', 'orelse'),
-]
-	# 'kw_defaults': Make.List([Make.Constant(None)]),
-	# ('Dict', 'keys'): Make.List([Make.Constant(None)]),
-
-defaultValue__type_attribute: dict[tuple[str, str], ast.expr] = {
-	('int | None', 'end_col_offset'): Make.Constant(None),
-	('int | None', 'end_lineno'): Make.Constant(None),
+defaultValue__attributeType_attribute: dict[__attributeType_attribute, column__value] = {
+	__attributeType_attribute('int | None', 'end_col_offset'): column__value('defaultValue', Make.Constant(None)),
+	__attributeType_attribute('int | None', 'end_lineno'): column__value('defaultValue', Make.Constant(None)),
 }
 
-move2keywordArguments__attributeKind: dict[str, str] = {
-	"No": "No",
-	"_attribute": "No",
+defaultValue__ClassDefIdentifier_attribute: dict[__ClassDefIdentifier_attribute, column__value] = {
+	__ClassDefIdentifier_attribute('AnnAssign', 'value'): column__value('defaultValue', Make.Constant(None)),
+	__ClassDefIdentifier_attribute('arg', 'annotation'): column__value('defaultValue', Make.Constant(None)),
+	__ClassDefIdentifier_attribute('AsyncFunctionDef', 'returns'): column__value('defaultValue', Make.Constant(None)),
+	__ClassDefIdentifier_attribute('Dict', 'keys'): column__value('defaultValue', Make.List([Make.Constant(None)])),
+	__ClassDefIdentifier_attribute('ExceptHandler', 'name'): column__value('defaultValue', Make.Constant(None)),
+	__ClassDefIdentifier_attribute('FunctionDef', 'returns'): column__value('defaultValue', Make.Constant(None)),
+	__ClassDefIdentifier_attribute('MatchAs', 'name'): column__value('defaultValue', Make.Constant(None)),
+	__ClassDefIdentifier_attribute('MatchAs', 'pattern'): column__value('defaultValue', Make.Constant(None)),
+	__ClassDefIdentifier_attribute('MatchStar', 'name'): column__value('defaultValue', Make.Constant(None)),
+	__ClassDefIdentifier_attribute('Return', 'value'): column__value('defaultValue', Make.Constant(None)),
+	__ClassDefIdentifier_attribute('Yield', 'value'): column__value('defaultValue', Make.Constant(None)),
 }
 
-move2keywordArguments__attribute: dict[str, str] = {
-	"type_comment": "Unpack",
-	"simple": "True",
+move2keywordArguments__attribute: dict[__attribute, column__value] = {
+	__attribute("type_comment"): column__value('move2keywordArguments', "Unpack"),
+	__attribute("simple"): column__value('move2keywordArguments', True),  # noqa: FBT003
 }
 
-type__ClassDefIdentifier_attribute: dict[tuple[str, str], str] = {
-	('Constant', 'value'): "ConstantValueType",
+move2keywordArguments__attributeKind: dict[__attributeKind, column__value] = {
+	__attributeKind("No"): column__value('move2keywordArguments', "No"),
+	__attributeKind("_attribute"): column__value('move2keywordArguments', "No"),
 }
+
+dictionary_defaultValue_ast_arg_Call_keyword_orElse: dict[__attribute | __ClassDefIdentifier_attribute, ast.expr] = {
+	__attribute('bases'): Make.List(),
+	__attribute('cases'): Make.List(),
+	__attribute('ctx'): Make.Call(Make.Attribute(Make.Name('ast'), 'Load')),
+	__attribute('decorator_list'): Make.List(),
+	__attribute('defaults'): Make.List(),
+	__attribute('elts'): Make.List(),
+	__attribute('finalbody'): Make.List(),
+	__attribute('keywords'): Make.List(),
+	__attribute('kw_defaults'): Make.List(),
+	__attribute('kwd_attrs'): Make.List(),
+	__attribute('kwd_patterns'): Make.List(),
+	__attribute('kwonlyargs'): Make.List(),
+	__attribute('patterns'): Make.List(),
+	__attribute('posonlyargs'): Make.List(),
+	__attribute('type_ignores'): Make.List(),
+	__ClassDefIdentifier_attribute('arguments', 'args'): Make.List(),
+	__ClassDefIdentifier_attribute('AsyncFor', 'orelse'): Make.List(),
+	__ClassDefIdentifier_attribute('AsyncFunctionDef', 'args'): Make.Call(Make.Attribute(Make.Name('ast'), 'arguments')),
+	__ClassDefIdentifier_attribute('AsyncFunctionDef', 'body'): Make.List(),
+	__ClassDefIdentifier_attribute('AsyncFunctionDef', 'type_params'): Make.List(),
+	__ClassDefIdentifier_attribute('Call', 'args'): Make.List(),
+	__ClassDefIdentifier_attribute('ClassDef', 'body'): Make.List(),
+	__ClassDefIdentifier_attribute('ClassDef', 'type_params'): Make.List(),
+	__ClassDefIdentifier_attribute('Dict', 'keys'): Make.List(),
+	__ClassDefIdentifier_attribute('Dict', 'values'): Make.List(),
+	__ClassDefIdentifier_attribute('ExceptHandler', 'body'): Make.List(),
+	__ClassDefIdentifier_attribute('For', 'orelse'): Make.List(),
+	__ClassDefIdentifier_attribute('FunctionDef', 'args'): Make.Call(Make.Attribute(Make.Name('ast'), 'arguments')),
+	__ClassDefIdentifier_attribute('FunctionDef', 'body'): Make.List(),
+	__ClassDefIdentifier_attribute('FunctionDef', 'type_params'): Make.List(),
+	__ClassDefIdentifier_attribute('If', 'orelse'): Make.List(),
+	__ClassDefIdentifier_attribute('match_case', 'body'): Make.List(),
+	__ClassDefIdentifier_attribute('MatchMapping', 'keys'): Make.List(),
+	__ClassDefIdentifier_attribute('Try', 'orelse'): Make.List(),
+	__ClassDefIdentifier_attribute('TryStar', 'orelse'): Make.List(),
+	__ClassDefIdentifier_attribute('While', 'orelse'): Make.List(),
+}
+

@@ -1,36 +1,34 @@
 from ast import (
-	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, keyword,
-	literal_eval, match_case, Name, operator, pattern, stmt, Subscript, type_param, TypeIgnore, unaryop, withitem,
+	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, keyword, match_case,
+	Name, operator, pattern, stmt, Subscript, type_param, TypeIgnore, unaryop, withitem,
 )
-from astToolFactory import pathRoot_typeshed, settingsManufacturing
+from astToolFactory import column__value, MaskTuple, pathRoot_typeshed, settingsManufacturing
 from astToolFactory._datacenter import _sortCaseInsensitive, getDataframe
 from astToolFactory._datacenterAnnex import (
-	_columns, attributeRename__attribute, attributeRename__ClassDefIdentifier_attribute, defaultValue__attribute,
-	defaultValue__ClassDefIdentifier_attribute, defaultValue__type_attribute,
-	LISTdefaultValue_ast_arg_Call_keyword__attribute, LISTdefaultValue_ast_arg_Call_keyword__ClassDefIdentifier_attribute,
-	move2keywordArguments__attribute, move2keywordArguments__attributeKind, type__ClassDefIdentifier_attribute,
+	_columns, attributeRename__attribute, attributeRename__ClassDefIdentifier_attribute,
+	attributeType__ClassDefIdentifier_attribute, defaultValue__attribute, defaultValue__attributeType_attribute,
+	defaultValue__ClassDefIdentifier_attribute, dictionary_defaultValue_ast_arg_Call_keyword_orElse,
+	move2keywordArguments__attribute, move2keywordArguments__attributeKind,
 )
 from astToolFactory.cpython import getDictionary_match_args
 from astToolkit import (
-	Be, ConstantValueType as _ConstantValue, DOT, dump, identifierDotAttribute, IfThis, Make, NodeChanger, NodeTourist,
-	parsePathFilename2astModule, Then,
+	Be, ConstantValueType as _ConstantValue, DOT, IfThis, Make, NodeChanger, NodeTourist, parsePathFilename2astModule,
+	Then,
 )
 from astToolkit.transformationTools import makeDictionaryClassDef
 from collections.abc import Callable, Mapping, Sequence
 from functools import cache
-from typing import Any, cast, Literal, TypeIs
+from typing import Any, cast
 from Z0Z_tools import raiseIfNone
 import ast
 import numpy
 import pandas
-import pprint
 import typeshed_client
 
 """Use idiomatic pandas.
 - No `lambda`, except `key=lambda`.
 - No intermediate data structures.
 - A dataframe is a data structure: no intermediate dataframes.
-- A so-called mask is an intermediate dataframe: no "masks".
 - A column is a data structure: no intermediate columns.
 - No `for`, no `iterrows`, no loops, no loops hidden in comprehension.
 - No `zip`.
@@ -53,10 +51,9 @@ def _get_astModule_astStub() -> ast.Module:
 	return parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file("ast", search_context=ImaSearchContext)))
 
 def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated: dict[tuple[str, int, Literal[False]], tuple[str, ...]] = getDictionary_match_args()
 	dataframe["match_args"] = (dataframe[["ClassDefIdentifier", "versionMinorPythonInterpreter", "deprecated"]]
 							.apply(tuple, axis="columns")
-							.map(match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated)
+							.map(getDictionary_match_args())
 							.fillna(dataframe["match_args"]))
 	"""NOTE deprecated classes are not defined in asdl and they do not have match_args in ast.pyi. The match_args values in the dataframe
 	for deprecated classes were created manually. If the dataframe were reset or eliminated, there is not currently a process to
@@ -100,17 +97,17 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 				lambda node: Be.Name(node) and isinstance(eval(node.id), type) and issubclass(eval(node.id), ast.AST),  # noqa: S307
 				lambda node: Make.Attribute(Make.Name("ast"), eval(node.id).__name__),  # noqa: S307
 			).visit(type_ast_expr)
-			dddataframeee["type"] = ast.unparse(cast("ast.AST", dddataframeee["type_ast_expr"]))
+			dddataframeee["attributeType"] = ast.unparse(cast("ast.AST", dddataframeee["type_ast_expr"]))
 
-			return dddataframeee["type_ast_expr"], dddataframeee["type"]
+			return dddataframeee["type_ast_expr"], dddataframeee["attributeType"]
 
-		dataframeTarget[["type_ast_expr", "type"]] = dataframeTarget.apply(get_type_ast_expr, axis="columns", result_type="expand")
+		dataframeTarget[["type_ast_expr", "attributeType"]] = dataframeTarget.apply(get_type_ast_expr, axis="columns", result_type="expand")
 		return dataframeTarget
 
 	dataframe = pandas.concat(objs=[dataframe, newRowsFrom_match_args(dataframe)], axis="index", ignore_index=True)
 
 	dataframe.attrs["drop_duplicates"].extend(["attribute"])
-	dataframe["type"] = dataframe[["ClassDefIdentifier", "attribute"]].apply(tuple, axis="columns").map(type__ClassDefIdentifier_attribute).fillna(dataframe["type"])
+	dataframe = dictionary2Dataframe(attributeType__ClassDefIdentifier_attribute, dataframe)
 	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs["drop_duplicates"], keep="last")
 
 	def newRows_attributes(dataframeTarget: pandas.DataFrame) -> pandas.DataFrame:
@@ -206,41 +203,22 @@ def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dataframe["ast_arg"] = dataframe.apply(makeColumn_ast_arg, axis="columns")
 	return dataframe
 
-def _makeColumn_attributeRename(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe["attributeRename"] = pandas.Series(data=dataframe["attribute"], index=dataframe.index, dtype=str, name="attributeRename", copy=True)
-	dataframe["attributeRename"] = dataframe["attribute"].map(attributeRename__attribute).fillna(dataframe["attributeRename"])
-	dataframe["attributeRename"] = dataframe[["ClassDefIdentifier", "attribute"]].apply(tuple, axis="columns").map(attributeRename__ClassDefIdentifier_attribute).fillna(dataframe["attributeRename"])
-	return dataframe
-
-def _makeColumn_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe["defaultValue"] = "No"  # Default value for the column
-	dataframe["defaultValue"] = dataframe["attribute"].map(defaultValue__attribute).fillna(dataframe["defaultValue"])
-	dataframe["defaultValue"] = dataframe[["ClassDefIdentifier", "attribute"]].apply(tuple, axis="columns").map(defaultValue__ClassDefIdentifier_attribute).fillna(dataframe["defaultValue"])
-	dataframe["defaultValue"] = dataframe[["type", "attribute"]].apply(tuple, axis="columns").map(defaultValue__type_attribute).fillna(dataframe["defaultValue"])
-	return dataframe
-
 def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dataframe["list2Sequence"] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name="list2Sequence")
 	containsListSuperClass = pandas.Series(data=False, index=dataframe.index, dtype=bool)
 	for ClassDefIdentifier in settingsManufacturing.astSuperClasses:
-		containsListSuperClass |= dataframe["type"].str.contains("list", regex=False, na=False) & dataframe["type"].str.contains(ClassDefIdentifier, regex=False, na=False)
+		containsListSuperClass |= dataframe["attributeType"].str.contains("list", regex=False, na=False) & dataframe["attributeType"].str.contains(ClassDefIdentifier, regex=False, na=False)
 	dataframe.loc[containsListSuperClass, "list2Sequence"] = True
 	return dataframe
 
-def _makeColumn_move2keywordArguments(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe["move2keywordArguments"] = False  # Default value for the column
-	dataframe["move2keywordArguments"] = dataframe["attributeKind"].map(move2keywordArguments__attributeKind).fillna(dataframe["move2keywordArguments"])
-	dataframe["move2keywordArguments"] = dataframe["attribute"].map(move2keywordArguments__attribute).fillna(dataframe["move2keywordArguments"])
-	return dataframe
-
 def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe.loc[dataframe["list2Sequence"], "type_ast_expr"] = dataframe["type"].str.replace("list", "Sequence").apply(_pythonCode2expr)
-	dataframe.loc[~dataframe["list2Sequence"], "type_ast_expr"] = dataframe["type"].apply(_pythonCode2expr)
-	dataframe.loc[dataframe["type"] == "No", "type_ast_expr"] = "No"
+	dataframe.loc[dataframe["list2Sequence"], "type_ast_expr"] = dataframe["attributeType"].str.replace("list", "Sequence").apply(_pythonCode2expr)
+	dataframe.loc[~dataframe["list2Sequence"], "type_ast_expr"] = dataframe["attributeType"].apply(_pythonCode2expr)
+	dataframe.loc[dataframe["attributeType"] == "No", "type_ast_expr"] = "No"
 	return dataframe
 
 def _makeColumn_type_astSuperClasses(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe["type_astSuperClasses"] = dataframe["type"].replace(
+	dataframe["type_astSuperClasses"] = dataframe["attributeType"].replace(
 		{f"ast.{ClassDefIdentifier}": identifierTypeVar for ClassDefIdentifier, identifierTypeVar in settingsManufacturing.astSuperClasses.items()},
 		regex=True,
 	)
@@ -282,47 +260,54 @@ def _makeColumnTypeAlias_hasDOTSubcategory(dataframe: pandas.DataFrame) -> panda
 	dataframe["TypeAlias_hasDOTSubcategory"] = numpy.where(
 		(attribute := dataframe["TypeAlias_hasDOTIdentifier"]) == "No",
 		"No",
-		cast("str", attribute) + "_" + dataframe["type"].str.replace("|", "Or", regex=False).str.replace("[", "_", regex=False).str.replace("[\\] ]", "", regex=True).str.replace("ast.", "", regex=False),
+		cast("str", attribute) + "_" + dataframe["attributeType"].str.replace("|", "Or", regex=False).str.replace("[", "_", regex=False).str.replace("[\\] ]", "", regex=True).str.replace("ast.", "", regex=False),
 	)
 	return dataframe
 
-def _make_keywordOrList(attributePROXY: dict[str, str | bool]) -> ast.keyword:
+def _make_keywordOrList(attributePROXY: dict[str, str | bool | ast.expr]) -> ast.keyword:
 	keywordValue = Make.Name(cast("str", attributePROXY["attributeRename"]))
 	if attributePROXY["list2Sequence"] is True:
-		keywordValue = Make.IfExp(test=keywordValue, body=Make.Call(Make.Name("list"), [keywordValue]), orElse= Make.List())
+		keywordValue = Make.IfExp(test=keywordValue, body=Make.Call(Make.Name("list"), [keywordValue]), orElse=cast("ast.expr", attributePROXY['orElse']))
 	else:
-		keywordValue = Make.Or.join([keywordValue, Make.List()])
+		keywordValue = Make.Or.join([keywordValue, cast("ast.expr", attributePROXY['orElse'])])
 	return Make.keyword(cast("str", attributePROXY["attribute"]), keywordValue)
 
 def _moveMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	for columnValue in LISTdefaultValue_ast_arg_Call_keyword__attribute + LISTdefaultValue_ast_arg_Call_keyword__ClassDefIdentifier_attribute:
-		maskColumnValue = pandas.concat(
-			[*[dataframe[column] == value for column, value in columnValue._asdict().items()]]
-		, axis=1).all(axis=1)
+	for columnValue, orElse in dictionary_defaultValue_ast_arg_Call_keyword_orElse.items():
+		maskByColumnValue = getMaskByColumnValue(dataframe, columnValue)
 
-		attributePROXY = dataframe.loc[maskColumnValue, ["attribute", "type", "attributeRename", "move2keywordArguments", "list2Sequence"]].drop_duplicates().to_dict(orient="records")
+		attributePROXY = dataframe.loc[maskByColumnValue, ["attribute", "attributeType", "attributeRename", "move2keywordArguments", "list2Sequence"]].drop_duplicates().to_dict(orient="records")
 
 		if len(attributePROXY) > 1:
 			message = f"Your current system assumes attribute '{attributePROXY[0]['attribute']}' is the same whenever it is used, but this function got {len(attributePROXY)} variations."
 			raise ValueError(message)
 
-		attributePROXY = cast("dict[str, str | bool]", attributePROXY[0])
+		attributePROXY = cast("dict[str, str | bool | ast.expr]", attributePROXY[0])
 		if cast("bool", attributePROXY["move2keywordArguments"]):
 			message = f"Your current system assumes attribute '{attributePROXY['attribute']}' is not a keyword argument, but this function got {attributePROXY}."
 			raise ValueError(message)
 
-		dataframe.loc[maskColumnValue, "defaultValue"] = Make.Constant(None) # pyright: ignore[reportCallIssue, reportArgumentType]
-		attributeType = cast("str", attributePROXY["type"]) + " | None"
+		dataframe.loc[maskByColumnValue, "defaultValue"] = Make.Constant(None) # pyright: ignore[reportCallIssue, reportArgumentType]
+		attributeType = cast("str", attributePROXY["attributeType"]) + " | None"
 		if attributePROXY["list2Sequence"] is True:
 			attributeType = attributeType.replace("list", "Sequence")
-		dataframe.loc[maskColumnValue, "ast_arg"] = Make.arg(cast("str", attributePROXY["attributeRename"]), annotation=cast("ast.expr", _pythonCode2expr(attributeType))) # pyright: ignore[reportCallIssue, reportArgumentType]
-		dataframe.loc[maskColumnValue, "Call_keyword"] = _make_keywordOrList(attributePROXY) # pyright: ignore[reportCallIssue, reportArgumentType]
+		dataframe.loc[maskByColumnValue, "ast_arg"] = Make.arg(cast("str", attributePROXY["attributeRename"]), annotation=cast("ast.expr", _pythonCode2expr(attributeType))) # pyright: ignore[reportCallIssue, reportArgumentType]
+		attributePROXY['orElse'] = orElse
+		dataframe.loc[maskByColumnValue, "Call_keyword"] = _make_keywordOrList(attributePROXY) # pyright: ignore[reportCallIssue, reportArgumentType]
 
 	return dataframe
 
 def _pythonCode2expr(string: str) -> Any:
 	astModule: ast.Module = ast.parse(string)
 	return raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
+
+def dictionary2Dataframe(dictionary: Mapping[MaskTuple, column__value], dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	for columnValueMask, assign in dictionary.items():
+		dataframe.loc[getMaskByColumnValue(dataframe, columnValueMask), assign.column] = assign.value
+	return dataframe
+
+def getMaskByColumnValue(dataframe: pandas.DataFrame, columnValue: MaskTuple) -> pandas.Series:
+	return pandas.concat([*[dataframe[column] == value for column, value in columnValue._asdict().items()]], axis=1).all(axis=1)
 
 def updateDataframe() -> None:
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
@@ -353,9 +338,16 @@ def updateDataframe() -> None:
 	# TODO finish `_getDataFromStubFile`
 	dataframe = _getDataFromStubFile(dataframe)
 
-	dataframe = _makeColumn_attributeRename(dataframe)
-	dataframe = _makeColumn_move2keywordArguments(dataframe)
-	dataframe = _makeColumn_defaultValue(dataframe)
+	dataframe["attributeRename"] = pandas.Series(data=dataframe["attribute"], index=dataframe.index, dtype=str, name="attributeRename", copy=True)
+	dataframe = dictionary2Dataframe(attributeRename__attribute, dataframe)
+	dataframe = dictionary2Dataframe(attributeRename__ClassDefIdentifier_attribute, dataframe)
+	dataframe["move2keywordArguments"] = pandas.Series(data=False, index=dataframe.index, dtype=object, name="move2keywordArguments", copy=True)
+	dataframe = dictionary2Dataframe(move2keywordArguments__attribute, dataframe)
+	dataframe = dictionary2Dataframe(move2keywordArguments__attributeKind, dataframe)
+	dataframe["defaultValue"] = pandas.Series(data="No", index=dataframe.index, dtype=str, name="defaultValue", copy=True)
+	dataframe = dictionary2Dataframe(defaultValue__attribute, dataframe)
+	dataframe = dictionary2Dataframe(defaultValue__attributeType_attribute, dataframe)
+	dataframe = dictionary2Dataframe(defaultValue__ClassDefIdentifier_attribute, dataframe)
 	dataframe["classAs_astAttribute"] = dataframe["ClassDefIdentifier"].astype(str).map(_make_astAttribute)
 	dataframe = _makeColumn_list2Sequence(dataframe)
 	dataframe = _makeColumn_type_ast_expr(dataframe)
@@ -371,6 +363,7 @@ def updateDataframe() -> None:
 	dataframe = _moveMutable_defaultValue(dataframe)
 	dataframe = _sortCaseInsensitive(dataframe, ["ClassDefIdentifier", "versionMinorPythonInterpreter", "attribute"]
 								, caseInsensitive=[True, False, True], ascending=[True, False, True])
+	# TODO Figure out overload for `Make`
 	dataframe = _make4ColumnsOfLists(dataframe)
 
 	dataframe.to_pickle(settingsManufacturing.pathFilenameDataframeAST)

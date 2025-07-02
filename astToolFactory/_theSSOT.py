@@ -8,6 +8,7 @@ from importlib import import_module as importlib_import_module
 from inspect import getfile as inspect_getfile
 from pathlib import Path
 from tomli import loads as tomli_loads
+from typing import Any, NamedTuple, TypeVar
 import dataclasses
 
 """Eliminate hardcoding"""
@@ -119,3 +120,11 @@ settings_astToolkit = ManufacturedPackageSettings(
 # 2) Infrastructure for more than one group of settings
 # It will probably never be used but it's the "right" way to design this
 settingsManufacturing: ManufacturedPackageSettings = deepcopy(settings_astToolkit)
+
+class column__value(NamedTuple):
+	"""A column name and its value."""
+
+	column: str
+	value: Any
+
+MaskTuple = TypeVar('MaskTuple', bound=NamedTuple, covariant=True)

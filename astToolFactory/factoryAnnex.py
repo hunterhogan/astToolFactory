@@ -2,7 +2,7 @@
 from astToolFactory import astName_overload, astName_staticmethod, settingsManufacturing
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
-from typing_extensions import NotRequired, TypedDict
+from typing import NotRequired, TypedDict
 import ast
 
 # `Grab` =====================================================================
@@ -18,6 +18,28 @@ FunctionDefGrab_andDoAllOf: ast.stmt = Make.FunctionDef('andDoAllOf'
 
 # `Make` =====================================================================
 def makeFunctionDef_join(identifierContainer: str, identifierCallee: str, docstring: ast.Expr) -> ast.stmt:
+	"""Create a `FunctionDef` AST node for a join method.
+
+	(AI generated docstring)
+
+	Constructs a `classmethod` `FunctionDef` that accepts expressions and joins them using a specified callee method.
+	The generated method signature includes type annotations for container types and supports keyword arguments.
+
+	Parameters
+	----------
+	identifierContainer : str
+		The type identifier for the expressions container (e.g., 'Sequence', 'Iterable').
+	identifierCallee : str
+		The method name to call on `Make` for joining the expressions.
+	docstring : ast.Expr
+		The docstring expression to include in the function body.
+
+	Returns
+	-------
+	functionDef : ast.stmt
+		A `FunctionDef` AST node representing the join method.
+
+	"""
 	return Make.FunctionDef('join'
 		, Make.arguments(list_arg=[Make.arg('cls'), Make.arg('expressions', annotation=Make.Subscript(Make.Name(identifierContainer), slice=Make.Attribute(Make.Name('ast'), 'expr')))]
 						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
@@ -84,33 +106,34 @@ FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturin
 	, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
 FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
-	, argumentSpecification=Make.arguments(list_arg=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
-						, vararg=Make.arg('attribute', annotation=Make.Name('str'))
-						, kwonlyargs=[Make.arg('context', annotation=Make.Attribute(Make.Name('ast'), 'expr_context'))]
-						, kw_defaults=[Make.Call(Make.Attribute(Make.Name('ast'), 'Load'))]
-						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
+	, Make.arguments(list_arg=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
+		, vararg=Make.arg('attribute', annotation=Make.Name('str'))
+		, kwonlyargs=[Make.arg('context', annotation=Make.BitOr.join([Make.Attribute(Make.Name('ast'), 'expr_context'), Make.Constant(None)]))]
+		, kw_defaults=[Make.Constant(None)]
+		, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 	, body=[docstrings[settingsManufacturing.identifiers['Make']]['Attribute']
+		, Make.Assign([Make.Name('ctx', Make.Store())], value=Make.Or.join([Make.Name('context'), Make.Call(Make.Attribute(Make.Name('ast'), 'Load'))]))
 		, Make.FunctionDef('addDOTattribute'
-			, argumentSpecification=Make.arguments(list_arg=[Make.arg('chain', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
-										, Make.arg('identifier', annotation=Make.Name('str'))
-										, Make.arg('context', annotation=Make.Attribute(Make.Name('ast'), 'expr_context'))]
-								, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
+			, Make.arguments(list_arg=[Make.arg('chain', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
+					, Make.arg('identifier', annotation=Make.Name('str'))
+					, Make.arg('ctx', annotation=Make.Attribute(Make.Name('ast'), 'expr_context'))]
+				, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 			, body=[Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), 'Attribute')
-										, list_keyword=[Make.keyword('value', Make.Name('chain')), Make.keyword('attr', Make.Name('identifier'))
-													, Make.keyword('ctx', Make.Name('context')), Make.keyword(None, value=Make.Name('keywordArguments'))]))]
+					, list_keyword=[Make.keyword('value', Make.Name('chain')), Make.keyword('attr', Make.Name('identifier'))
+						, Make.keyword('ctx', Make.Name('ctx')), Make.keyword(None, value=Make.Name('keywordArguments'))]))]
 			, returns=Make.Attribute(Make.Name('ast'), 'Attribute'))
 		, Make.Assign([Make.Name('buffaloBuffalo', Make.Store())], value=Make.Call(Make.Name('addDOTattribute')
-																				, listParameters=[Make.Name('value'), Make.Subscript(Make.Name('attribute'), slice=Make.Constant(0)), Make.Name('context')]
-																				, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))
+					, listParameters=[Make.Name('value'), Make.Subscript(Make.Name('attribute'), slice=Make.Constant(0)), Make.Name('ctx')]
+					, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))
 		, Make.For(Make.Name('identifier', Make.Store()), iter=Make.Subscript(Make.Name('attribute'), slice=Make.Slice(lower=Make.Constant(1), upper=Make.Constant(None)))
 			, body=[Make.Assign([Make.Name('buffaloBuffalo', Make.Store())], value=Make.Call(Make.Name('addDOTattribute')
-																				, listParameters=[Make.Name('buffaloBuffalo'), Make.Name('identifier'), Make.Name('context')]
-																				, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))])
+					, listParameters=[Make.Name('buffaloBuffalo'), Make.Name('identifier'), Make.Name('ctx')]
+					, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))])
 		, Make.Return(Make.Name('buffaloBuffalo'))]
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), 'Attribute'))
 
-# This relatively simple can probably be removed from the annex after I tweak a few things in the dataframe.
+# This relatively simple FunctionDef can probably be removed from the annex after I tweak a few things in the dataframe.
 # Minimum changes in the dataframe data for this 'ClassDefIdentifier': 'attributeRename', override 'type'.
 # Oh, wait. I don't plan to add anything that would _add_ `Make.arg('asName')` to 'match_args'.
 FunctionDefMake_Import: ast.stmt = Make.FunctionDef('Import'
@@ -211,8 +234,7 @@ astModule_theSSOT = Make.Module([
 
 # `TypeAlias` =====================================================================
 listHandmade_astTypes: list[ast.stmt] = [
-    # _ConstantValue: typing_extensions.TypeAlias = str | bytes | bool | int | float | complex | None | EllipsisType
-    # If I automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include `bytes` or `range`.
+    # If I were to automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include `bytes` or `range`.
     # And, I would change the identifier to `ast_ConstantValue`.
 	Make.AnnAssign(Make.Name('ConstantValueType', Make.Store()), annotation=Make.Name('typing_TypeAlias')
 		, value=Make.BitOr().join(Make.Name(identifier)
@@ -223,6 +245,26 @@ listHandmade_astTypes: list[ast.stmt] = [
 ]
 
 class dataTypeVariables(TypedDict):
+	"""Type specification for `TypeVar` configuration data.
+
+	(AI generated docstring)
+
+	Defines the structure for configuration parameters used when creating `TypeVar` instances.
+	All fields are optional and provide different aspects of type variable behavior.
+
+	Attributes
+	----------
+	constraints : NotRequired[list[ast.expr]]
+		List of constraint expressions that limit the type variable to specific types.
+	bound : NotRequired[ast.expr]
+		Upper bound expression that constrains the type variable to subtypes.
+	tuple_keyword : NotRequired[list[tuple[str, bool]]]
+		Keyword arguments as tuples of parameter name and boolean value.
+	default_value : NotRequired[ast.expr]
+		Default value expression for the type variable.
+
+	"""
+
 	constraints: NotRequired[list[ast.expr]]
 	bound: NotRequired[ast.expr]
 	tuple_keyword: NotRequired[list[tuple[str, bool]]]
@@ -260,7 +302,8 @@ for identifierTypeVariable, data in typeVariables.items():
 		, list_keyword=list_keyword)))
 
 listHandmade_astTypes.extend([
-	# TODO, a non-trivial automatic transformation from ast.pyi `TypedDict._Attributes` and `TypeVar._EndPositionT` to the following:
+# ruff: noqa: FBT003
+	# TODO, a non-trivial automatic transformation from ast.pyi `TypedDict._Attributes` and `TypeVar._EndPositionT` to the following
 	Make.ClassDef('_attributes', bases=[Make.Name('TypedDict')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
 		, body=[Make.AnnAssign(Make.Name('lineno', Make.Store()), annotation=Make.Name('int'))
 			, Make.AnnAssign(Make.Name('col_offset', Make.Store()), annotation=Make.Name('int'))

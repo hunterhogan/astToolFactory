@@ -77,6 +77,7 @@ diminutive2etymology: dict[str, str] = {
 	'defaults': '',
 	'Del': '***Del***ete',
 	'Delete': '',
+	'dict': '***dict***ionary',
 	'Dict': '***Dict***ionary',
 	'DictComp': '***Dict***ionary ***c***o***mp***rehension',
 	'Div': '***Div***ision',

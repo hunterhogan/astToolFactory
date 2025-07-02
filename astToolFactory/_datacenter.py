@@ -105,7 +105,7 @@ def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tup
 	return dataframe.to_records(index=False).tolist()
 
 def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str, list[ast.expr], int, int]]:  # noqa: ARG001
-	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimumAttribute", "type_ast_expr", "type", "TypeAlias_hasDOTIdentifier"]
+	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimumAttribute", "type_ast_expr", "attributeType", "TypeAlias_hasDOTIdentifier"]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
 
@@ -146,7 +146,7 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 			overloadDefinition=False,
 			TypeAlias_hasDOTSubcategory="No",
 			type_ast_expr="No",
-			type="No",
+			attributeType="No",
 		)[dataframe.columns])
 	], ignore_index=True).sort_values("attribute", kind="stable")
 
@@ -159,18 +159,18 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 		matchingRows: pandas.DataFrame = (
 			dataframe.loc[
 				(dataframe["attribute"] == dataframeTarget["attribute"])
-				& (dataframe["type"] != "No")
+				& (dataframe["attributeType"] != "No")
 				& (dataframe["versionMinorMinimum"] <= dataframeTarget["versionMinorMinimum"]),
-				["type_ast_expr", "type"],
+				["type_ast_expr", "attributeType"],
 			]
-			.drop_duplicates(subset="type")
-			.sort_values("type", key=lambda x: x.str.lower())
+			.drop_duplicates(subset="attributeType")
+			.sort_values("attributeType", key=lambda x: x.str.lower())
 		)
 
 		return matchingRows["type_ast_expr"].tolist()
 
 	dataframe["list_ast_expr"] = dataframe.apply(makeColumn_list_ast_expr, axis="columns")
-	dataframe = dataframe.drop(columns=["type_ast_expr", "type"])
+	dataframe = dataframe.drop(columns=["type_ast_expr", "attributeType"])
 
 	byColumn: str = "identifierTypeOfNode"
 	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
@@ -188,14 +188,14 @@ def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	ascending: list[bool] = caseInsensitive.copy()
 	drop_duplicates: list[str] = listColumns[0:2]
 
-	index_type: int = 1
+	index_attributeType: int = 1
 	index_type_ast_expr: int = 4
 	index_versionMinorMinimum: int = 2
 
 	dataframe: pandas.DataFrame = getDataframe(**keywordArguments).query("attributeKind == '_field'")[listColumns].pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending).drop_duplicates(drop_duplicates, keep="last").reset_index(drop=True)
 
 	dataframe = dataframe.rename(columns={
-		listColumns[index_type]: "type",
+		listColumns[index_attributeType]: "attributeType",
 		listColumns[index_type_ast_expr]: "type_ast_expr",
 		listColumns[index_versionMinorMinimum]: "versionMinorMinimum",
 	})
@@ -208,8 +208,8 @@ def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[t
 		matchingRows: pandas.DataFrame = dataframe.loc[
 			(dataframe["attribute"] == dataframeTarget["attribute"])
 			& (dataframe["versionMinorMinimum"] <= dataframeTarget["versionMinorMinimum"]),
-			["type_ast_expr", "type"],
-		].sort_values("type", key=lambda x: x.str.lower())
+			["type_ast_expr", "attributeType"],
+		].sort_values("attributeType", key=lambda x: x.str.lower())
 
 		return matchingRows["type_ast_expr"].tolist()
 
