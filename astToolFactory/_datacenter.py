@@ -240,7 +240,9 @@ def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	return dataframe.to_records(index=False).tolist()
 
 def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.expr], int, int]]:
-	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "ClassDefIdentifier", "versionMinorMinimumAttribute", "classAs_astAttribute", "TypeAlias_hasDOTIdentifier"]
+	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "ClassDefIdentifier", "versionMinorMinimumAttribute",
+		"classAs_astAttribute", "TypeAlias_hasDOTIdentifier", "list4TypeAlias_value",
+		"hashable_list4TypeAlias_value", "list4TypeAliasSubcategories"]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
 
@@ -251,9 +253,7 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 
 	index_versionMinorMinimum: int = 3
 
-	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)
-				.query("attributeKind == '_field'")
-				[listColumns]
+	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments).query("attributeKind == '_field'")[listColumns]
 				.pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending)
 				.drop_duplicates(drop_duplicates, keep="last").reset_index(drop=True))
 	dataframe = dataframe.rename(columns={listColumns[index_versionMinorMinimum]: "versionMinorMinimum"})
@@ -261,51 +261,26 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 
 	elementsTarget: list[str] = ["identifierTypeAlias", "list4TypeAlias_value", "guardVersion", "versionMinorMinimum"]
 
-	def makeColumn_list4TypeAlias_value(dataframeTarget: pandas.DataFrame) -> tuple[list[Any], str]:
-		"""For each 'TypeAlias_hasDOTSubcategory', make a `list` of `ast.expr` representing the `ast.AST` subclasses in the `TypeAlias_hasDOTSubcategory`."""
-		matchingRows: pandas.DataFrame = (
-			dataframe.loc[
-				(dataframe["TypeAlias_hasDOTSubcategory"] == dataframeTarget["TypeAlias_hasDOTSubcategory"])
-				& (dataframe["ClassDefIdentifier"] != "No")
-				& (dataframe["versionMinorMinimum"] <= dataframeTarget["versionMinorMinimum"]),
-				["classAs_astAttribute", "ClassDefIdentifier"],
-			]
-			.drop_duplicates(subset="ClassDefIdentifier")
-			.sort_values("ClassDefIdentifier", key=lambda x: x.str.lower())
-		)
-
-		return matchingRows["classAs_astAttribute"].tolist(), str(matchingRows["ClassDefIdentifier"].tolist())
-
-	dataframe[["list4TypeAlias_value", "hashable_list4TypeAlias_value"]] = dataframe.apply(makeColumn_list4TypeAlias_value, axis="columns", result_type="expand")
 	dataframe = dataframe.drop_duplicates(subset=["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimum", "hashable_list4TypeAlias_value"])
 
 	def addRows_hasDOTIdentifier4Subcategories(groupBy: pandas.DataFrame) -> pandas.DataFrame:
 		arrayGroupBy: NDArray[numpy.str_] = groupBy["TypeAlias_hasDOTSubcategory"].to_numpy()
-		# See https://docs.astral.sh/ruff/rules/pandas-nunique-constant-series-check/  # noqa: ERA001
 		if (arrayGroupBy[0] == arrayGroupBy).all():
 			return groupBy
 
-		rows_hasDOTIdentifier: pandas.DataFrame = (
-			groupBy.drop_duplicates(subset="TypeAlias_hasDOTSubcategory", keep="last")[["versionMinorMinimum"]]
-			.drop_duplicates()
-			.assign(
-				attribute=groupBy["attribute"].iloc[0],
-				TypeAlias_hasDOTSubcategory="No",
+		rows_hasDOTIdentifier: pandas.DataFrame = (groupBy.drop_duplicates(subset="TypeAlias_hasDOTSubcategory", keep="last")[["versionMinorMinimum"]].drop_duplicates()
+			.assign(attribute=groupBy["attribute"].iloc[0], TypeAlias_hasDOTSubcategory="No",
 				TypeAlias_hasDOTIdentifier=groupBy["TypeAlias_hasDOTIdentifier"].iloc[0],
-				list4TypeAlias_value=[[Make.Name(subcategory) for subcategory in groupBy["TypeAlias_hasDOTSubcategory"]]], # pyright: ignore[reportArgumentType]
-			)
+				list4TypeAlias_value=[groupBy["list4TypeAliasSubcategories"].iloc[0]])
 		)
-
 		return pandas.concat([groupBy, rows_hasDOTIdentifier])
 
-	dataframe = (dataframe.sort_values("versionMinorMinimum", ascending=False)
-		.groupby("attribute")[dataframe.columns].apply(addRows_hasDOTIdentifier4Subcategories).reset_index(drop=True)
-	)
+	dataframe = dataframe.groupby("attribute")[dataframe.columns].apply(addRows_hasDOTIdentifier4Subcategories).reset_index(drop=True)
 
 	dataframe["identifierTypeAlias"] = dataframe["TypeAlias_hasDOTIdentifier"].where(
-		dataframe.groupby("attribute")["TypeAlias_hasDOTSubcategory"].transform("nunique") == 1,
-		dataframe["TypeAlias_hasDOTSubcategory"].where(dataframe["TypeAlias_hasDOTSubcategory"] != "No"
-													, dataframe["TypeAlias_hasDOTIdentifier"]),
+		dataframe.groupby("attribute")["TypeAlias_hasDOTSubcategory"].transform("nunique") == 1
+		, dataframe["TypeAlias_hasDOTSubcategory"].where(dataframe["TypeAlias_hasDOTSubcategory"] != "No"
+														, dataframe["TypeAlias_hasDOTIdentifier"])
 	)
 
 	byColumn: str = "identifierTypeAlias"

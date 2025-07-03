@@ -166,30 +166,6 @@ listOverloads_keyword: list[ast.stmt] = [
 		, decorator_list=[Make.Name('staticmethod'), Make.Name('overload')]
 		, returns=Make.Attribute(Make.Name('ast'), 'keyword'))]
 
-listOverloadsTypeAlias: list[ast.stmt] = [
-	Make.FunctionDef('TypeAlias'
-		, argumentSpecification=Make.arguments(list_arg=[Make.arg('name', annotation=Make.Attribute(Make.Name('ast'), 'Name'))
-				, Make.arg('type_params', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'type_param')))
-			]
-			, kwonlyargs=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
-			, kw_defaults=[None]
-			, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
-			, defaults=[Make.List()]
-		)
-		, body=[Make.Expr(Make.Constant(...))]
-		, decorator_list=[astName_staticmethod, astName_overload]
-		, returns=Make.Attribute(Make.Name('ast'), 'TypeAlias'))
-	, Make.FunctionDef('TypeAlias'
-		, argumentSpecification=Make.arguments(list_arg=[Make.arg('name', annotation=Make.Attribute(Make.Name('ast'), 'Name'))
-				, Make.arg('type_params', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'type_param')))
-				, Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
-			]
-			, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
-		, body=[Make.Expr(Make.Constant(...))]
-		, decorator_list=[astName_staticmethod, astName_overload]
-		, returns=Make.Attribute(Make.Name('ast'), 'TypeAlias'))
-]
-
 # `theSSOT` =====================================================================
 astModule_theSSOT = Make.Module([
     Make.ImportFrom('importlib', list_alias=[Make.alias('import_module', asName='importlib_import_module')])
@@ -236,12 +212,10 @@ astModule_theSSOT = Make.Module([
 listHandmade_astTypes: list[ast.stmt] = [
     # If I were to automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include `bytes` or `range`.
     # And, I would change the identifier to `ast_ConstantValue`.
-	Make.AnnAssign(Make.Name('ConstantValueType', Make.Store()), annotation=Make.Name('typing_TypeAlias')
+	Make.TypeAlias(Make.Name('ConstantValueType', Make.Store()), type_params=[]
 		, value=Make.BitOr().join(Make.Name(identifier)
-				for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float', 'int', 'None', 'range', 'str']
-			)
-	),
-	Make.AnnAssign(Make.Name('identifierDotAttribute', Make.Store()), annotation=Make.Name('typing_TypeAlias'), value=Make.Name('str')),
+			for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float', 'int', 'None', 'range', 'str']))
+	, Make.TypeAlias(Make.Name('identifierDotAttribute', Make.Store()), type_params=[], value=Make.Name('str'))
 ]
 
 class dataTypeVariables(TypedDict):

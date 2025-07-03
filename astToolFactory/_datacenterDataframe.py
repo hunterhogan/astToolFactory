@@ -6,7 +6,7 @@ from astToolFactory import column__value, MaskTuple, pathRoot_typeshed, settings
 from astToolFactory._datacenter import _sortCaseInsensitive, getDataframe
 from astToolFactory._datacenterAnnex import (
 	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, defaultValue__,
-	dictionary_defaultValue_ast_arg_Call_keyword_orElse, move2keywordArguments__, Column__ClassDefIdentifier_versionMinorMinimum_match_args
+	dictionary_defaultValue_ast_arg_Call_keyword_orElse, move2keywordArguments__,
 )
 from astToolFactory.cpython import getDictionary_match_args
 from astToolkit import (
@@ -14,10 +14,9 @@ from astToolkit import (
 	Then,
 )
 from astToolkit.transformationTools import makeDictionaryClassDef
-from collections import ChainMap
 from collections.abc import Callable, Mapping, Sequence
 from functools import cache
-from typing import Any, NamedTuple, cast
+from typing import Any, cast
 from Z0Z_tools import raiseIfNone
 import ast
 import numpy
@@ -90,7 +89,7 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 			type_ast_expr: ast.expr = raiseIfNone(getAnnotation.captureLastMatch(dictionaryClassDef[ClassDefIdentifier]))
 
-			type_ast_expr = NodeChanger(Be.Subscript.valueIs(IfThis.isNameIdentifier("Literal")), Then.replaceWith(Make.Name("bool"))).visit(type_ast_expr)
+			NodeChanger(Be.Subscript.valueIs(IfThis.isNameIdentifier("Literal")), Then.replaceWith(Make.Name("bool"))).visit(type_ast_expr)
 
 			dddataframeee["type_ast_expr"] = NodeChanger[ast.Name, ast.expr](
 				lambda node: Be.Name(node) and isinstance(eval(node.id), type) and issubclass(eval(node.id), ast.AST),  # noqa: S307
@@ -106,8 +105,8 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dataframe = pandas.concat(objs=[dataframe, newRowsFrom_match_args(dataframe)], axis="index", ignore_index=True)
 
 	dataframe.attrs["drop_duplicates"].extend(["attribute"])
-	dataframe = dictionary2Dataframe(attributeType__ClassDefIdentifier_attribute, dataframe)
 	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs["drop_duplicates"], keep="last")
+	dataframe = dictionary2Dataframe(attributeType__ClassDefIdentifier_attribute, dataframe)
 
 	def newRows_attributes(dataframeTarget: pandas.DataFrame) -> pandas.DataFrame:
 		"""TODO If there is 'match_args', each element of 'match_args' is an attribute."""
@@ -238,6 +237,53 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dataframe["Call_keyword"] = dataframe.apply(workhorse, axis="columns")
 	return dataframe
 
+def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	dataframe["list4TypeAlias_value"] = pandas.Series(data='No', index=dataframe.index, dtype=object)
+	dataframe["hashable_list4TypeAlias_value"] = pandas.Series(data='No', index=dataframe.index, dtype=str)
+
+	def compute_list4TypeAliasByRow(dataframeTarget: pandas.DataFrame) -> tuple[list[Any], str]:
+		maskSubcategory = (
+			(dataframe["attributeKind"] == "_field")
+			& ~ (dataframe["deprecated"])
+			& (dataframe["TypeAlias_hasDOTSubcategory"] == dataframeTarget["TypeAlias_hasDOTSubcategory"])
+			& (dataframe["versionMinorMinimumAttribute"] <= dataframeTarget["versionMinorMinimumAttribute"])
+		)
+		if not maskSubcategory.any():
+			return [], "[]"
+		matchingRows = (
+			dataframe.loc[maskSubcategory, ["classAs_astAttribute", "ClassDefIdentifier"]]
+			.drop_duplicates(subset="ClassDefIdentifier")
+			.sort_values("ClassDefIdentifier", key=lambda x: x.str.lower())
+		)
+		return matchingRows["classAs_astAttribute"].tolist(), str(matchingRows["ClassDefIdentifier"].tolist())
+
+	mask_assign = dataframe["attributeKind"] == "_field"
+	computed_values = dataframe[mask_assign].apply(compute_list4TypeAliasByRow, axis='columns', result_type="expand")
+	computed_values.columns = ["list4TypeAlias_value", "hashable_list4TypeAlias_value"]
+	dataframe.loc[mask_assign, ["list4TypeAlias_value", "hashable_list4TypeAlias_value"]] = computed_values
+	return dataframe
+
+def _makeColumn_list4TypeAliasSubcategories(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	mask_field = (dataframe["attributeKind"] == "_field")
+
+	dataframe["list4TypeAliasSubcategories"] = pandas.Series(data='No', index=dataframe.index, dtype=object)
+
+	def compute_list4TypeAliasSubcategories(groupBy: pandas.DataFrame) -> list[ast.expr]:
+		groupBy = groupBy[groupBy["TypeAlias_hasDOTSubcategory"] != "No"]
+		groupBy = groupBy[~groupBy["deprecated"]]
+		TypeAlias_hasDOTSubcategory = groupBy["TypeAlias_hasDOTSubcategory"].unique()
+		return [Make.Name(subcategory) for subcategory in sorted(TypeAlias_hasDOTSubcategory, key=lambda x: x.lower())]
+
+	# Create a mapping from attribute to subcategory names
+	list4TypeAliasSubcategories__attributeKind_attribute: dict[str, list[ast.expr]] = {}
+	for attribute, groupBy in dataframe[mask_field].groupby("attribute"):
+		list4TypeAliasSubcategories__attributeKind_attribute[str(attribute)] = compute_list4TypeAliasSubcategories(groupBy)
+
+	# Map the subcategory names to the appropriate rows using pandas map
+	dataframe.loc[mask_field, "list4TypeAliasSubcategories"] = dataframe.loc[mask_field, "attribute"].map(list4TypeAliasSubcategories__attributeKind_attribute)
+
+	return dataframe
+
 def _makeColumnTypeAlias_hasDOTSubcategory(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	columnNew = 'TypeAlias_hasDOTSubcategory'
 	dataframe[columnNew] = pandas.Series(data="No", index=dataframe.index, dtype="object", name=columnNew, copy=True)
@@ -331,6 +377,8 @@ def updateDataframe() -> None:
 	dataframe["type_astSuperClasses_ast_expr"] = numpy.where(dataframe["type_astSuperClasses"] == "No", "No", dataframe["type_astSuperClasses"].apply(_pythonCode2expr))
 	dataframe["TypeAlias_hasDOTIdentifier"] = numpy.where(dataframe["attributeKind"] == "_field", "hasDOT" + cast("str", dataframe["attribute"]), "No")
 	dataframe = _makeColumnTypeAlias_hasDOTSubcategory(dataframe)
+	dataframe = _makeColumn_list4TypeAlias(dataframe)
+	dataframe = _makeColumn_list4TypeAliasSubcategories(dataframe)
 	dataframe = _computeVersionMinimum(dataframe, ["ClassDefIdentifier", "match_args"], "versionMinorMinimum_match_args")
 	dataframe = _computeVersionMinimum(dataframe, ["ClassDefIdentifier", "attribute"], "versionMinorMinimumAttribute")
 	dataframe = _computeVersionMinimum(dataframe, ["ClassDefIdentifier"], "versionMinorMinimumClass")

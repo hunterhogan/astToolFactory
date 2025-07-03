@@ -72,10 +72,6 @@ class Column__ClassDefIdentifier_attribute(NamedTuple):
 	ClassDefIdentifier: str
 	attribute: str
 
-class Column__ClassDefIdentifier_versionMinorMinimum_match_args(NamedTuple):
-	ClassDefIdentifier: str
-	versionMinorMinimum_match_args: int
-
 attributeRename__: dict[Column__attribute | Column__ClassDefIdentifier_attribute, column__value] = {
 	Column__attribute('arg'): column__value('attributeRename', 'Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'),
 	Column__attribute('asname'): column__value('attributeRename', 'asName'),

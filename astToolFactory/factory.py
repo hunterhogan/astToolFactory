@@ -8,15 +8,15 @@ for the toolkit's code generation process.
 """
 
 from astToolFactory import (
-	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, astName_typing_TypeAlias,
-	getElementsBe, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call,
-	ManufacturedPackageSettings, settingsManufacturing, settingsPackage,
+	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, getElementsBe, getElementsDOT,
+	getElementsGrab, getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
+	settingsManufacturing, settingsPackage,
 )
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
 	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute, FunctionDefMake_Import,
-	listHandmade_astTypes, listOverloads_keyword, listOverloadsTypeAlias,
+	listHandmade_astTypes, listOverloads_keyword,
 )
 from astToolkit import (
 	astModuleToIngredientsFunction, Be, extractClassDef, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
@@ -165,12 +165,10 @@ def writeClass(
 def make_astTypes(**keywordArguments: Any) -> None:
 	"""Generate and write the AST types module.
 
-	(AI generated docstring)
-
 	Parameters
 	----------
 	**keywordArguments : Any
-			Additional keyword arguments for type generation.
+		Override `ManufacturedPackageSettings`.
 
 	Returns
 	-------
@@ -179,38 +177,25 @@ def make_astTypes(**keywordArguments: Any) -> None:
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
 	list4ModuleBody: list[ast.stmt] = []
-	ledgerOfImports = LedgerOfImports(
-		Make.Module(
-			[
-				Make.ImportFrom("types", [Make.alias("EllipsisType")]),
-				Make.ImportFrom(
-					"typing",
-					[
-						Make.alias("Any"),
-						Make.alias("TypeAlias", "typing_TypeAlias"),
-						Make.alias("TypedDict"),
-						Make.alias("TypeVar", "typing_TypeVar"),
-					],
-				),
-				Make.Import("ast"),
-				Make.Import("sys"),
-			]
-		)
-	)
+	ledgerOfImports = LedgerOfImports(Make.Module([
+		Make.ImportFrom("types", [Make.alias("EllipsisType")])
+		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("TypeAlias", "typing_TypeAlias"), Make.alias("TypedDict"), Make.alias("TypeVar", "typing_TypeVar")])
+		, Make.Import("ast")
+		, Make.Import("sys")]))
 
 	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias(**keywordArguments):  # noqa: B007
-		ast_stmt = Make.AnnAssign(
-			Make.Name(identifierTypeAlias, Make.Store()), astName_typing_TypeAlias, value=Make.BitOr.join(list4TypeAlias_value)
-		)
+		ast_stmt = Make.TypeAlias(Make.Name(identifierTypeAlias, Make.Store()), type_params=[], value=Make.BitOr.join(list4TypeAlias_value))
 
 		if guardVersion:
 			_makeGuardVersion()
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ModuleBody.append(ast_stmt)
 
-	astModule: ast.Module = Make.Module(
-		body=[docstringWarning, *ledgerOfImports.makeList_ast(), *listHandmade_astTypes, *list4ModuleBody]
-	)
+	astModule: ast.Module = Make.Module([
+		docstringWarning
+		, *ledgerOfImports.makeList_ast()
+		, *listHandmade_astTypes
+		, *list4ModuleBody])
 
 	writeModule(astModule, "_astTypes")
 
@@ -548,17 +533,15 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # noqa: C901, PLR0912
-	"""Generate and write the Make tool class for the AST toolkit.
-
-	(AI generated docstring)
+def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # noqa: C901
+	"""Generate and write `class` `Make` for `astToolkit`.
 
 	Parameters
 	----------
 	identifierToolClass : str
 			Name of the tool class to generate.
 	**keywordArguments : Any
-			Additional keyword arguments for tool generation.
+			Override `ManufacturedPackageSettings`.
 
 	Returns
 	-------
@@ -571,63 +554,41 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 	ledgerOfImports.addImportFrom_asStr("astToolkit", "ast_attributes")
 
 	list4ClassDefBody: list[ast.stmt] = [
-		docstrings[identifierToolClass][identifierToolClass],
-		FunctionDef_boolopJoinMethod,
-		FunctionDef_operatorJoinMethod,
-	]
+		docstrings[identifierToolClass][identifierToolClass]
+		, FunctionDef_boolopJoinMethod
+		, FunctionDef_operatorJoinMethod]
 
-	for (
-		ClassDefIdentifier,
-		listFunctionDef_args,
-		kwarg_annotationIdentifier,
-		defaults,
-		classAs_astAttribute,
-		overloadDefinition,
-		listCall_keyword,
-		guardVersion,
-		versionMinorMinimum,  # noqa: B007
-	) in getElementsMake(identifierToolClass, **keywordArguments):
+	for (ClassDefIdentifier, listFunctionDef_args, kwarg_annotationIdentifier, defaults, classAs_astAttribute, overloadDefinition,
+		listCall_keyword, guardVersion, versionMinorMinimum) in getElementsMake(identifierToolClass, **keywordArguments):  # noqa: B007
 		# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
 		if ClassDefIdentifier in [subclass.__name__ for subclass in ast.boolop.__subclasses__()]:
 			list4ClassDefBody.append(
-				Make.ClassDef(
-					ClassDefIdentifier,
-					bases=[Make.Attribute(Make.Name("ast"), ClassDefIdentifier)],
-					body=[docstrings[identifierToolClass][ClassDefIdentifier], FunctionDef_join_boolop],
-				)
-			)
+				Make.ClassDef(ClassDefIdentifier
+					, bases=[Make.Attribute(Make.Name("ast"), ClassDefIdentifier)]
+					, body=[docstrings[identifierToolClass][ClassDefIdentifier], FunctionDef_join_boolop]))
 			continue
-		if ClassDefIdentifier in [subclass.__name__ for subclass in ast.operator.__subclasses__()]:
+		elif ClassDefIdentifier in [subclass.__name__ for subclass in ast.operator.__subclasses__()]:
 			list4ClassDefBody.append(
-				Make.ClassDef(
-					ClassDefIdentifier,
-					bases=[Make.Attribute(Make.Name("ast"), ClassDefIdentifier)],
-					body=[docstrings[identifierToolClass][ClassDefIdentifier], FunctionDef_join_operator],
-				)
-			)
+				Make.ClassDef(ClassDefIdentifier
+					, bases=[Make.Attribute(Make.Name("ast"), ClassDefIdentifier)]
+					, body=[docstrings[identifierToolClass][ClassDefIdentifier], FunctionDef_join_operator]))
 			continue
-		if ClassDefIdentifier == "Attribute":
+		elif ClassDefIdentifier == "Attribute":
 			list4ClassDefBody.append(FunctionDefMake_Attribute)
 			continue
-		if ClassDefIdentifier == "Import":
+		elif ClassDefIdentifier == "Import":
 			list4ClassDefBody.append(FunctionDefMake_Import)
 			ledgerOfImports.addImportFrom_asStr("astToolkit", "identifierDotAttribute")
 			continue
-		# Add prefabricated overloads for a method.
-		if ClassDefIdentifier == "TypeAlias":
-			list4ClassDefBody.extend(listOverloadsTypeAlias)
-			ledgerOfImports.addImportFrom_asStr("typing", "overload")
 		elif ClassDefIdentifier == "keyword":
 			list4ClassDefBody.extend(listOverloads_keyword)
 			ledgerOfImports.addImportFrom_asStr("typing", "overload")
 
 		if kwarg_annotationIdentifier != "No":
-			ledgerOfImports.addImportFrom_asStr("astToolkit", kwarg_annotationIdentifier)
-			kwarg: ast.arg | None = Make.arg(
-				settingsManufacturing.keywordArgumentsIdentifier,
-				annotation=Make.Subscript(Make.Name("Unpack"), slice=Make.Name(kwarg_annotationIdentifier)),
-			)
 			listCall_keyword.append(keywordKeywordArguments4Call)
+			ledgerOfImports.addImportFrom_asStr("astToolkit", kwarg_annotationIdentifier)
+			kwarg: ast.arg | None = Make.arg(settingsManufacturing.keywordArgumentsIdentifier
+				, annotation=Make.Subscript(Make.Name("Unpack"), slice=Make.Name(kwarg_annotationIdentifier)))
 		else:
 			kwarg = None
 		decorator_list: list[ast.expr] = [astName_staticmethod]
@@ -637,35 +598,26 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 			decorator_list.append(astName_overload)
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
-			body = [
-				docstrings[identifierToolClass][ClassDefIdentifier],
-				Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword)),
-			]
+			body = [docstrings[identifierToolClass][ClassDefIdentifier]
+				, Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 
-		ast_stmt = Make.FunctionDef(
-			ClassDefIdentifier,
-			Make.arguments(list_arg=listFunctionDef_args, kwarg=kwarg, defaults=defaults),
-			body=body,
-			decorator_list=decorator_list,
-			returns=classAs_astAttribute,
-		)
+		ast_stmt = Make.FunctionDef(ClassDefIdentifier
+			, Make.arguments(list_arg=listFunctionDef_args, kwarg=kwarg, defaults=defaults)
+			, body=body
+			, decorator_list=decorator_list
+			, returns=classAs_astAttribute)
 
 		if guardVersion:
 			_makeGuardVersion()
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ClassDefBody.append(ast_stmt)
 
-	ledgerOfImports.walkThis(
-		Make.Module(
-			[
-				Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")]),
-				Make.ImportFrom("typing", [Make.alias("Any")]),
-				Make.ImportFrom("typing_extensions", [Make.alias("Unpack")]),
-				Make.Import("ast"),
-				Make.Import("sys"),
-			]
-		)
-	)
+	ledgerOfImports.walkThis(Make.Module([
+		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
+		, Make.ImportFrom("typing", [Make.alias("Any")])
+		, Make.ImportFrom("typing_extensions", [Make.alias("Unpack")])
+		, Make.Import("ast")
+		, Make.Import("sys")]))
 	list4ModuleBody: list[ast.stmt] = [*ledgerOfImports.makeList_ast()]
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 

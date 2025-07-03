@@ -22,7 +22,7 @@ classifiers = [
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
 dependencies = [
   "Z0Z_tools",
-  "astToolkit==0.5.9",
+  "astToolkit==0.5.12",
   "isort",
   "pandas",
   "pyarrow",
