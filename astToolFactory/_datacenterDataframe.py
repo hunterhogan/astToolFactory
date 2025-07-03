@@ -5,10 +5,8 @@ from ast import (
 from astToolFactory import column__value, MaskTuple, pathRoot_typeshed, settingsManufacturing
 from astToolFactory._datacenter import _sortCaseInsensitive, getDataframe
 from astToolFactory._datacenterAnnex import (
-	_columns, attributeRename__attribute, attributeRename__ClassDefIdentifier_attribute,
-	attributeType__ClassDefIdentifier_attribute, defaultValue__attribute, defaultValue__attributeType_attribute,
-	defaultValue__ClassDefIdentifier_attribute, dictionary_defaultValue_ast_arg_Call_keyword_orElse,
-	move2keywordArguments__attribute, move2keywordArguments__attributeKind,
+	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, defaultValue__,
+	dictionary_defaultValue_ast_arg_Call_keyword_orElse, move2keywordArguments__, Column__ClassDefIdentifier_versionMinorMinimum_match_args
 )
 from astToolFactory.cpython import getDictionary_match_args
 from astToolkit import (
@@ -16,9 +14,10 @@ from astToolkit import (
 	Then,
 )
 from astToolkit.transformationTools import makeDictionaryClassDef
+from collections import ChainMap
 from collections.abc import Callable, Mapping, Sequence
 from functools import cache
-from typing import Any, cast
+from typing import Any, NamedTuple, cast
 from Z0Z_tools import raiseIfNone
 import ast
 import numpy
@@ -158,11 +157,19 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 def _make_astAttribute(ClassDefIdentifier: str) -> ast.expr:
 	return Make.Attribute(Make.Name("ast"), ClassDefIdentifier)
 
+def _make_keywordOrList(attributePROXY: dict[str, str | bool | ast.expr]) -> ast.keyword:
+	keywordValue = Make.Name(cast("str", attributePROXY["attributeRename"]))
+	if attributePROXY["list2Sequence"] is True:
+		keywordValue = Make.IfExp(test=keywordValue, body=Make.Call(Make.Name("list"), [keywordValue]), orElse=cast("ast.expr", attributePROXY['orElse']))
+	else:
+		keywordValue = Make.Or.join([keywordValue, cast("ast.expr", attributePROXY['orElse'])])
+	return Make.keyword(cast("str", attributePROXY["attribute"]), keywordValue)
+
 def _make4ColumnsOfLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	dictionaryTupleAttributes: dict[tuple[str, int], list[tuple[str, ast.expr]]] = {}
 	dictionaryFunctionDef_args: dict[tuple[str, int], list[ast.arg]] = {}
 	dictionaryDefaults: dict[tuple[str, int], list[ast.expr]] = {}
 	dictionaryCall_keyword: dict[tuple[str, int], list[ast.keyword]] = {}
-	dictionaryTupleAttributes: dict[tuple[str, int], list[tuple[str, ast.expr]]] = {}
 
 	for (ClassDefIdentifier, versionMinorMinimum_match_args), dataframeGroupBy in dataframe.groupby(["ClassDefIdentifier", "versionMinorMinimum_match_args"]):
 		groupKey: tuple[str, int] = (ClassDefIdentifier, versionMinorMinimum_match_args)
@@ -172,73 +179,52 @@ def _make4ColumnsOfLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 		dataframeGroupBy = dataframeGroupBy[dataframeGroupBy["attributeKind"] == "_field"]  # noqa: PLW2901
 
-		dictionaryTupleAttributes[groupKey] = (dataframeGroupBy.copy().drop_duplicates(subset="attribute")
-											[["attribute", "type_ast_expr"]]
-											.apply(tuple, axis="columns").tolist())
+		dictionaryTupleAttributes[groupKey] = (dataframeGroupBy.copy().drop_duplicates(subset="attribute")[["attribute", "type_ast_expr"]].apply(tuple, axis="columns").tolist())
 
 		dictionaryFunctionDef_args[groupKey] = (dataframeGroupBy[dataframeGroupBy["move2keywordArguments"] == False]  # noqa: E712
-										.copy().drop_duplicates(subset="attribute")["ast_arg"].tolist())
+																.copy().drop_duplicates(subset="attribute")["ast_arg"].tolist())
 
 		dictionaryDefaults[groupKey] = (dataframeGroupBy[(dataframeGroupBy["defaultValue"] != "No")
-									& (dataframeGroupBy["move2keywordArguments"] == False)]  # noqa: E712
-									.copy().drop_duplicates(subset="attribute")["defaultValue"].tolist())
+			& (dataframeGroupBy["move2keywordArguments"] == False)].copy().drop_duplicates(subset="attribute")["defaultValue"].tolist())  # noqa: E712
 
 		dictionaryCall_keyword[groupKey] = (dataframeGroupBy[(dataframeGroupBy["move2keywordArguments"] != "No")
 			& (dataframeGroupBy["move2keywordArguments"] != "Unpack")].drop_duplicates(subset="attribute")["Call_keyword"].tolist())
 
-	dataframe["listFunctionDef_args"] = (dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]]
-						.apply(tuple, axis="columns").map(dictionaryFunctionDef_args).fillna(dataframe["listFunctionDef_args"]))
+	dataframe["listTupleAttributes"] = (dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]].apply(tuple, axis="columns").map(dictionaryTupleAttributes).fillna(dataframe["listTupleAttributes"]))
+	dataframe["listFunctionDef_args"] = (dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]].apply(tuple, axis="columns").map(dictionaryFunctionDef_args).fillna(dataframe["listFunctionDef_args"]))
 	dataframe["listDefaults"] = (dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]].apply(tuple, axis="columns").map(dictionaryDefaults).fillna(dataframe["listDefaults"]))
 	dataframe["listCall_keyword"] = (dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]].apply(tuple, axis="columns").map(dictionaryCall_keyword).fillna(dataframe["listCall_keyword"]))
-	dataframe["listTupleAttributes"] = (dataframe[["ClassDefIdentifier", "versionMinorMinimum_match_args"]].apply(tuple, axis="columns").map(dictionaryTupleAttributes).fillna(dataframe["listTupleAttributes"]))
 
 	return dataframe
 
 def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	def makeColumn_ast_arg(dataframeTarget: pandas.DataFrame) -> Any:
+	columnNew = "ast_arg"
+	dataframe[columnNew] = pandas.Series(data="No", index=dataframe.index, dtype="object", name=columnNew, copy=True)
+	def workhorse(dataframeTarget: pandas.DataFrame) -> Any:
 		if cast("str | bool", dataframeTarget["move2keywordArguments"]) != False:  # noqa: E712
 			return "No"
 		return Make.arg(cast("str", dataframeTarget["attributeRename"]), annotation=cast("ast.expr", dataframeTarget["type_ast_expr"]))
 
-	dataframe["ast_arg"] = dataframe.apply(makeColumn_ast_arg, axis="columns")
+	dataframe[columnNew] = dataframe.apply(workhorse, axis="columns")
 	return dataframe
 
 def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe["list2Sequence"] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name="list2Sequence")
-	containsListSuperClass = pandas.Series(data=False, index=dataframe.index, dtype=bool)
+	columnNew = "list2Sequence"
+	dataframe[columnNew] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name=columnNew)
 	for ClassDefIdentifier in settingsManufacturing.astSuperClasses:
-		containsListSuperClass |= dataframe["attributeType"].str.contains("list", regex=False, na=False) & dataframe["attributeType"].str.contains(ClassDefIdentifier, regex=False, na=False)
-	dataframe.loc[containsListSuperClass, "list2Sequence"] = True
+		mask_attributeType = dataframe["attributeType"].str.contains("list", na=False) & dataframe["attributeType"].str.contains(ClassDefIdentifier, na=False)
+		dataframe.loc[mask_attributeType, columnNew] = True
 	return dataframe
 
 def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe.loc[dataframe["list2Sequence"], "type_ast_expr"] = dataframe["attributeType"].str.replace("list", "Sequence").apply(_pythonCode2expr)
-	dataframe.loc[~dataframe["list2Sequence"], "type_ast_expr"] = dataframe["attributeType"].apply(_pythonCode2expr)
-	dataframe.loc[dataframe["attributeType"] == "No", "type_ast_expr"] = "No"
+	columnNew = 'type_ast_expr'
+	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype="object", name=columnNew)
+	dataframe.loc[dataframe["list2Sequence"], columnNew] = dataframe["attributeType"].str.replace("list", "Sequence").apply(_pythonCode2expr)
+	dataframe.loc[~dataframe["list2Sequence"], columnNew] = dataframe["attributeType"].apply(_pythonCode2expr)
 	return dataframe
-
-def _makeColumn_type_astSuperClasses(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe["type_astSuperClasses"] = dataframe["attributeType"].replace(
-		{f"ast.{ClassDefIdentifier}": identifierTypeVar for ClassDefIdentifier, identifierTypeVar in settingsManufacturing.astSuperClasses.items()},
-		regex=True,
-	)
-	return dataframe
-
-def _makeColumn_type_astSuperClasses_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe["type_astSuperClasses_ast_expr"] = numpy.where(dataframe["type_astSuperClasses"] == "No", "No", dataframe["type_astSuperClasses"].apply(_pythonCode2expr))
-	return dataframe
-
-def _makeColumn_versionMinorMinimum_match_args(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	return _computeVersionMinimum(dataframe, ["ClassDefIdentifier", "match_args"], "versionMinorMinimum_match_args")
-
-def _makeColumn_versionMinorMinimumAttribute(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	return _computeVersionMinimum(dataframe, ["ClassDefIdentifier", "attribute"], "versionMinorMinimumAttribute")
-
-def _makeColumn_versionMinorMinimumClass(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	return _computeVersionMinimum(dataframe, ["ClassDefIdentifier"], "versionMinorMinimumClass")
 
 def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	def makeColumnCall_keyword(dataframeTarget: pandas.DataFrame) -> Any:
+	def workhorse(dataframeTarget: pandas.DataFrame) -> Any:
 		if cast("bool", (dataframeTarget['attributeKind'] == "_field") & ((dataframeTarget['move2keywordArguments'] != "No") & (dataframeTarget['move2keywordArguments'] != "Unpack"))):
 			if cast("bool", dataframeTarget["move2keywordArguments"]):
 				keywordValue: ast.expr = cast("ast.expr", dataframeTarget["defaultValue"])
@@ -249,28 +235,15 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			return Make.keyword(cast("str", dataframeTarget["attribute"]), keywordValue)
 		return "No"
 
-	dataframe["Call_keyword"] = dataframe.apply(makeColumnCall_keyword, axis="columns")
-	return dataframe
-
-def _makeColumnTypeAlias_hasDOTIdentifier(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe["TypeAlias_hasDOTIdentifier"] = numpy.where(dataframe["attributeKind"] == "_field", "hasDOT" + cast("str", dataframe["attribute"]), "No")
+	dataframe["Call_keyword"] = dataframe.apply(workhorse, axis="columns")
 	return dataframe
 
 def _makeColumnTypeAlias_hasDOTSubcategory(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	dataframe["TypeAlias_hasDOTSubcategory"] = numpy.where(
-		(attribute := dataframe["TypeAlias_hasDOTIdentifier"]) == "No",
-		"No",
-		cast("str", attribute) + "_" + dataframe["attributeType"].str.replace("|", "Or", regex=False).str.replace("[", "_", regex=False).str.replace("[\\] ]", "", regex=True).str.replace("ast.", "", regex=False),
-	)
+	columnNew = 'TypeAlias_hasDOTSubcategory'
+	dataframe[columnNew] = pandas.Series(data="No", index=dataframe.index, dtype="object", name=columnNew, copy=True)
+	mask_hasDOTIdentifier = dataframe["TypeAlias_hasDOTIdentifier"] != "No"
+	dataframe.loc[mask_hasDOTIdentifier, columnNew] = dataframe["TypeAlias_hasDOTIdentifier"] + "_" + dataframe["attributeType"].str.replace("|", "Or").str.replace("[", "_").str.replace("[\\] ]", "", regex=True).str.replace("ast.", "")
 	return dataframe
-
-def _make_keywordOrList(attributePROXY: dict[str, str | bool | ast.expr]) -> ast.keyword:
-	keywordValue = Make.Name(cast("str", attributePROXY["attributeRename"]))
-	if attributePROXY["list2Sequence"] is True:
-		keywordValue = Make.IfExp(test=keywordValue, body=Make.Call(Make.Name("list"), [keywordValue]), orElse=cast("ast.expr", attributePROXY['orElse']))
-	else:
-		keywordValue = Make.Or.join([keywordValue, cast("ast.expr", attributePROXY['orElse'])])
-	return Make.keyword(cast("str", attributePROXY["attribute"]), keywordValue)
 
 def _moveMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	for columnValue, orElse in dictionary_defaultValue_ast_arg_Call_keyword_orElse.items():
@@ -298,15 +271,18 @@ def _moveMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	return dataframe
 
 def _pythonCode2expr(string: str) -> Any:
+	"""Convert *one* expression as a string of Python code to an `ast.expr`."""
 	astModule: ast.Module = ast.parse(string)
 	return raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
 
 def dictionary2Dataframe(dictionary: Mapping[MaskTuple, column__value], dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	"""Convert a hyper-marked-up dictionary to columns and values in a dataframe."""
 	for columnValueMask, assign in dictionary.items():
 		dataframe.loc[getMaskByColumnValue(dataframe, columnValueMask), assign.column] = assign.value
 	return dataframe
 
 def getMaskByColumnValue(dataframe: pandas.DataFrame, columnValue: MaskTuple) -> pandas.Series:
+	"""Convert a specialized `NamedTuple`, which is an arbitrary number of column-names and row-values, to a `True`/`False` mask for a dataframe."""
 	return pandas.concat([*[dataframe[column] == value for column, value in columnValue._asdict().items()]], axis=1).all(axis=1)
 
 def updateDataframe() -> None:
@@ -339,26 +315,25 @@ def updateDataframe() -> None:
 	dataframe = _getDataFromStubFile(dataframe)
 
 	dataframe["attributeRename"] = pandas.Series(data=dataframe["attribute"], index=dataframe.index, dtype=str, name="attributeRename", copy=True)
-	dataframe = dictionary2Dataframe(attributeRename__attribute, dataframe)
-	dataframe = dictionary2Dataframe(attributeRename__ClassDefIdentifier_attribute, dataframe)
+	dataframe = dictionary2Dataframe(attributeRename__, dataframe)
+
 	dataframe["move2keywordArguments"] = pandas.Series(data=False, index=dataframe.index, dtype=object, name="move2keywordArguments", copy=True)
-	dataframe = dictionary2Dataframe(move2keywordArguments__attribute, dataframe)
-	dataframe = dictionary2Dataframe(move2keywordArguments__attributeKind, dataframe)
+	dataframe = dictionary2Dataframe(move2keywordArguments__, dataframe)
+
 	dataframe["defaultValue"] = pandas.Series(data="No", index=dataframe.index, dtype=str, name="defaultValue", copy=True)
-	dataframe = dictionary2Dataframe(defaultValue__attribute, dataframe)
-	dataframe = dictionary2Dataframe(defaultValue__attributeType_attribute, dataframe)
-	dataframe = dictionary2Dataframe(defaultValue__ClassDefIdentifier_attribute, dataframe)
+	dataframe = dictionary2Dataframe(defaultValue__, dataframe)
+
 	dataframe["classAs_astAttribute"] = dataframe["ClassDefIdentifier"].astype(str).map(_make_astAttribute)
 	dataframe = _makeColumn_list2Sequence(dataframe)
 	dataframe = _makeColumn_type_ast_expr(dataframe)
-	dataframe = _makeColumn_type_astSuperClasses(dataframe)
+	dataframe["type_astSuperClasses"] = dataframe["attributeType"].replace({f"ast.{ClassDefIdentifier}": identifierTypeVar for ClassDefIdentifier, identifierTypeVar in settingsManufacturing.astSuperClasses.items()}, regex=True)
 	dataframe = _makeColumn_ast_arg(dataframe)
-	dataframe = _makeColumn_type_astSuperClasses_ast_expr(dataframe)
-	dataframe = _makeColumnTypeAlias_hasDOTIdentifier(dataframe)
+	dataframe["type_astSuperClasses_ast_expr"] = numpy.where(dataframe["type_astSuperClasses"] == "No", "No", dataframe["type_astSuperClasses"].apply(_pythonCode2expr))
+	dataframe["TypeAlias_hasDOTIdentifier"] = numpy.where(dataframe["attributeKind"] == "_field", "hasDOT" + cast("str", dataframe["attribute"]), "No")
 	dataframe = _makeColumnTypeAlias_hasDOTSubcategory(dataframe)
-	dataframe = _makeColumn_versionMinorMinimum_match_args(dataframe)
-	dataframe = _makeColumn_versionMinorMinimumAttribute(dataframe)
-	dataframe = _makeColumn_versionMinorMinimumClass(dataframe)
+	dataframe = _computeVersionMinimum(dataframe, ["ClassDefIdentifier", "match_args"], "versionMinorMinimum_match_args")
+	dataframe = _computeVersionMinimum(dataframe, ["ClassDefIdentifier", "attribute"], "versionMinorMinimumAttribute")
+	dataframe = _computeVersionMinimum(dataframe, ["ClassDefIdentifier"], "versionMinorMinimumClass")
 	dataframe = _makeColumnCall_keyword(dataframe)
 	dataframe = _moveMutable_defaultValue(dataframe)
 	dataframe = _sortCaseInsensitive(dataframe, ["ClassDefIdentifier", "versionMinorPythonInterpreter", "attribute"]

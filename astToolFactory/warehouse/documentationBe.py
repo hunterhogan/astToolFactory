@@ -90,12 +90,12 @@ for astClass in [C for C in [AST,*chain(*(c.__subclasses__() for c in [AST,Const
 
     ImaDocstring += " matches"
 
-    matchesClasses: list[identifierDotAttribute] = list({f"`class` `{astClassDefIdentifier}`", *sorted([f"`ast.{subclass.__name__}`" for subclass in astClass.__subclasses__() if issubclass(subclass, ast.AST)], key=lambda element: element.lower())})
+    matchesClasses: list[identifierDotAttribute] = list({f"`{astClassDefIdentifier}`", *sorted([f"`ast.{subclass.__name__}`" for subclass in astClass.__subclasses__() if issubclass(subclass, ast.AST)], key=lambda element: element.lower())})
 
     if len(matchesClasses) > 1:
         ImaDocstring += " any of"
 
-    ImaDocstring += f" {' | '.join(matchesClasses)}.\n"
+    ImaDocstring += f" `class` {' | '.join(matchesClasses)}.\n"
 
     indexConjunction: int = (
         bool(associatedDelimiters := map2PythonDelimiters.get(ClassDefIdentifier, None))
