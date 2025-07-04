@@ -109,13 +109,11 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 			.query("attributeKind == '_field'")
 			.pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending)[listColumns]
 			.drop_duplicates(drop_duplicates, keep="last")
-			.reset_index(drop=True)
-	)
+			.reset_index(drop=True))
 
 	dataframe = dataframe.rename(columns={
 			listColumns[index_type_ast_expr]: "type_ast_expr",
-			listColumns[index_versionMinorMinimum]: "versionMinorMinimum",
-	})
+			listColumns[index_versionMinorMinimum]: "versionMinorMinimum"})
 
 	del listColumns
 
@@ -123,19 +121,20 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 
 	dataframe["overloadDefinition"] = dataframe.groupby("attribute").transform("size") > 1
 	dataframe = pandas.concat([
-		dataframe,
-		(dataframe[dataframe["overloadDefinition"]]
-		.groupby("attribute")["versionMinorMinimum"]
-		.unique()
-		.explode()
-		.reset_index()
-		.merge(dataframe[["attribute", "TypeAlias_hasDOTIdentifier"]].drop_duplicates("attribute"), on="attribute", how="left")
-		.assign(
-			overloadDefinition=False,
-			TypeAlias_hasDOTSubcategory="No",
-			type_ast_expr="No",
-			attributeType="No",
-		)[dataframe.columns])
+		dataframe
+		, (dataframe[dataframe["overloadDefinition"]]
+			.groupby("attribute")["versionMinorMinimum"]
+			.unique()
+			.explode()
+			.reset_index()
+			.merge(dataframe[["attribute", "TypeAlias_hasDOTIdentifier"]].drop_duplicates("attribute"), on="attribute", how="left")
+			.assign(
+				overloadDefinition=False,
+				TypeAlias_hasDOTSubcategory="No",
+				type_ast_expr="No",
+				attributeType="No",
+			)[dataframe.columns]
+		)
 	], ignore_index=True).sort_values("attribute", kind="stable")
 
 	dataframe["identifierTypeOfNode"] = dataframe["TypeAlias_hasDOTSubcategory"].where(dataframe["overloadDefinition"], dataframe["TypeAlias_hasDOTIdentifier"])

@@ -1,0 +1,36 @@
+# This workflow syncs Parser/Python.asdl and Parser/asdl.py from python/cpython branches to this repo.
+# All key settings are configurable below.
+
+name: Sync CPython ASDL Files
+
+on:
+  schedule:
+    # Runs every Monday at 3am UTC (configurable)
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+
+env:
+  # GitHub token for API access
+  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout this repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install PyGithub
+        run: pip install PyGithub
+
+      - name: Run sync script
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: python .github/scripts/sync_cpython_asdl.py "${{ secrets.GITHUB_TOKEN }}" "${{ github.repository }}"
