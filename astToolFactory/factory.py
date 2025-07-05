@@ -16,7 +16,7 @@ from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
 	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute, FunctionDefMake_Import,
-	listHandmade_astTypes, listOverloads_keyword,
+	listFunctionDefs_index, listHandmade_astTypes, listOverloads_keyword,
 )
 from astToolkit import (
 	astModuleToIngredientsFunction, Be, extractClassDef, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
@@ -314,9 +314,9 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	Parameters
 	----------
 	identifierToolClass : str
-			Name of the tool class to generate.
+		Name of the tool class to generate.
 	**keywordArguments : Any
-			Override `ManufacturedPackageSettings`.
+		Override `ManufacturedPackageSettings`.
 
 	Returns
 	-------
@@ -505,9 +505,9 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	Parameters
 	----------
 	identifierToolClass : str
-			Name of the tool class to generate.
+		Name of the tool class to generate.
 	**keywordArguments : Any
-			Override `ManufacturedPackageSettings`.
+		Override `ManufacturedPackageSettings`.
 
 	Returns
 	-------
@@ -516,11 +516,8 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
 	list4ClassDefBody: list[ast.stmt] = [
-		docstrings[settingsManufacturing.identifiers[identifierToolClass]][
-			settingsManufacturing.identifiers[identifierToolClass]
-		],
-		FunctionDefGrab_andDoAllOf,
-	]
+		docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
+		, FunctionDefGrab_andDoAllOf]
 
 	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(# noqa: B007
 		identifierToolClass, **keywordArguments
@@ -547,9 +544,11 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom("astToolkit", [Make.alias("*")])
 		, Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")])
-		, Make.ImportFrom("typing", [Make.alias("Any")]), Make.Import("ast")
+		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("cast")])
+		, Make.Import("ast")
 		, Make.Import("sys")
 		, Make.If(Make.Compare(Make.Attribute(Make.Name("sys"), "version_info"), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]), [Make.ImportFrom("astToolkit", [Make.alias("hasDOTdefault_value")])])
+		, *listFunctionDefs_index
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
@@ -560,9 +559,9 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 	Parameters
 	----------
 	identifierToolClass : str
-			Name of the tool class to generate.
+		Name of the tool class to generate.
 	**keywordArguments : Any
-			Override `ManufacturedPackageSettings`.
+		Override `ManufacturedPackageSettings`.
 
 	Returns
 	-------
@@ -570,7 +569,10 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
-	ledgerOfImports: LedgerOfImports = LedgerOfImports()
+	ledgerOfImports: LedgerOfImports = LedgerOfImports(Make.Module([
+		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
+		, Make.ImportFrom("typing", [Make.alias("Any")])
+		, Make.Import("ast")]))
 	ledgerOfImports.addImportFrom_asStr("astToolkit", "ConstantValueType")
 	ledgerOfImports.addImportFrom_asStr("astToolkit", "ast_attributes")
 
@@ -608,6 +610,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 		if kwarg_annotationIdentifier != "No":
 			listCall_keyword.append(keywordKeywordArguments4Call)
 			ledgerOfImports.addImportFrom_asStr("astToolkit", kwarg_annotationIdentifier)
+			ledgerOfImports.addImportFrom_asStr("typing", 'Unpack')
 			kwarg: ast.arg | None = Make.arg(settingsManufacturing.keywordArgumentsIdentifier
 				, annotation=Make.Subscript(Make.Name("Unpack"), slice=Make.Name(kwarg_annotationIdentifier)))
 		else:
@@ -630,15 +633,10 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 
 		if guardVersion:
 			_makeGuardVersion()
+			ledgerOfImports.addImport_asStr("sys")
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ClassDefBody.append(ast_stmt)
 
-	ledgerOfImports.walkThis(Make.Module([
-		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
-		, Make.ImportFrom("typing", [Make.alias("Any")])
-		, Make.ImportFrom("typing_extensions", [Make.alias("Unpack")])
-		, Make.Import("ast")
-		, Make.Import("sys")]))
 	list4ModuleBody: list[ast.stmt] = [*ledgerOfImports.makeList_ast()]
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 

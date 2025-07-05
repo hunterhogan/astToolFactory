@@ -17,34 +17,28 @@ identifierClass = identifierMethod = settingsManufacturing.identifiers[identifie
 docstrings[identifierClass][identifierMethod] = Make.Expr(Make.Constant(
     f"""Create a `class` `ast.AST` `object` or an `ast.AST` subclass `object`.
 
-    Every non-deprecated subclass of `ast.AST` ({diminutive2etymology['AST']}), has a corresponding
-    method in `Make`, and for each `class`, you can set the value of each attribute. But, what is an
-    "attribute"? In the `ast` universe, one word may have many different meanings, and if you want
-    to avoid confusion, you should pay close attention to capitalization, leading underscores, and
-    context. In Python, an "attribute" is a property of an `object`. In `class` `Make`, when you
-    create an `ast.AST` subclass `object`, you can set the value of any attribute of that `object`.
-    The `ast` universe divides attributes into two categories, `_attributes` and `_fields` (or
-    `_field*`).
+    Every non-deprecated subclass of `ast.AST` ({diminutive2etymology['AST']}), has a corresponding method in `Make`, and for each
+    `class`, you can set the value of each attribute. But, what is an "attribute"? In the `ast` universe, one word may have many
+    different meanings, and if you want to avoid confusion, you should pay close attention to capitalization, leading underscores,
+    and context. In Python, an "attribute" is a property of an `object`. In `class` `Make`, when you create an `ast.AST` subclass
+    `object`, you can set the value of any attribute of that `object`. The `ast` universe divides attributes into two categories,
+    `_attributes` and `_fields` (or `_field*`).
 
-    The attributes in category `_attributes` are `lineno` ({diminutive2etymology['lineno']}),
-    `col_offset` ({diminutive2etymology['col_offset']}), `end_lineno`
-    ({diminutive2etymology['end_lineno']}), and `end_col_offset`
-    ({diminutive2etymology['end_col_offset']}). These attributes of an `ast` `object` represent the
-    physical location of the text when rendered as Python code. With abstract syntax trees, as
-    opposed to concrete syntax trees for example, you rarely need to work directly with physical
-    locations, therefore `_attributes` are almost always relegated to `**keywordArguments` in `Make`
-    methods. For a counter example, see `Make.TypeIgnore` ({diminutive2etymology['TypeIgnore']}), for
-    which `lineno` is a named parameter.
+    The attributes in category `_attributes` are `lineno` ({diminutive2etymology['lineno']}), `col_offset`
+    ({diminutive2etymology['col_offset']}), `end_lineno` ({diminutive2etymology['end_lineno']}), and `end_col_offset`
+    ({diminutive2etymology['end_col_offset']}). These attributes of an `ast` `object` represent the physical location of the text
+    when rendered as Python code. With abstract syntax trees, as opposed to concrete syntax trees for example, you rarely need to
+    work directly with physical locations, therefore `_attributes` are almost always relegated to `**keywordArguments` in `Make`
+    methods. For a counter example, see `Make.TypeIgnore` ({diminutive2etymology['TypeIgnore']}), for which `lineno` is a named
+    parameter.
 
-    In an attempt to distinguish the attributes of `ast.AST` subclasses that are not in the category
-    `_attributes` from the four attributes in the category `_attributes`, all other attributes of
-    `ast.AST` subclasses are in category `_fields` (or sometimes, category `_field*`, such as
-    `_field_types`).
+    In an attempt to distinguish the attributes of `ast.AST` subclasses that are not in the category `_attributes` from the four
+    attributes in the category `_attributes`, all other attributes of `ast.AST` subclasses are in category `_fields` (or
+    sometimes, category `_field*`, such as `_field_types`).
 
-    You probably want to try to avoid confusing these concepts and categories with similarly named
-    things, including `ast.Attribute`, `ast.Attribute.attr` ({diminutive2etymology['attr']}),
-    `getattr`, `setattr`, `ast.MatchClass.kwd_attrs` ({diminutive2etymology['kwd_attrs']}), and
-    `_Attributes` (no, really, it's a thing).
+    You probably want to try to avoid confusing these concepts and categories with similarly named things, including
+    `ast.Attribute`, `ast.Attribute.attr` ({diminutive2etymology['attr']}), `getattr`, `setattr`, `ast.MatchClass.kwd_attrs`
+    ({diminutive2etymology['kwd_attrs']}), and `_Attributes` (no, really, it's a thing).
 
     Parameters
     ----------
@@ -67,27 +61,22 @@ docstrings[identifierClass][identifierMethod] = Make.Expr(Make.Constant(
 ))
 
 for subclass in ast.boolop.__subclasses__():
-    docstrings[identifierClass][subclass.__name__] = Make.Expr(Make.Constant(
-        f"""Identical to the `ast` ({diminutive2etymology['ast']}) class but with a method, `join()`, that "joins" expressions using the `ast.BoolOp` ({diminutive2etymology['BoolOp']}) class."""
-    ))
+    docstrings[identifierClass][subclass.__name__] = Make.Expr(Make.Constant(f"""Identical to the `ast` ({diminutive2etymology['ast']}) class but with a method, `join()`, that "joins" expressions using the `ast.BoolOp` ({diminutive2etymology['BoolOp']}) class."""))
 
 for subclass in ast.operator.__subclasses__():
-    docstrings[identifierClass][subclass.__name__] = Make.Expr(Make.Constant(
-        f"""Identical to the `ast` ({diminutive2etymology['ast']}) class but with a method, `join()`, that "joins" expressions using the `ast.BinOp` ({diminutive2etymology['BinOp']}) class."""
-    ))
+    docstrings[identifierClass][subclass.__name__] = Make.Expr(Make.Constant(f"""Identical to the `ast` ({diminutive2etymology['ast']}) class but with a method, `join()`, that "joins" expressions using the `ast.BinOp` ({diminutive2etymology['BinOp']}) class."""))
 
 docstrings[identifierClass][settingsManufacturing.identifiers['boolopJoinMethod']] = Make.Expr(Make.Constant(
         """'Join' expressions with a boolean operator.
 
         (AI generated docstring)
 
-        This private method provides the core logic for boolean operator joining used by
-        `And.join()` and `Or.join()` methods. It handles edge cases like empty sequences
-        and single expressions while creating properly nested `ast.BoolOp` structures for
+        This private method provides the core logic for boolean operator joining used by `And.join()` and `Or.join()` methods. It
+        handles edge cases like empty sequences and single expressions while creating properly nested `ast.BoolOp` structures for
         multiple expressions.
 
-        If you are looking for public join functionality, use the specific boolean operator
-        classes (`Make.And.join()`, `Make.Or.join()`) instead of this internal method.
+        If you are looking for public join functionality, use the specific boolean operator classes (`Make.And.join()`,
+        `Make.Or.join()`) instead of this internal method.
 
         Parameters
         ----------
@@ -137,7 +126,6 @@ docstrings[identifierClass]['join_boolop'] = Make.Expr(Make.Constant(
             ```
 
             Both produce the same AST structure but the join() method eliminates the manual construction.
-            Handles single expressions and empty sequences gracefully.
 
             """
 ))
@@ -147,12 +135,11 @@ docstrings[identifierClass]['_operatorJoinMethod'] = Make.Expr(Make.Constant(
 
         (AI generated docstring)
 
-        This private method provides the core logic for binary operator joining used by
-        operator classes like `Add.join()`, `BitOr.join()`, etc. It creates left-associative
-        nested `ast.BinOp` structures by chaining expressions from left to right.
+        This private method provides the core logic for binary operator joining used by operator classes like `Add.join()`,
+        `BitOr.join()`, etc. It creates left-associative nested `ast.BinOp` structures by chaining expressions from left to right.
 
-        If you are looking for public join functionality, use the specific operator classes
-        (`Make.Add.join()`, `Make.BitOr.join()`, etc.) instead of this internal method.
+        If you are looking for public join functionality, use the specific operator classes (`Make.Add.join()`,
+        `Make.BitOr.join()`, etc.) instead of this internal method.
 
         Parameters
         ----------
@@ -164,8 +151,8 @@ docstrings[identifierClass]['_operatorJoinMethod'] = Make.Expr(Make.Constant(
         Returns
         -------
         joinedExpression : ast.expr
-            Single expression representing the left-associative chained
-            binary operations, or empty string constant if no expressions provided.
+            Single expression representing the left-associative chained binary operations, or empty string constant if no
+            expressions provided.
 
         """
 ))
@@ -206,7 +193,6 @@ docstrings[identifierClass]['join_operator'] = Make.Expr(Make.Constant(
             ```
 
             Both produce the same AST structure but the join() method eliminates the manual nesting.
-            Handles single expressions and empty iterables gracefully.
 
             """
 ))
@@ -264,22 +250,18 @@ docstrings[identifierClass]['AnnAssign'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['arg'] = Make.Expr(Make.Constant(
-        f"""Make a function parameter AST object representing individual arguments in function signatures.
+        f"""Make an `ast.arg` ({diminutive2etymology['arg']}) object representing individual arguments in function signatures.
 
-        (AI generated docstring)
-
-        The `ast.arg` ({diminutive2etymology['arg']}) object represents a single parameter in
-        function definitions, including positional, keyword-only, and special parameters like
-        `*arguments` and `**keywordArguments`. Contains the parameter name and optional type
-        annotation.
+        The `ast.arg` ({diminutive2etymology['ast']}) object represents a single parameter in function definitions, including
+        positional, keyword-only, and special parameters like `*arguments` and `**keywordArguments`. Contains the parameter name
+        and optional type annotation.
 
         Parameters
         ----------
         Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo: str
             Parameter name as string. This corresponds to `ast.arg.arg`; and in an `ast.FunctionDef`
-            ({diminutive2etymology['FunctionDef']}) `object`, it corresponds to
-            `ast.FunctionDef.args.args[n].arg.arg`, which has the same semantic value as
-            `Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo`.
+            ({diminutive2etymology['FunctionDef']}) `object`, it corresponds to `ast.FunctionDef.args.args[n].arg.arg`, which has
+            the same semantic value as `Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo`.
         annotation : ast.expr | None
             Optional type annotation expression for the parameter.
 

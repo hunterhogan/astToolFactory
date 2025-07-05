@@ -16,6 +16,27 @@ FunctionDefGrab_andDoAllOf: ast.stmt = Make.FunctionDef('andDoAllOf'
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('个')]), Make.Name('个')])))
 
+# `Index` =====================================================================
+listFunctionDefs_index: list[ast.stmt] = [
+Make.FunctionDef('index'
+	, Make.arguments(list_arg=[Make.arg('at', annotation=Make.Name('int'))])
+	, body=[Make.FunctionDef('workhorse'
+		, Make.arguments(list_arg=[Make.arg('node', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Name('个')))])
+		, body=[Make.Return(Make.Call(Make.Name('cast'), listParameters=[Make.Constant('归个'), Make.Subscript(Make.Name('node'), slice=Make.Name('at'))]))]
+		, returns=Make.Name('归个')), Make.Return(Make.Name('workhorse'))]
+	, returns=Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Subscript(Make.Name('Sequence'), slice=Make.Name('个'))]), Make.Name('归个')]))
+	, type_params=[Make.TypeVar('个'), Make.TypeVar('归个')])
+,
+Make.FunctionDef('indices'
+	, Make.arguments(list_arg=[Make.arg('at', annotation=Make.Name('slice'))])
+	, body=[Make.FunctionDef('workhorse'
+		, Make.arguments(list_arg=[Make.arg('node', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Name('个')))])
+		, body=[Make.Return(Make.Call(Make.Name('cast'), listParameters=[Make.Constant('归个'), Make.Subscript(Make.Name('node'), slice=Make.Name('at'))]))]
+		, returns=Make.Name('归个')), Make.Return(Make.Name('workhorse'))]
+	, returns=Make.Subscript(Make.Name('Callable'), slice=Make.Tuple([Make.List([Make.Subscript(Make.Name('Sequence'), slice=Make.Name('个'))]), Make.Name('归个')]))
+	, type_params=[Make.TypeVar('个'), Make.TypeVar('归个')])
+]
+
 # `Make` =====================================================================
 def makeFunctionDef_join(identifierContainer: str, identifierCallee: str, docstring: ast.Expr) -> ast.stmt:
 	"""Create a `FunctionDef` AST node for a join method.
@@ -154,7 +175,7 @@ listOverloads_keyword: list[ast.stmt] = [
 							]
 						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 		, body=[Make.Expr(value=Make.Constant(...))]
-		, decorator_list=[Make.Name('staticmethod'), Make.Name('overload')]
+		, decorator_list=[astName_staticmethod, astName_overload]
 		, returns=Make.Attribute(Make.Name('ast'), 'keyword'))
 	, Make.FunctionDef('keyword'
 		, argumentSpecification=Make.arguments(list_arg=[Make.arg('Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo', annotation=Make.BitOr.join([Make.Name('str'), Make.Constant(None)]))]
@@ -163,7 +184,7 @@ listOverloads_keyword: list[ast.stmt] = [
 						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
 						, defaults=[Make.Constant(None)])
 		, body=[Make.Expr(value=Make.Constant(...))]
-		, decorator_list=[Make.Name('staticmethod'), Make.Name('overload')]
+		, decorator_list=[astName_staticmethod, astName_overload]
 		, returns=Make.Attribute(Make.Name('ast'), 'keyword'))]
 
 # `theSSOT` =====================================================================
