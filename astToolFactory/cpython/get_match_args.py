@@ -2,10 +2,10 @@
 
 from astToolFactory import settingsManufacturing, settingsPackage
 from astToolkit import identifierDotAttribute
+from hunterMakesPy import importLogicalPath2Identifier, raiseIfNone
 from pathlib import Path
 from pprint import pprint
 from typing import Any, Literal, Protocol, TYPE_CHECKING, TypedDict
-from Z0Z_tools import importLogicalPath2Identifier, raiseIfNone
 import sys
 
 if TYPE_CHECKING:

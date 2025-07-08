@@ -20,7 +20,7 @@ versionMinor_astMinimumSupportedHARDCODED = 9
 pathRelativeRoot_typeshedHARDCODED: Path = Path('typings/stdlib')
 
 try:
-	identifierPackagePACKAGING: str = tomli_loads(Path("../pyproject.toml").read_text())["project"]["name"]
+	identifierPackagePACKAGING: str = tomli_loads(Path("pyproject.toml").read_text(encoding="utf-8"))["project"]["name"]
 except Exception:  # noqa: BLE001
 	identifierPackagePACKAGING = "astToolFactory"
 
@@ -97,12 +97,11 @@ isort_codeConfiguration: dict[str, int | str | list[str]] = {
 	"force_alphabetical_sort_within_sections": True,
 	"from_first": True,
 	"honor_noqa": True,
-	"include_trailing_comma": True,
 	"indent": "\t",
 	"line_length": 120,
 	"lines_after_imports": 1,
 	"lines_between_types": 0,
-	"multi_line_output": 5,
+	"multi_line_output": 4,
 	"no_sections": True,
 	"skip": ["__init__.py"],
 	"use_parentheses": True,

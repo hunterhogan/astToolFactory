@@ -10,23 +10,20 @@ for the toolkit's code generation process.
 from astToolFactory import (
 	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, getElementsBe, getElementsDOT,
 	getElementsGrab, getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
-	settingsManufacturing, settingsPackage,
-)
+	settingsManufacturing, settingsPackage)
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
 	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute, FunctionDefMake_Import,
-	listFunctionDefs_index, listHandmade_astTypes, listOverloads_keyword,
-)
+	listFunctionDefs_index, listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import (
 	astModuleToIngredientsFunction, Be, extractClassDef, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
-	Make, NodeChanger, parseLogicalPath2astModule,
-)
+	Make, NodeChanger, parseLogicalPath2astModule)
 from astToolkit.transformationTools import write_astModule
+from hunterMakesPy import raiseIfNone, writeStringToHere
 from isort import code as isort_code
 from pathlib import PurePosixPath
 from typing import Any, TypedDict
-from Z0Z_tools import raiseIfNone, writeStringToHere
 import ast
 import autoflake
 
@@ -235,32 +232,24 @@ def makeTool_dump() -> None:
 
 def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write the Be tool class for the astToolkit."""
-	list4ClassDefBody: list[ast.stmt] = [
-		docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
-	]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
 
-	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute, listTupleAttributes in getElementsBe(
-		identifierToolClass, **keywordArguments
-	):
+	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute, listTupleAttributes in getElementsBe(identifierToolClass, **keywordArguments):
 		if not listTupleAttributes:
 			ast_stmt: ast.stmt = Make.FunctionDef(
 				ClassDefIdentifier
 				, Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)])
 				, body=[docstrings[identifierToolClass][ClassDefIdentifier]
-					, Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))
-				]
+					, Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
 				, decorator_list=[astName_staticmethod]
-				, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute)
-			)
+				, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute))
 
 			if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
 				ast_stmt = Make.If(Make.Compare(
 						Make.Attribute(Make.Name("sys"), "version_info")
 						, ops=[Make.GtE()]
-						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])]
-					)
-					, body=[ast_stmt]
-				)
+						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+					, body=[ast_stmt])
 
 			list4ClassDefBody.append(ast_stmt)
 		else:
@@ -275,26 +264,23 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 					, body=[Make.FunctionDef("workhorse"
 							, Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)])
 							, body=[Make.Return(Make.BoolOp(Make.And(), values=[Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]), Make.Call(Make.Name("attributeCondition"), listParameters=[Make.Attribute(Make.Name("node"), attribute)])]))]
-							, returns=Make.BinOp(left=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute), op=Make.BitOr(), right=Make.Name("bool")))
+							, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute))
 						, Make.Return(Make.Name("workhorse"))]
 					, decorator_list=[astName_staticmethod]
-					, returns=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([astASTastAttribute]), Make.BinOp(left=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute), op=Make.BitOr(), right=Make.Name("bool"))]))))
+					, returns=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([astASTastAttribute]), Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute)]))))
 
 			list_ast_stmt: list[ast.stmt] = [
 				Make.ClassDef(f"_{ClassDefIdentifier}", body=list4subClassDefBody)
 				, Make.Assign([Make.Name(ClassDefIdentifier, context=Make.Store())], value=Make.Call(Make.Name(f"_{ClassDefIdentifier}")))
-				, docstrings[identifierToolClass][ClassDefIdentifier]
-			]
+				, docstrings[identifierToolClass][ClassDefIdentifier]]
 
 			if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
 				list_ast_stmt = [
 					Make.If(Make.Compare(
 							Make.Attribute(Make.Name("sys"), "version_info")
 							, ops=[Make.GtE()]
-							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])]
-						)
-						, body=list_ast_stmt
-				)]
+							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
+						, body=list_ast_stmt)]
 
 			list4ClassDefBody.extend(list_ast_stmt)
 
@@ -324,13 +310,9 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
-	list4ClassDefBody: list[ast.stmt] = [
-		docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
-	]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
 
-	for identifierTypeOfNode, overloadDefinition, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(# noqa: B007
-		identifierToolClass, **keywordArguments
-	):
+	for identifierTypeOfNode, overloadDefinition, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass, **keywordArguments):  # noqa: B007
 		decorator_list: list[ast.expr] = [astName_staticmethod]
 		if overloadDefinition:
 			decorator_list.append(astName_overload)

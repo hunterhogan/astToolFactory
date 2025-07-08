@@ -21,13 +21,13 @@ classifiers = [
 ]
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
 dependencies = [
-  "astToolkit==0.5.12",
+  "astToolkit==0.5.13",
+  "hunterMakesPy",
   "isort",
   "pandas",
   "pyarrow",
   "tomli",
   "typeshed_client",
-  "Z0Z_tools",
 ]
 optional-dependencies = { testing = [
   "mypy",
