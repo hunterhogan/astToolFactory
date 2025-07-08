@@ -1394,38 +1394,44 @@ docstrings[identifierClass]['IfExp'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['Import'] = Make.Expr(Make.Constant(
-        """Import statement AST `object` for absolute module imports.
+        f"""Make an `ast.Import` `object` representing a single `import` statement.
 
-        (AI generated docstring)
+        The `ast.Import` `object` represents one `import` statement with zero or more module names separated by commas.
+        Each module name is an `ast.alias` `object`. The series of module names is stored in `ast.Import.names` as a `list` of
+        `ast.alias`.
 
-        The `ast.Import` `object` represents `import` statements that bring modules
-        into the current namespace. It supports optional aliasing to use alternative
-        names for imported modules.
+        Nevertheless, with `Make.Import`, you must create exactly one `ast.alias` `object` to be placed in `ast.Import.names`.
 
         Parameters
         ----------
-        names : Sequence[ast.alias]
-            List of module names to import, each wrapped in an alias object.
+        dotModule : identifierDotAttribute
+            ({diminutive2etymology['dotModule']}) The name of the module to import: the name may be in dot notation, also called attribute access; the name may be an absolute or relative import.
+            This parameter corresponds with `ast.alias.name` in `ast.Import.names[0]`; or, written as one dot-notation statement, it corresponds with
+            `ast.Import.names[0].name`.
+        asName : str | None = None
+            ({diminutive2etymology['asName']}) The identifier of the module in the local scope: `asName` must be a valid identifier, so it cannot be in dot notation.
+            This parameter corresponds with `ast.alias.asname` in `ast.Import.names[0]`; or, written as one dot-notation statement, it corresponds with
+            `ast.Import.names[0].asname`.
 
         Returns
         -------
         importStatement : ast.Import
-            AST `object` representing an absolute module import statement.
+            An `ast.Import` `object` with one `ast.alias` `object` representing a single `import` statement with a single module name.
 
         Examples
         --------
         ```python
-        # Creates AST for: import os
-        simpleImport = Make.Import([Make.alias('os')])
+        # To represent: `import os`
+        Make.Import(dotModule = 'os')
 
-        # Creates AST for: import numpy as np
-        aliasedImport = Make.Import([Make.alias('numpy', 'np')])
+        # To represent: `import re as regex`
+        Make.Import(dotModule = 're', asName = 'regex')
 
-        # Creates AST for: import collections.abc
-        nestedImport = Make.Import([Make.alias('collections.abc')])
+        # To represent: `import collections.abc`
+        Make.Import(dotModule = 'collections.abc')
 
-        # Creates AST for: import xml.etree.ElementTree as ET
-        nestedAliasedImport = Make.Import([Make.alias('xml.etree.ElementTree', 'ET')])
+        # To represent: `import scipy.signal.windows as SciPy`
+        Make.Import(dotModule = 'scipy.signal.windows', asName = 'SciPy')
         ```
 
         """

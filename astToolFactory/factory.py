@@ -17,9 +17,9 @@ from astToolFactory.factoryAnnex import (
 	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute, FunctionDefMake_Import,
 	listFunctionDefs_index, listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import (
-	astModuleToIngredientsFunction, Be, extractClassDef, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
-	Make, NodeChanger, parseLogicalPath2astModule)
-from astToolkit.transformationTools import write_astModule
+	astModuleToIngredientsFunction, Be, dump, extractClassDef, IfThis, IngredientsFunction, IngredientsModule,
+	LedgerOfImports, Make, NodeChanger, parseLogicalPath2astModule)
+from astToolkit.transformationTools import unjoinBinOP, write_astModule
 from hunterMakesPy import raiseIfNone, writeStringToHere
 from isort import code as isort_code
 from pathlib import PurePosixPath
@@ -136,12 +136,7 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 	pythonSource += "\n"
 	writeStringToHere(pythonSource, pathFilenameModule)
 
-def writeClass(
-	classIdentifier: str,
-	list4ClassDefBody: list[ast.stmt],
-	list4ModuleBody: list[ast.stmt],
-	moduleIdentifierPrefix: str | None = "_tool",
-) -> None:
+def writeClass(classIdentifier: str, list4ClassDefBody: list[ast.stmt], list4ModuleBody: list[ast.stmt], moduleIdentifierPrefix: str | None = "_tool") -> None:
 	"""Write a class definition and its module to disk.
 
 	(AI generated docstring)
@@ -258,9 +253,9 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 				, body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
 				, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute))]
 
-			for attribute, type_ast_expr in listTupleAttributes:
+			for attribute, _type_ast_expr in listTupleAttributes:
 				list4subClassDefBody.append(Make.FunctionDef(attribute + "Is"
-					, Make.arguments(list_arg=[Make.arg("attributeCondition", annotation=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([type_ast_expr]), Make.Name("bool")])))])
+					, Make.arguments(list_arg=[Make.arg("attributeCondition", annotation=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([Make.Name('Any')]), Make.Name("bool")])))])
 					, body=[Make.FunctionDef("workhorse"
 							, Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)])
 							, body=[Make.Return(Make.BoolOp(Make.And(), values=[Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]), Make.Call(Make.Name("attributeCondition"), listParameters=[Make.Attribute(Make.Name("node"), attribute)])]))]
@@ -286,6 +281,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom("typing_extensions", [Make.alias("TypeIs")]),
+		Make.ImportFrom("typing", [Make.alias("Any")]),
 		Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")]),
 		Make.ImportFrom("astToolkit", [Make.alias("ConstantValueType")]),
 		Make.Import("ast"),
@@ -319,6 +315,19 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
 			body = [Make.Return(Make.Attribute(Make.Name("node"), attribute))]
+			workbench = list_ast_expr.copy()
+			list_ast_expr.clear()
+			caseInsensitiveSort: list[str] = []
+			while workbench:
+				ast_expr: ast.expr = workbench.pop()
+				if isinstance(ast_expr, ast.BinOp):
+					workbench.extend(unjoinBinOP(ast_expr, ast.BitOr))
+				else:
+					checkMe = str(ast.unparse(ast_expr)).lower()
+					if checkMe not in caseInsensitiveSort:
+						index = len([item for item in caseInsensitiveSort if item <= checkMe])
+						caseInsensitiveSort.insert(index, checkMe)
+						list_ast_expr.insert(index, ast_expr)
 
 		ast_stmt = Make.FunctionDef(attribute
 				, Make.arguments(list_arg=[Make.arg("node", annotation=Make.Name(identifierTypeOfNode))])

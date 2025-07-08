@@ -1,5 +1,6 @@
 """Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
-from astToolFactory import astName_overload, astName_staticmethod, settingsManufacturing
+from astToolFactory import (
+	astName_overload, astName_staticmethod, astSubscriptUnpack_ast_attributes, settingsManufacturing)
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
 from typing import NotRequired, TypedDict
@@ -70,7 +71,7 @@ def makeFunctionDef_join(identifierContainer: str, identifierCallee: str, docstr
 		, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
 FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturing.identifiers['boolopJoinMethod']
-    , argumentSpecification=Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'boolop')))
+    , Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'boolop')))
             , Make.arg('expressions', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'expr')))
             ]
         , kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
@@ -157,35 +158,41 @@ FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
 # This relatively simple FunctionDef can probably be removed from the annex after I tweak a few things in the dataframe.
 # Minimum changes in the dataframe data for this 'ClassDefIdentifier': 'attributeRename', override 'type'.
 # Oh, wait. I don't plan to add anything that would _add_ `Make.arg('asName')` to 'match_args'.
-FunctionDefMake_Import: ast.stmt = Make.FunctionDef('Import'
-	, argumentSpecification=Make.arguments(list_arg=[Make.arg('dotModule', annotation=Make.Name('identifierDotAttribute'))
-							, Make.arg('asName', annotation=Make.BitOr().join([Make.Name('str'), Make.Constant(None)]))]
-					, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
-					, defaults=[Make.Constant(None)])
-	, body=[Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), 'Import')
-							, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias'), listParameters=[Make.Name('dotModule'), Make.Name('asName')])]))
-										, Make.keyword(None, value=Make.Name('keywordArguments'))]))]
+ClassDefIdentifier: str = 'Import' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
+FunctionDefMake_Import: ast.stmt = Make.FunctionDef(ClassDefIdentifier
+	, Make.arguments(list_arg=[Make.arg('dotModule', annotation=Make.Name('identifierDotAttribute'))
+			, Make.arg('asName', annotation=Make.BitOr().join([Make.Name('str'), Make.Constant(None)]))]
+		, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
+		, defaults=[Make.Constant(None)])
+	, body=[docstrings[settingsManufacturing.identifiers['Make']][ClassDefIdentifier]
+		, Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
+			, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias')
+				, listParameters=[Make.Name('dotModule'), Make.Name('asName')])])), Make.keyword(None, value=Make.Name('keywordArguments'))]))]
 	, decorator_list=[astName_staticmethod]
-	, returns=Make.Attribute(Make.Name('ast'), 'Import'))
+	, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
+del ClassDefIdentifier
 
+ClassDefIdentifier: str = 'keyword' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
 listOverloads_keyword: list[ast.stmt] = [
-	Make.FunctionDef('keyword'
-		, argumentSpecification=Make.arguments(list_arg=[Make.arg('Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo', annotation=Make.BitOr.join([Make.Name('str'), Make.Constant(None)]))
-							, Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
-							]
-						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
+	Make.FunctionDef(ClassDefIdentifier
+		, Make.arguments(list_arg=[Make.arg('Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'
+					, annotation=Make.BitOr.join([Make.Name('str'), Make.Constant(None)]))
+				, Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
+			, kwarg=Make.arg('keywordArguments', annotation=astSubscriptUnpack_ast_attributes))
 		, body=[Make.Expr(value=Make.Constant(...))]
 		, decorator_list=[astName_staticmethod, astName_overload]
-		, returns=Make.Attribute(Make.Name('ast'), 'keyword'))
-	, Make.FunctionDef('keyword'
-		, argumentSpecification=Make.arguments(list_arg=[Make.arg('Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo', annotation=Make.BitOr.join([Make.Name('str'), Make.Constant(None)]))]
-						, kwonlyargs=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
-						, kw_defaults=[None]
-						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
-						, defaults=[Make.Constant(None)])
+		, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
+	, Make.FunctionDef(ClassDefIdentifier
+		, Make.arguments(list_arg=[Make.arg('Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'
+				, annotation=Make.BitOr.join([Make.Name('str'), Make.Constant(None)]))]
+			, kwonlyargs=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
+			, kw_defaults=[None]
+			, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
+			, defaults=[Make.Constant(None)])
 		, body=[Make.Expr(value=Make.Constant(...))]
 		, decorator_list=[astName_staticmethod, astName_overload]
-		, returns=Make.Attribute(Make.Name('ast'), 'keyword'))]
+		, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))]
+del ClassDefIdentifier
 
 # `theSSOT` =====================================================================
 astModule_theSSOT = Make.Module([
@@ -196,7 +203,7 @@ astModule_theSSOT = Make.Module([
 	, Make.Import(dotModule='dataclasses')
 	, Make.Assign([Make.Name('identifierPackage', Make.Store())], value=Make.Constant('astToolkit'))
 	, Make.FunctionDef('getPathPackageINSTALLING'
-		, argumentSpecification=Make.arguments()
+		, Make.arguments()
         , body=[Make.AnnAssign(Make.Name('pathPackage', Make.Store()), annotation=Make.Name('Path')
 				, value=Make.Call(Make.Name('Path')
 					, listParameters=[Make.Call(Make.Name('inspect_getfile')

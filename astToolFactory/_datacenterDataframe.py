@@ -1,3 +1,4 @@
+# pyright: reportUnusedImport=false
 from ast import (
 	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, keyword, match_case,
 	Name, operator, pattern, stmt, Subscript, type_param, TypeIgnore, unaryop, withitem)
@@ -11,7 +12,7 @@ from astToolkit import (
 	Be, ConstantValueType as _ConstantValue, DOT, IfThis, Make, NodeChanger, NodeTourist, parsePathFilename2astModule,
 	Then)
 from astToolkit.transformationTools import makeDictionaryClassDef
-from collections.abc import Callable, Mapping, Sequence
+from collections.abc import Mapping
 from functools import cache
 from hunterMakesPy import raiseIfNone
 from typing import Any, cast

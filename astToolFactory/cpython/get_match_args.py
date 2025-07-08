@@ -5,7 +5,7 @@ from astToolkit import identifierDotAttribute
 from hunterMakesPy import importLogicalPath2Identifier, raiseIfNone
 from pathlib import Path
 from pprint import pprint
-from typing import Any, Literal, Protocol, TYPE_CHECKING, TypedDict
+from typing import Any, Literal, Protocol, TYPE_CHECKING
 import sys
 
 if TYPE_CHECKING:

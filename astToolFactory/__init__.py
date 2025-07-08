@@ -16,6 +16,7 @@ from astToolFactory._snippets import (
 	astName_staticmethod as astName_staticmethod,
 	astName_typing_TypeAlias as astName_typing_TypeAlias,
 	astName_typing_TypeVar as astName_typing_TypeVar,
+    astSubscriptUnpack_ast_attributes as astSubscriptUnpack_ast_attributes,
 	format_hasDOTIdentifier as format_hasDOTIdentifier,
 	formatTypeAliasSubcategory as formatTypeAliasSubcategory,
 	keywordKeywordArguments4Call as keywordKeywordArguments4Call,
