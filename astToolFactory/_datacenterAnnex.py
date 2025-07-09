@@ -93,7 +93,7 @@ attributeRename__: dict[Column__attribute | Column__ClassDefIdentifier_attribute
 }
 
 attributeType__ClassDefIdentifier_attribute: dict[Column__ClassDefIdentifier_attribute, column__value] = {
-	Column__ClassDefIdentifier_attribute('alias', 'name'): column__value('attributeType', 'identifierDotAttribute'),
+	# Column__ClassDefIdentifier_attribute('alias', 'name'): column__value('attributeType', 'identifierDotAttribute'),
 	Column__ClassDefIdentifier_attribute('Constant', 'value'): column__value('attributeType', 'ConstantValueType'),
 }
 

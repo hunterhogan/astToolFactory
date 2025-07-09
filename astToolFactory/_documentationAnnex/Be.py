@@ -8,7 +8,7 @@ NOTE Use special indentation in this file.
 from ast import AST, Constant
 from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import (
-	diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators)
+    diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators)
 from astToolkit import identifierDotAttribute, Make
 from itertools import chain
 import ast
