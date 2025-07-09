@@ -127,23 +127,24 @@ FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturin
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
-FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
+ClassDefIdentifier: str = 'Attribute' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
+FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 	, Make.arguments(list_arg=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
 		, vararg=Make.arg('attribute', annotation=Make.Name('str'))
 		, kwonlyargs=[Make.arg('context', annotation=Make.BitOr.join([Make.Attribute(Make.Name('ast'), 'expr_context'), Make.Constant(None)]))]
 		, kw_defaults=[Make.Constant(None)]
 		, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
-	, body=[docstrings[settingsManufacturing.identifiers['Make']]['Attribute']
+	, body=[docstrings[settingsManufacturing.identifiers['Make']][ClassDefIdentifier]
 		, Make.Assign([Make.Name('ctx', Make.Store())], value=Make.Or.join([Make.Name('context'), Make.Call(Make.Attribute(Make.Name('ast'), 'Load'))]))
 		, Make.FunctionDef('addDOTattribute'
 			, Make.arguments(list_arg=[Make.arg('chain', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
 					, Make.arg('identifier', annotation=Make.Name('str'))
 					, Make.arg('ctx', annotation=Make.Attribute(Make.Name('ast'), 'expr_context'))]
 				, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
-			, body=[Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), 'Attribute')
+			, body=[Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
 					, list_keyword=[Make.keyword('value', Make.Name('chain')), Make.keyword('attr', Make.Name('identifier'))
 						, Make.keyword('ctx', Make.Name('ctx')), Make.keyword(None, value=Make.Name('keywordArguments'))]))]
-			, returns=Make.Attribute(Make.Name('ast'), 'Attribute'))
+			, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
 		, Make.Assign([Make.Name('buffaloBuffalo', Make.Store())], value=Make.Call(Make.Name('addDOTattribute')
 					, listParameters=[Make.Name('value'), Make.Subscript(Make.Name('attribute'), slice=Make.Constant(0)), Make.Name('ctx')]
 					, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))
@@ -153,23 +154,16 @@ FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef('Attribute'
 					, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))])
 		, Make.Return(Make.Name('buffaloBuffalo'))]
 	, decorator_list=[astName_staticmethod]
-	, returns=Make.Attribute(Make.Name('ast'), 'Attribute'))
-
-# This relatively simple FunctionDef can probably be removed from the annex after I tweak a few things in the dataframe.
-# Minimum changes in the dataframe data for this 'ClassDefIdentifier': 'attributeRename', override 'type'.
-# Oh, wait. I don't plan to add anything that would _add_ `Make.arg('asName')` to 'match_args'.
-ClassDefIdentifier: str = 'Import' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
-FunctionDefMake_Import: ast.stmt = Make.FunctionDef(ClassDefIdentifier
-	, Make.arguments(list_arg=[Make.arg('dotModule', annotation=Make.Name('identifierDotAttribute'))
-			, Make.arg('asName', annotation=Make.BitOr().join([Make.Name('str'), Make.Constant(None)]))]
-		, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
-		, defaults=[Make.Constant(None)])
-	, body=[docstrings[settingsManufacturing.identifiers['Make']][ClassDefIdentifier]
-		, Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
-			, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias')
-				, listParameters=[Make.Name('dotModule'), Make.Name('asName')])])), Make.keyword(None, value=Make.Name('keywordArguments'))]))]
-	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
+del ClassDefIdentifier
+
+ClassDefIdentifier: str = 'Import' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
+list_argMake_Import: list[ast.arg]=[Make.arg('dotModule', annotation=Make.Name('identifierDotAttribute'))
+		, Make.arg('asName', annotation=Make.BitOr().join([Make.Name('str'), Make.Constant(None)]))]
+FunctionDef_bodyMake_Import: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers['Make']][ClassDefIdentifier]
+	, Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
+		, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias')
+			, listParameters=[Make.Name('dotModule'), Make.Name('asName')])])), Make.keyword(None, value=Make.Name('keywordArguments'))]))]
 del ClassDefIdentifier
 
 ClassDefIdentifier: str = 'keyword' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".

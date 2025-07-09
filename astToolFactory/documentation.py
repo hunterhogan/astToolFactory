@@ -20,17 +20,4 @@ def getMoreDocstrings() -> None:
 
 getMoreDocstrings()
 
-"""
-Every text field has a boolean value: AI generated
-
-Summary: text without new lines.
-
-Uncategorized: an open-ended text field.
-
-Categories, defined:
-	Parameters: a dictionary of parameter identifiers and text descriptions.
-	Returns: a dictionary of parameter identifiers and text descriptions.
-
-Any category name with a text field, such as:
-Examples
-"""
+# 31337 H4XØR

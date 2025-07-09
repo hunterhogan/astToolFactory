@@ -13,12 +13,12 @@ from astToolFactory import (
 	settingsManufacturing, settingsPackage)
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
-	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
-	FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute, FunctionDefMake_Import,
-	listFunctionDefs_index, listHandmade_astTypes, listOverloads_keyword)
+	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
+	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute,
+	list_argMake_Import, listFunctionDefs_index, listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import (
-	astModuleToIngredientsFunction, Be, dump, extractClassDef, IfThis, IngredientsFunction, IngredientsModule,
-	LedgerOfImports, Make, NodeChanger, parseLogicalPath2astModule)
+	astModuleToIngredientsFunction, Be, extractClassDef, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
+	Make, NodeChanger, parseLogicalPath2astModule)
 from astToolkit.transformationTools import unjoinBinOP, write_astModule
 from hunterMakesPy import raiseIfNone, writeStringToHere
 from isort import code as isort_code
@@ -108,7 +108,6 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 			("keyword", "[reportInconsistentOverload]"),
 			("MatchClass", "[reportSelfClsParameterName]"),
 			("MatchSingleton", "FBT001"),
-			("TypeAlias", "[reportInconsistentOverload]"),
 		]:
 			for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
 				if "def " + astClass in line:
@@ -565,6 +564,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 		, Make.ImportFrom("typing", [Make.alias("Any")])
 		, Make.Import("ast")]))
 	ledgerOfImports.addImportFrom_asStr("astToolkit", "ConstantValueType")
+	ledgerOfImports.addImportFrom_asStr("astToolkit", "identifierDotAttribute")
 	ledgerOfImports.addImportFrom_asStr("astToolkit", "ast_attributes")
 
 	list4ClassDefBody: list[ast.stmt] = [
@@ -590,10 +590,6 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 		elif ClassDefIdentifier == "Attribute":
 			list4ClassDefBody.append(FunctionDefMake_Attribute)
 			continue
-		elif ClassDefIdentifier == "Import":
-			list4ClassDefBody.append(FunctionDefMake_Import)
-			ledgerOfImports.addImportFrom_asStr("astToolkit", "identifierDotAttribute")
-			continue
 		elif ClassDefIdentifier == "keyword":
 			list4ClassDefBody.extend(listOverloads_keyword)
 			ledgerOfImports.addImportFrom_asStr("typing", "overload")
@@ -612,6 +608,9 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 		if overloadDefinition:
 			decorator_list.append(astName_overload)
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
+		elif ClassDefIdentifier == "Import":
+			listFunctionDef_args: list[ast.arg] = list_argMake_Import  # noqa: PLW2901
+			body = FunctionDef_bodyMake_Import
 		else:
 			body = [docstrings[identifierToolClass][ClassDefIdentifier]
 				, Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]

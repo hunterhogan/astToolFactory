@@ -83,6 +83,7 @@ attributeRename__: dict[Column__attribute | Column__ClassDefIdentifier_attribute
 	Column__attribute('keywords'): column__value('attributeRename', 'list_keyword'),
 	Column__attribute('module'): column__value('attributeRename', 'dotModule'),
 	Column__attribute('orelse'): column__value('attributeRename', 'orElse'),
+	Column__ClassDefIdentifier_attribute('alias', 'name'): column__value('attributeRename', 'dotModule'),
 	Column__ClassDefIdentifier_attribute('arguments', 'args'): column__value('attributeRename', 'list_arg'),
 	Column__ClassDefIdentifier_attribute('AsyncFunctionDef', 'args'): column__value('attributeRename', 'argumentSpecification'),
 	Column__ClassDefIdentifier_attribute('Call', 'args'): column__value('attributeRename', 'listParameters'),
@@ -92,7 +93,8 @@ attributeRename__: dict[Column__attribute | Column__ClassDefIdentifier_attribute
 }
 
 attributeType__ClassDefIdentifier_attribute: dict[Column__ClassDefIdentifier_attribute, column__value] = {
-	Column__ClassDefIdentifier_attribute('Constant', 'value'): column__value('attributeType', "ConstantValueType"),
+	Column__ClassDefIdentifier_attribute('alias', 'name'): column__value('attributeType', 'identifierDotAttribute'),
+	Column__ClassDefIdentifier_attribute('Constant', 'value'): column__value('attributeType', 'ConstantValueType'),
 }
 
 defaultValue__: dict[Column__attribute | Column__attributeType_attribute | Column__ClassDefIdentifier_attribute, column__value] = {
@@ -113,8 +115,8 @@ defaultValue__: dict[Column__attribute | Column__attributeType_attribute | Colum
 	Column__attribute('rest'): column__value('defaultValue', Make.Constant(None)),
 	Column__attribute('simple'): column__value('defaultValue', Make.Call(Make.Name('int'), [Make.Call(Make.Name('isinstance'), [Make.Name('target'), Make.Attribute(Make.Name('ast'), 'Name')])])),
 	Column__attribute('step'): column__value('defaultValue', Make.Constant(None)),
-	Column__attribute('type'): column__value('defaultValue', Make.Constant(None)),
 	Column__attribute('type_comment'): column__value('defaultValue', Make.Constant(None)),
+	Column__attribute('type'): column__value('defaultValue', Make.Constant(None)),
 	Column__attribute('upper'): column__value('defaultValue', Make.Constant(None)),
 	Column__attribute('vararg'): column__value('defaultValue', Make.Constant(None)),
 	Column__attributeType_attribute('int | None', 'end_col_offset'): column__value('defaultValue', Make.Constant(None)),
@@ -164,6 +166,7 @@ dictionary_defaultValue_ast_arg_Call_keyword_orElse: dict[Column__attribute | Co
 	Column__ClassDefIdentifier_attribute('FunctionDef', 'body'): Make.List(),
 	Column__ClassDefIdentifier_attribute('FunctionDef', 'type_params'): Make.List(),
 	Column__ClassDefIdentifier_attribute('If', 'orelse'): Make.List(),
+	Column__ClassDefIdentifier_attribute('Import', 'names'): Make.List(),
 	Column__ClassDefIdentifier_attribute('match_case', 'body'): Make.List(),
 	Column__ClassDefIdentifier_attribute('MatchMapping', 'keys'): Make.List(),
 	Column__ClassDefIdentifier_attribute('Try', 'orelse'): Make.List(),
@@ -172,8 +175,8 @@ dictionary_defaultValue_ast_arg_Call_keyword_orElse: dict[Column__attribute | Co
 }
 
 move2keywordArguments__: dict[Column__attribute | Column__attributeKind, column__value] = {
-	Column__attribute("type_comment"): column__value('move2keywordArguments', "Unpack"),
-	Column__attribute("simple"): column__value('move2keywordArguments', True),  # noqa: FBT003
-	Column__attributeKind("No"): column__value('move2keywordArguments', "No"),
-	Column__attributeKind("_attribute"): column__value('move2keywordArguments', "No"),
+	Column__attribute('simple'): column__value('move2keywordArguments', True),  # noqa: FBT003
+	Column__attribute('type_comment'): column__value('move2keywordArguments', 'Unpack'),
+	Column__attributeKind('_attribute'): column__value('move2keywordArguments', 'No'),
+	Column__attributeKind('No'): column__value('move2keywordArguments', 'No'),
 }
