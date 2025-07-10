@@ -8,8 +8,8 @@ for the toolkit's code generation process.
 """
 
 from astToolFactory import (
-	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, getElementsBe, getElementsDOT,
-	getElementsGrab, getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
+	astASTastAttribute, astName_overload, astName_staticmethod, getElementsBe, getElementsDOT, getElementsGrab,
+	getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
 	settingsManufacturing, settingsPackage)
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
@@ -383,21 +383,18 @@ def makeToolFind(identifierToolClass: str, **keywordArguments: Any) -> None:
 		"""
 
 		"""Separate subclass and attributes
+		"""
 		ast_stmt: ast.stmt = Make.FunctionDef(
 			ClassDefIdentifier
-			, Make.arguments(list_arg=[Make.arg("self"), Make.arg("node", annotation=astASTastAttribute)])
-			, body=[
-				# docstrings[identifierToolClass][ClassDefIdentifier]
-				# ,
-				Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))
-			]
-			# , decorator_list=[astName_classmethod]
+			, Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)])
+			, body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
+			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute)
 		)
 
 		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
 			ast_stmt = Make.If(
-				Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
+				Make.Compare(Make.Attribute(Make.Name("sys"), 'version_info')
 					, ops=[Make.GtE()]
 					, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
 				, body=[ast_stmt])
@@ -405,23 +402,17 @@ def makeToolFind(identifierToolClass: str, **keywordArguments: Any) -> None:
 		list4ClassDefBody.append(ast_stmt)
 
 		if listTupleAttributes:
-			list4subClassDefBody: list[ast.stmt] = [
-				# docstrings[identifierToolClass][ClassDefIdentifier]
-				# ,
-				Make.FunctionDef("__init__"
-					, Make.arguments(list_arg=[Make.arg("self"), Make.arg("node", annotation=classAs_astAttribute)])
-					, body=[Make.Assign([Make.Name("self._node", context=Make.Store())], value=Make.Name("node"))]
-					, returns=Make.Constant(None))]
+			list4subClassDefBody: list[ast.stmt] = []
 
 			for attribute, type_ast_expr in listTupleAttributes:
-				list4subClassDefBody.append(Make.FunctionDef(attribute
-					, decorator_list=[Make.Name('property')]
-					, argumentSpecification=Make.arguments(list_arg=[Make.arg("self")])
+				list4subClassDefBody.append(Make.FunctionDef(ClassDefIdentifier + '_' + attribute
+					, argumentSpecification=Make.arguments(list_arg=[Make.arg("node", annotation=classAs_astAttribute)])
 					, returns=type_ast_expr
-					, body=[Make.Return(Make.Attribute(Make.Name("self._node"), attribute))]
+					, decorator_list=[astName_staticmethod]
+					, body=[Make.Return(Make.Attribute(Make.Name('node'), attribute))]
 					))
 
-			list_ast_stmt: list[ast.stmt] = [Make.ClassDef(f"_{ClassDefIdentifier}", body=list4subClassDefBody)]
+			list_ast_stmt: list[ast.stmt] = list4subClassDefBody
 
 			if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
 				list_ast_stmt = [
@@ -432,8 +423,8 @@ def makeToolFind(identifierToolClass: str, **keywordArguments: Any) -> None:
 						, body=list_ast_stmt)]
 
 			list4ClassDefBody.extend(list_ast_stmt)
-		"""
 
+		"""Classes within classes
 		list4subClassDefBody: list[ast.stmt] = [
 			Make.FunctionDef(
 			'__call__'
@@ -468,7 +459,7 @@ def makeToolFind(identifierToolClass: str, **keywordArguments: Any) -> None:
 					, body=list_ast_stmt)]
 
 		list4ClassDefBody.extend(list_ast_stmt)
-
+	"""
 	# NOTE A temporary system during prototype development.
 	identifierToolClassOVERRIDE: str = "Find"
 	identifierToolClass = identifierToolClassOVERRIDE
