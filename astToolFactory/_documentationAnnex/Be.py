@@ -8,7 +8,7 @@ NOTE Use special indentation in this file.
 from ast import AST, Constant
 from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import (
-    diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators)
+	diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators)
 from astToolkit import identifierDotAttribute, Make
 from itertools import chain
 import ast
@@ -89,7 +89,7 @@ for astClass in [C for C in [AST,*chain(*(c.__subclasses__() for c in [AST,Const
 
     ImaDocstring += " matches"
 
-    matchesClasses: list[identifierDotAttribute] = list({f"`{astClassDefIdentifier}`", *sorted([f"`ast.{subclass.__name__}`" for subclass in astClass.__subclasses__() if issubclass(subclass, ast.AST)], key=lambda element: element.lower())})
+    matchesClasses: list[identifierDotAttribute] = list(dict.fromkeys([f"`{astClassDefIdentifier}`", *sorted([f"`ast.{c.__name__}`" for c in astClass.__subclasses__() if issubclass(c, ast.AST)], key=lambda s: s.lower())]))
 
     if len(matchesClasses) > 1:
         ImaDocstring += " any of"
