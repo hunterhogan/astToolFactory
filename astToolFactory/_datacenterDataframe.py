@@ -100,26 +100,19 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	def newRowsFrom_match_args(dataframeTarget: pandas.DataFrame) -> pandas.DataFrame:
 		def get_attributeType(dddataframeee: pandas.DataFrame) -> pandas.Series:
-			getAnnotation = NodeTourist[ast.AnnAssign, ast.expr](
-				findThis = Be.AnnAssign.targetIs(IfThis.isNameIdentifier(cast('str', dddataframeee['attribute'])))
-				, doThat = Then.extractIt(DOT.annotation))
-
-			# TODO remove if typeshed ast.NameConstant is fixed
-			ClassDefIdentifier: str = cast('str', dddataframeee['ClassDefIdentifier'])
-			if ClassDefIdentifier == 'NameConstant':
-				ClassDefIdentifier = 'Constant'
-
-			type_ast_expr: ast.expr = raiseIfNone(getAnnotation.captureLastMatch(dictionaryClassDef[ClassDefIdentifier]))
-
-			NodeChanger(findThis=Be.Subscript.valueIs(IfThis.isNameIdentifier("Literal")), doThat=Then.replaceWith(Make.Name("bool"))
-				).visit(type_ast_expr)
-
-			eval2ast_expr= NodeChanger[ast.Name, ast.expr](
+			# `eval` "resolves" any TypeAlias into the actual type.
+			dddataframeee['attributeType'] = ast.unparse(NodeChanger[ast.Name, ast.expr](
 				findThis=lambda node: Be.Name(node) and isinstance(eval(node.id), type) and issubclass(eval(node.id), ast.AST)  # noqa: S307
 				, doThat=lambda node: Make.Attribute(Make.Name("ast"), eval(node.id).__name__)  # noqa: S307
-			)
-
-			dddataframeee['attributeType'] = ast.unparse(eval2ast_expr.visit(type_ast_expr))
+				).visit(
+					# TODO remove when `ast.MatchSingleton.value` is changed to `bool`.
+					NodeChanger[ast.Subscript, ast.Name](
+					findThis=Be.Subscript.valueIs(IfThis.isNameIdentifier("Literal"))
+					, doThat=Then.replaceWith(Make.Name("bool"))
+					).visit(raiseIfNone(NodeTourist[ast.AnnAssign, ast.expr](
+						findThis = Be.AnnAssign.targetIs(IfThis.isNameIdentifier(cast('str', dddataframeee['attribute'])))
+						, doThat = Then.extractIt(DOT.annotation)
+						).captureLastMatch(dictionaryClassDef[cast('str', dddataframeee['ClassDefIdentifier'])])))))
 
 			return dddataframeee['attributeType']
 
@@ -143,19 +136,26 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	for deprecated classes were created manually. If the dataframe were reset or eliminated, there is not currently a process to
 	recreate the match_args for deprecated classes."""
 
+	print(len(dataframe))
+	dataframe['match_args'] = pandas.Series(data=[()] * len(dataframe), index=dataframe.index, dtype=object, name='match_args')
 	dataframe['match_args'] = (dataframe[['ClassDefIdentifier', "versionMinorPythonInterpreter", 'deprecated']]
 		.apply(tuple, axis="columns")
 		.map(getDictionary_match_args())
 		.fillna(dataframe['match_args'])) # NOTE if this logic were better, it would not use `fillna` and there still wouldn't be empty cells.
 	dataframe.attrs['drop_duplicates'].extend(['match_args'])
-
-	dataframe['attribute'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attribute')
-	dataframe.attrs['drop_duplicates'].extend(['attribute'])
-	dataframe['attributeKind'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeKind')
-	dataframe['attributeType'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeType')
-	dataframe = pandas.concat(objs=[dataframe, newRowsFrom_match_args(dataframe)], axis='index', ignore_index=True)
+	print(len(dataframe))
 
 	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last')
+	print(len(dataframe))
+
+	# dataframe['attribute'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attribute')
+	dataframe.attrs['drop_duplicates'].extend(['attribute'])
+	# dataframe['attributeKind'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeKind')
+	# dataframe['attributeType'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeType')
+	dataframe = pandas.concat(objs=[dataframe, newRowsFrom_match_args(dataframe)], axis='index', ignore_index=True)
+	print(len(dataframe))
+	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last')
+	print(len(dataframe))
 
 	dataframe = pandas.concat(objs=[dataframe, newRowsFrom_attributes(dataframe)], axis='index', ignore_index=True)
 

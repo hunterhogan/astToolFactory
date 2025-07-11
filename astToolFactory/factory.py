@@ -1,11 +1,4 @@
-"""Module for manufacturing astToolkit tools and writing generated modules.
-
-(AI generated docstring)
-
-This module provides functions to generate and write astToolkit tools, including Be, DOT, Grab, and
-Make tools, as well as the SSOT module. It manages imports, class definitions, and module writing
-for the toolkit's code generation process.
-"""
+"""Module for manufacturing and writing ast tools and modules."""
 
 from astToolFactory import (
 	astASTastAttribute, astName_overload, astName_staticmethod, getElementsBe, getElementsDOT, getElementsGrab,
@@ -53,7 +46,7 @@ Then, I could pass the dataclass around more easily.
 """
 
 def _makeGuardVersion() -> None:
-	"""Construct version guard for astToolkit code generation."""
+	"""Construct version guard."""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0602, PLW0603
 	orElse: ast.stmt | None = None
 	if versionMinorMinimum >= settingsManufacturing.pythonMinimumVersionMinor:
@@ -121,7 +114,7 @@ def writeModule(astModule: ast.Module, moduleIdentifier: str) -> None:
 		pythonSource = "# ruff: noqa: A002\n" + pythonSource
 		pythonSource = pythonSource.replace("# type: ignore[", "# pyright: ignore[")
 		pythonSource = pythonSource.replace("# type: ignore", "# noqa: ")
-	autoflake_additional_imports: list[str] = ["astToolkit"]
+	autoflake_additional_imports: list[str] = [settingsManufacturing.identifierPackage]
 	pythonSource = autoflake.fix_code(
 		pythonSource,
 		autoflake_additional_imports,
@@ -200,15 +193,7 @@ def make_astTypes(**keywordArguments: Any) -> None:
 	writeModule(astModule, "_astTypes")
 
 def makeTool_dump() -> None:
-	"""Generate and write the dump tool for the astToolkit.
-
-	(AI generated docstring)
-
-	Returns
-	-------
-	None
-
-	"""
+	"""Generate and write `dump`."""
 	ingredientsFunction: IngredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule("ast"), "dump")
 
 	def doThat(node: ast.FunctionDef) -> ast.expr | Any:
@@ -225,7 +210,7 @@ def makeTool_dump() -> None:
 	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsManufacturing.identifierPackage)
 
 def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
-	"""Generate and write the Be tool class for the astToolkit."""
+	"""Generate and write `class` `Be`."""
 	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
 
 	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute, listTupleAttributes in getElementsBe(identifierToolClass, **keywordArguments):
@@ -282,7 +267,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 		Make.ImportFrom("typing_extensions", [Make.alias("TypeIs")]),
 		Make.ImportFrom("typing", [Make.alias("Any")]),
 		Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")]),
-		Make.ImportFrom("astToolkit", [Make.alias("ConstantValueType")]),
+		Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("ConstantValueType")]),
 		Make.Import("ast"),
 		Make.Import("sys"),
 	]
@@ -290,7 +275,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
-	"""Generate and write the DOT tool class for the astToolkit.
+	"""Generate and write the `DOT` tool class.
 
 	Parameters
 	----------
@@ -341,7 +326,7 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 			list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom("astToolkit", [Make.alias("*")])
+		Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("*")])
 		, Make.ImportFrom("collections.abc", [Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("overload")])
 		, Make.Import("ast")
@@ -351,7 +336,7 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 				, [Make.GtE()]
 				, [Make.Tuple([Make.Constant(3), Make.Constant(13)])]
 			)
-			, body=[Make.ImportFrom("astToolkit", [Make.alias("hasDOTdefault_value")])]
+			, body=[Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTdefault_value")])]
 		)
 	]
 
@@ -481,7 +466,7 @@ import ast"""))
 	writeModule(astModule, moduleIdentifier)
 
 def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
-	"""Generate and write the Grab tool class for the astToolkit.
+	"""Generate and write the `Grab` tool class.
 
 	Parameters
 	----------
@@ -523,19 +508,19 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 			list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom("astToolkit", [Make.alias("*")])
+		Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("*")])
 		, Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("cast")])
 		, Make.Import("ast")
 		, Make.Import("sys")
-		, Make.If(Make.Compare(Make.Attribute(Make.Name("sys"), "version_info"), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]), [Make.ImportFrom("astToolkit", [Make.alias("hasDOTdefault_value")])])
+		, Make.If(Make.Compare(Make.Attribute(Make.Name("sys"), "version_info"), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]), [Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTdefault_value")])])
 		, *listFunctionDefs_index
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # noqa: C901
-	"""Generate and write `class` `Make` for `astToolkit`.
+	"""Generate and write `class` `Make`.
 
 	Parameters
 	----------
@@ -554,9 +539,9 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any")])
 		, Make.Import("ast")]))
-	ledgerOfImports.addImportFrom_asStr("astToolkit", "ConstantValueType")
-	ledgerOfImports.addImportFrom_asStr("astToolkit", "identifierDotAttribute")
-	ledgerOfImports.addImportFrom_asStr("astToolkit", "ast_attributes")
+	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "ConstantValueType")
+	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "identifierDotAttribute")
+	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "ast_attributes")
 
 	list4ClassDefBody: list[ast.stmt] = [
 		docstrings[identifierToolClass][identifierToolClass]
@@ -587,7 +572,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # 
 
 		if kwarg_annotationIdentifier != "No":
 			listCall_keyword.append(keywordKeywordArguments4Call)
-			ledgerOfImports.addImportFrom_asStr("astToolkit", kwarg_annotationIdentifier)
+			ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, kwarg_annotationIdentifier)
 			ledgerOfImports.addImportFrom_asStr("typing", 'Unpack')
 			kwarg: ast.arg | None = Make.arg(settingsManufacturing.keywordArgumentsIdentifier
 				, annotation=Make.Subscript(Make.Name("Unpack"), slice=Make.Name(kwarg_annotationIdentifier)))
@@ -634,7 +619,7 @@ def write_theSSOT() -> None:
 	writeModule(astModule_theSSOT, "_theSSOT")
 
 def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None:
-	"""Manufacture all astToolkit tools and write generated modules.
+	"""Manufacture all tools and write generated modules.
 
 	(AI generated docstring)
 

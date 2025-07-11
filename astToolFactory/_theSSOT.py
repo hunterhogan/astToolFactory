@@ -41,7 +41,7 @@ class PackageSettings:
 
 settingsPackage = PackageSettings()
 
-pathRoot_typeshed: Path = Path(settingsPackage.pathPackage, '..', pathRelativeRoot_typeshedHARDCODED)
+pathRoot_typeshed: Path = Path(settingsPackage.pathPackage, '..', pathRelativeRoot_typeshedHARDCODED).resolve()
 
 @dataclasses.dataclass
 class ManufacturedPackageSettings(PackageSettings):
