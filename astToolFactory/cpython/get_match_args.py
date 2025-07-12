@@ -155,7 +155,7 @@ def extract_match_args() -> dict[int, dict[str, tuple[str, ...]]]:
 # 	for versionMinor, dictionaryClass_match_args in dictionaryByVersion.items():
 # 		for ClassDefIdentifier, match_args in dictionaryClass_match_args.items():
 # 			match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated[
-# 				Column__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated(ClassDefIdentifier, versionMinor, False)  # noqa: FBT003
+# 				Column__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated(ClassDefIdentifier, versionMinor, False)
 # 				] = column__value('match_args', match_args)
 
 # 	return match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated

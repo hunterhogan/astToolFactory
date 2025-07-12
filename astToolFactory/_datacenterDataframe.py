@@ -136,10 +136,11 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	# dataframe = dictionary2UpdateDataframe(getDictionary_match_args(), dataframe)
 
-	dataframe['match_args'] = (dataframe[['ClassDefIdentifier', "versionMinorPythonInterpreter", 'deprecated']]
+	new_match_args = (dataframe[['ClassDefIdentifier', "versionMinorPythonInterpreter", 'deprecated']]
 		.apply(tuple, axis="columns")
 		.map(getDictionary_match_args())
 		.fillna(dataframe['match_args'])) # NOTE if this logic were better, it would not use `fillna` and there still wouldn't be empty cells.
+	dataframe.loc[:, 'match_args'] = new_match_args
 
 	dataframe.attrs['drop_duplicates'].extend(['match_args'])
 
@@ -149,6 +150,8 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dataframe.attrs['drop_duplicates'].extend(['attribute'])
 	# dataframe['attributeKind'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeKind')
 	# dataframe['attributeType'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeType')
+
+	# NOTE these two functions each create ~4 times more rows than necessary.
 	dataframe = pandas.concat(objs=[dataframe, newRowsFrom_match_args(dataframe)], axis='index', ignore_index=True)
 	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last')
 
