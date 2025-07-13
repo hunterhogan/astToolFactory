@@ -190,45 +190,11 @@ del ClassDefIdentifier
 
 # `theSSOT` =====================================================================
 astModule_theSSOT = Make.Module([
-    Make.ImportFrom('importlib', list_alias=[Make.alias('import_module', asName='importlib_import_module')])
-	, Make.ImportFrom('inspect', list_alias=[Make.alias('getfile', asName='inspect_getfile')])
-	, Make.ImportFrom('pathlib', list_alias=[Make.alias('Path')])
-	, Make.ImportFrom('tomli', list_alias=[Make.alias('load', asName='tomli_load')])
-	, Make.Import(dotModule='dataclasses')
+    Make.ImportFrom('hunterMakesPy', list_alias=[Make.alias('PackageSettings')])
 	, Make.Assign([Make.Name('identifierPackage', Make.Store())], value=Make.Constant('astToolkit'))
-	, Make.FunctionDef('getPathPackageINSTALLING'
-		, Make.arguments()
-        , body=[Make.AnnAssign(Make.Name('pathPackage', Make.Store()), annotation=Make.Name('Path')
-				, value=Make.Call(Make.Name('Path')
-					, listParameters=[Make.Call(Make.Name('inspect_getfile')
-						, listParameters=[Make.Call(Make.Name('importlib_import_module')
-							, listParameters=[Make.Name('identifierPackage')])])]))
-			, Make.If(test=Make.Call(Make.Attribute(Make.Name('pathPackage'), 'is_file'))
-				, body=[Make.Assign([Make.Name('pathPackage', Make.Store())], value=Make.Attribute(Make.Name('pathPackage'), 'parent'))])
-			, Make.Return(value=Make.Name('pathPackage'))
-		]
-        , returns=Make.Name('Path')
-	)
-	, Make.ClassDef('PackageSettings'
-		, body=[
-            Make.AnnAssign(Make.Name('fileExtension', Make.Store())
-				, annotation=Make.Name('str')
-                , value=Make.Call(Make.Attribute(Make.Name('dataclasses'), 'field'), list_keyword=[Make.keyword('default', value=Make.Constant('.py'))]))
-			, Make.Expr(value=Make.Constant('Default file extension for generated code files.'))
-			, Make.AnnAssign(Make.Name('packageName', Make.Store())
-				, annotation=Make.Name('str')
-                , value=Make.Call(Make.Attribute(Make.Name('dataclasses'), 'field'), list_keyword=[Make.keyword('default', value=Make.Name('identifierPackage'))]))
-			, Make.Expr(Make.Constant('Name of this package, used for import paths and configuration.'))
-			, Make.AnnAssign(Make.Name('pathPackage', Make.Store())
-				, annotation=Make.Name('Path')
-                , value=Make.Call(Make.Attribute(Make.Name('dataclasses'), 'field'), list_keyword=[Make.keyword('default_factory', value=Make.Name('getPathPackageINSTALLING'))
-												, Make.keyword('metadata', value=Make.Dict(keys=[Make.Constant('evaluateWhen')], values=[Make.Constant('installing')]))
-                                                ]))
-			, Make.Expr(Make.Constant('Absolute path to the installed package directory.'))
-		]
-    , decorator_list=[Make.Attribute(Make.Name('dataclasses'), 'dataclass')]
-    )
-	, Make.Assign([Make.Name('packageSettings', Make.Store())], value=Make.Call(Make.Name('PackageSettings')))])
+	, Make.Assign([Make.Name('packageSettings', Make.Store())]
+		, value=Make.Call(Make.Name('PackageSettings')
+			, list_keyword=[ast.keyword('identifierPackageFALLBACK', Make.Name('identifierPackage'))]))])
 
 # `TypeAlias` =====================================================================
 listHandmade_astTypes: list[ast.stmt] = [
