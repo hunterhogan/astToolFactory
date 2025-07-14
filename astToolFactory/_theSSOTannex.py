@@ -4,6 +4,13 @@ from pathlib import Path
 PackageToManufactureIdentifier: str = 'astToolkit'
 pathPackageToManufacture = Path('/apps', PackageToManufactureIdentifier, PackageToManufactureIdentifier)
 
+autoflakeSettings: dict[str, bool] = {
+		'expand_star_imports': True,
+		'remove_all_unused_imports': True,
+		'remove_duplicate_keys': False,
+		'remove_unused_variables': False,
+}
+
 dictionaryIdentifiers: dict[str, str] = {
 	'Be': 'Be',
 	'boolopJoinMethod': '_boolopJoinMethod',
@@ -11,6 +18,8 @@ dictionaryIdentifiers: dict[str, str] = {
 	'Grab': 'Grab',
 	'Make': 'Make',
 	'operatorJoinMethod': '_operatorJoinMethod',
+    'SSOT': '_theSSOT',
+    'types': '_astTypes',
 }
 
 dictionary_astSuperClasses: dict[str, str] = {

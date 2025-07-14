@@ -4,8 +4,8 @@ Secondary: settings for manufacturing.
 Tertiary: hardcoded values until I implement a dynamic solution.
 """
 from astToolFactory._theSSOTannex import (
-	dictionary_astSuperClasses, dictionaryIdentifiers, isort_codeConfiguration, PackageToManufactureIdentifier,
-	pathPackageToManufacture)
+	autoflakeSettings, dictionary_astSuperClasses, dictionaryIdentifiers, isort_codeConfiguration,
+	PackageToManufactureIdentifier, pathPackageToManufacture)
 from copy import deepcopy
 from hunterMakesPy import PackageSettings
 from pathlib import Path
@@ -33,6 +33,7 @@ pathRoot_typeshed: Path = Path(settingsPackage.pathPackage, '..', pathRelativeRo
 @dataclasses.dataclass
 class ManufacturedPackageSettings(PackageSettings):
 	astSuperClasses: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
+	autoflake: dict[str, bool] = dataclasses.field(default_factory=dict[str, bool])
 	identifiers: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
 	includeDeprecated: bool = False
 	isort_code: dict[str, int | str | list[str]] = dataclasses.field(default_factory=dict[str, int | str | list[str]])
@@ -44,6 +45,7 @@ class ManufacturedPackageSettings(PackageSettings):
 
 settings_astToolkit = ManufacturedPackageSettings(
 	astSuperClasses=dictionary_astSuperClasses,
+	autoflake=autoflakeSettings,
 	identifierPackage=PackageToManufactureIdentifier,
 	identifiers=dictionaryIdentifiers,
 	isort_code=isort_codeConfiguration,

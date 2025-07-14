@@ -1,19 +1,24 @@
-from collections import deque
-from collections.abc import Callable
+from astToolkit import ConstantValueType
+from collections.abc import Callable, Sequence
 from typing import Any
 from typing_extensions import TypeIs
 import ast
+import dataclasses
+
+@dataclasses.dataclass
+class Findonaut:
+
+	attrChain: list[str] = dataclasses.field(default_factory=list[str])
+	FindInstance: list[Callable] = dataclasses.field(default_factory=list[Callable])
+
+	def __post_init__(self) -> None:
+		self.attrActive = None
 
 class Find:
-	# class _str(str):
-	# 	__slots__ = ()
-	# 	def equal(self, other: object) -> bool:
-	# 		return super().__eq__(other)
 
-	# class _int(int):
-	# 	def equal(self, other: object) -> bool:
-	# 		return super().__eq__(other)
+	def __init__(self, state: Findonaut | None = None) -> None:
+		self.state = state or Findonaut()
 
-	@classmethod
-	def at(cls, getable: Any, index: int, /) -> object:
+	@staticmethod
+	def at(getable: Any, index: int, /) -> object:
 		return getable.__getitem__(index)
