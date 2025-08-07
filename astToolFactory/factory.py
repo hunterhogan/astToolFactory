@@ -470,7 +470,7 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:  # noqa: C901
+def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write `class` `Make`.
 
 	Parameters

@@ -1,6 +1,7 @@
 """Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
 from astToolFactory import (
-	astName_overload, astName_staticmethod, astSubscriptUnpack_ast_attributes, settingsManufacturing)
+	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, astSubscriptUnpack_ast_attributes,
+	keywordKeywordArguments4Call, settingsManufacturing)
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
 from typing import NotRequired, TypedDict
@@ -40,41 +41,36 @@ Make.FunctionDef('indices'
 
 # `Make` =====================================================================
 def makeFunctionDef_join(identifierContainer: str, identifierCallee: str, docstring: ast.Expr) -> ast.stmt:
-	"""Create a `FunctionDef` AST node for a join method.
-
-	(AI generated docstring)
-
-	Constructs a `classmethod` `FunctionDef` that accepts expressions and joins them using a specified callee method.
-	The generated method signature includes type annotations for container types and supports keyword arguments.
+	"""Make the `ast.FunctionDef` `.join` `@classmethod` for the `Make` classes that correspond to the `ast.boolop` and `ast.operator` subclasses.
 
 	Parameters
 	----------
 	identifierContainer : str
-		The type identifier for the expressions container (e.g., 'Sequence', 'Iterable').
+		The type of container that will hold the `ast.expr` to be joined by the `@classmethod` (*i.e.*, 'Sequence', 'Iterable').
 	identifierCallee : str
-		The method name to call on `Make` for joining the expressions.
+		The `Make` `class` of which the `.join` `@classmethod` will be a member.
 	docstring : ast.Expr
-		The docstring expression to include in the function body.
+		The docstring for the `.join` `@classmethod`.
 
 	Returns
 	-------
-	functionDef : ast.stmt
-		A `FunctionDef` AST node representing the join method.
+	astFunctionDef : ast.stmt
+		The `ast.FunctionDef` `.join` `@classmethod`.
 
 	"""
 	return Make.FunctionDef('join'
 		, Make.arguments(list_arg=[Make.arg('cls'), Make.arg('expressions', annotation=Make.Subscript(Make.Name(identifierContainer), slice=Make.Attribute(Make.Name('ast'), 'expr')))]
-						, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
+						, kwarg=Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 		, body=[docstring
-			, Make.Return(Make.Call(callee=Make.Attribute(Make.Name('Make'), identifierCallee), listParameters=[Make.Name('cls'), Make.Name('expressions')], list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))]
-		, decorator_list=[Make.Name('classmethod')]
+			, Make.Return(Make.Call(callee=Make.Attribute(Make.Name('Make'), identifierCallee), listParameters=[Make.Name('cls'), Make.Name('expressions')], list_keyword=[keywordKeywordArguments4Call]))]
+		, decorator_list=[astName_classmethod]
 		, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
 FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturing.identifiers['boolopJoinMethod']
     , Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'boolop')))
             , Make.arg('expressions', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'expr')))
             ]
-        , kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
+        , kwarg=Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
     )
     , body=[docstrings[settingsManufacturing.identifiers['Make']]['_boolopJoinMethod']
 		, Make.AnnAssign(Make.Name('listExpressions', Make.Store())
@@ -83,14 +79,14 @@ FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturing.
                     )
         , Make.Match(subject=Make.Call(Make.Name('len'), listParameters=[Make.Name('listExpressions')])
                     , cases=[Make.match_case(pattern=Make.MatchValue(Make.Constant(0))
-                                , body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())], value=Make.Call(Make.Attribute(Make.Name('Make'), 'Constant'), listParameters=[Make.Constant('')], list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))])
+                                , body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())], value=Make.Call(Make.Attribute(Make.Name('Make'), 'Constant'), listParameters=[Make.Constant('')], list_keyword=[keywordKeywordArguments4Call]))])
                             , Make.match_case(pattern=Make.MatchValue(value=Make.Constant(1))
                                 , body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())], value=Make.Subscript(Make.Name('listExpressions'), slice=Make.Constant(0)))])
                             , Make.match_case(pattern=Make.MatchAs()
                                 , body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())]
                                                     , value=Make.Call(Make.Attribute(Make.Name('Make'), 'BoolOp')
                                                             , listParameters=[Make.Call(Make.Name('ast_operator')), Make.Name('listExpressions')]
-                                                            , list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]
+                                                            , list_keyword=[keywordKeywordArguments4Call]
                                                             )
                                                 )
                                     ]
@@ -107,14 +103,14 @@ FunctionDef_join_operator: ast.stmt = makeFunctionDef_join('Iterable', settingsM
 FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturing.identifiers['operatorJoinMethod']
 	, Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'operator')))
 						, Make.arg('expressions', annotation=Make.Subscript(Make.Name('Iterable'), slice=Make.Attribute(Make.Name('ast'), 'expr')))]
-					, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
+					, kwarg=Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 	, body=[docstrings[settingsManufacturing.identifiers['Make']]['_operatorJoinMethod']
 		, Make.AnnAssign(Make.Name('listExpressions', Make.Store()), annotation=Make.Subscript(Make.Name('list'), slice=Make.Attribute(Make.Name('ast'), 'expr'))
 						, value=Make.Call(Make.Name('list'), listParameters=[Make.Name('expressions')]))
 		, Make.If(Make.UnaryOp(Make.Not(), Make.Name('listExpressions'))
 			, body=[Make.Expr(Make.Call(Make.Attribute(Make.Name('listExpressions'), 'append')
 								, listParameters=[Make.Call(Make.Attribute(Make.Name('Make'), 'Constant')
-										, listParameters=[Make.Constant('')], list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))])]))])
+										, listParameters=[Make.Constant('')], list_keyword=[keywordKeywordArguments4Call])]))])
 		, Make.AnnAssign(Make.Name('expressionsJoined', Make.Store()), annotation=Make.Attribute(Make.Name('ast'), 'expr'), value=Make.Subscript(Make.Name('listExpressions'), slice=Make.Constant(0)))
 		, Make.For(Make.Name('expression', Make.Store()), iter=Make.Subscript(Make.Name('listExpressions'), slice=Make.Slice(lower=Make.Constant(1)))
 			, body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())]
@@ -122,7 +118,7 @@ FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturin
 								, list_keyword=[Make.keyword('left', Make.Name('expressionsJoined'))
 											, Make.keyword('op', Make.Call(Make.Name('ast_operator')))
 											, Make.keyword('right', Make.Name('expression'))
-											, Make.keyword(None, value=Make.Name('keywordArguments'))]))])
+											, keywordKeywordArguments4Call]))])
 		, Make.Return(Make.Name('expressionsJoined'))]
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), 'expr'))
@@ -133,25 +129,25 @@ FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 		, vararg=Make.arg('attribute', annotation=Make.Name('str'))
 		, kwonlyargs=[Make.arg('context', annotation=Make.BitOr.join([Make.Attribute(Make.Name('ast'), 'expr_context'), Make.Constant(None)]))]
 		, kw_defaults=[Make.Constant(None)]
-		, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
+		, kwarg=Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 	, body=[docstrings[settingsManufacturing.identifiers['Make']][ClassDefIdentifier]
 		, Make.Assign([Make.Name('ctx', Make.Store())], value=Make.Or.join([Make.Name('context'), Make.Call(Make.Attribute(Make.Name('ast'), 'Load'))]))
 		, Make.FunctionDef('addDOTattribute'
 			, Make.arguments(list_arg=[Make.arg('chain', annotation=Make.Attribute(Make.Name('ast'), 'expr'))
 					, Make.arg('identifier', annotation=Make.Name('str'))
 					, Make.arg('ctx', annotation=Make.Attribute(Make.Name('ast'), 'expr_context'))]
-				, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
+				, kwarg=Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))))
 			, body=[Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
 					, list_keyword=[Make.keyword('value', Make.Name('chain')), Make.keyword('attr', Make.Name('identifier'))
-						, Make.keyword('ctx', Make.Name('ctx')), Make.keyword(None, value=Make.Name('keywordArguments'))]))]
+						, Make.keyword('ctx', Make.Name('ctx')), keywordKeywordArguments4Call]))]
 			, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
 		, Make.Assign([Make.Name('buffaloBuffalo', Make.Store())], value=Make.Call(Make.Name('addDOTattribute')
 					, listParameters=[Make.Name('value'), Make.Subscript(Make.Name('attribute'), slice=Make.Constant(0)), Make.Name('ctx')]
-					, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))
+					, list_keyword=[keywordKeywordArguments4Call]))
 		, Make.For(Make.Name('identifier', Make.Store()), iter=Make.Subscript(Make.Name('attribute'), slice=Make.Slice(lower=Make.Constant(1), upper=Make.Constant(None)))
 			, body=[Make.Assign([Make.Name('buffaloBuffalo', Make.Store())], value=Make.Call(Make.Name('addDOTattribute')
 					, listParameters=[Make.Name('buffaloBuffalo'), Make.Name('identifier'), Make.Name('ctx')]
-					, list_keyword=[Make.keyword(None, value=Make.Name('keywordArguments'))]))])
+					, list_keyword=[keywordKeywordArguments4Call]))])
 		, Make.Return(Make.Name('buffaloBuffalo'))]
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
@@ -163,7 +159,7 @@ list_argMake_Import: list[ast.arg]=[Make.arg('dotModule', annotation=Make.Name('
 FunctionDef_bodyMake_Import: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers['Make']][ClassDefIdentifier]
 	, Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
 		, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias')
-			, listParameters=[Make.Name('dotModule'), Make.Name('asName')])])), Make.keyword(None, value=Make.Name('keywordArguments'))]))]
+			, listParameters=[Make.Name('dotModule'), Make.Name('asName')])])), keywordKeywordArguments4Call]))]
 del ClassDefIdentifier
 
 ClassDefIdentifier: str = 'keyword' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
@@ -172,7 +168,7 @@ listOverloads_keyword: list[ast.stmt] = [
 		, Make.arguments(list_arg=[Make.arg('Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'
 					, annotation=Make.BitOr.join([Make.Name('str'), Make.Constant(None)]))
 				, Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
-			, kwarg=Make.arg('keywordArguments', annotation=astSubscriptUnpack_ast_attributes))
+			, kwarg=Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=astSubscriptUnpack_ast_attributes))
 		, body=[Make.Expr(value=Make.Constant(...))]
 		, decorator_list=[astName_staticmethod, astName_overload]
 		, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
@@ -181,7 +177,7 @@ listOverloads_keyword: list[ast.stmt] = [
 				, annotation=Make.BitOr.join([Make.Name('str'), Make.Constant(None)]))]
 			, kwonlyargs=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
 			, kw_defaults=[None]
-			, kwarg=Make.arg('keywordArguments', annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
+			, kwarg=Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
 			, defaults=[Make.Constant(None)])
 		, body=[Make.Expr(value=Make.Constant(...))]
 		, decorator_list=[astName_staticmethod, astName_overload]
@@ -203,6 +199,8 @@ listHandmade_astTypes: list[ast.stmt] = [
 	Make.TypeAlias(Make.Name('ConstantValueType', Make.Store()), type_params=[]
 		, value=Make.BitOr().join(Make.Name(identifier)
 			for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float', 'int', 'None', 'range', 'str']))
+	, Make.TypeAlias(Make.Name('astASTattributes', Make.Store()), type_params=[]
+		, value=Make.BitOr().join([astASTastAttribute, Make.Name('ConstantValueType'), Make.Subscript(Make.Name('list'), astASTastAttribute), Make.Subscript(Make.Name('list'), Make.BitOr.join([astASTastAttribute, Make.Constant(None)])), Make.Subscript(Make.Name('list'), Make.Name('str'))]))
 	, Make.TypeAlias(Make.Name('identifierDotAttribute', Make.Store()), type_params=[], value=Make.Name('str'))
 ]
 
@@ -243,7 +241,6 @@ for astSuperClass, identifierTypeVariable in settingsManufacturing.astSuperClass
 		'bound': Make.Attribute(Make.Name('ast'), astSuperClass),
 		'tuple_keyword': [('covariant', True)],
 	}
-
 for identifierTypeVariable, data in typeVariables.items():
 	listParameters: list[ast.expr] = [Make.Constant(identifierTypeVariable)]
 	if 'constraints' in data:
