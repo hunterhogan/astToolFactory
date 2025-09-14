@@ -18,6 +18,148 @@ FunctionDefGrab_andDoAllOf: ast.stmt = Make.FunctionDef('andDoAllOf'
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('个')]), Make.Name('个')])))
 
+FunctionDefGrab_indexV2: ast.stmt = Make.FunctionDef(
+	'index',
+	Make.arguments(
+		posonlyargs=[
+			Make.arg(
+				'at',
+				annotation=Make.Name('int'))],
+		list_arg=[
+			Make.arg(
+				'action',
+				annotation=Make.Subscript(
+					value=Make.Name('Callable'),
+					slice=Make.Tuple(
+						[
+							Make.List(
+								[
+									Make.Name('Any')]),
+							Make.Name('Any')])))]),
+	body=[
+		Make.FunctionDef(
+			'workhorse',
+			Make.arguments(
+				list_arg=[
+					Make.arg(
+						'node',
+						annotation=Make.Subscript(
+							value=Make.Name('Sequence'),
+							slice=Make.Name('个')))]),
+			body=[
+				Make.Assign(
+					targets=[
+						Make.Name('node', context=Make.Store())],
+					value=Make.Call(
+						Make.Name('list'),
+						listParameters=[
+							Make.Name('node')])),
+				Make.Assign(
+					targets=[
+						Make.Name('consequences', context=Make.Store())],
+					value=Make.Call(
+						Make.Name('action'),
+						listParameters=[
+							Make.Subscript(
+								value=Make.Name('node'),
+								slice=Make.Name('at'))])),
+				Make.If(
+					test=Make.Compare(
+						left=Make.Name('consequences'),
+						ops=[
+							Make.Is()],
+						comparators=[
+							Make.Constant(None)]),
+					body=[
+						Make.Delete(
+							targets=[
+								Make.Subscript(
+									value=Make.Name('node'),
+									slice=Make.Name('at'),
+									context=Make.Del())])],
+					orElse=[
+						Make.If(
+							test=Make.Call(
+								Make.Name('isinstance'),
+								listParameters=[
+									Make.Name('consequences'),
+									Make.Name('list')]),
+							body=[
+								Make.Assign(
+									targets=[
+										Make.Name('node', context=Make.Store())],
+									value=Make.BinOp(
+										left=Make.BinOp(
+											left=Make.Subscript(
+												value=Make.Name('node'),
+												slice=Make.Slice(
+													lower=Make.Constant(0),
+													upper=Make.Name('at'))),
+											op=Make.Add(),
+											right=Make.Name('consequences')),
+										op=Make.Add(),
+										right=Make.Subscript(
+											value=Make.Name('node'),
+											slice=Make.Slice(
+												lower=Make.BinOp(
+													left=Make.Name('at'),
+													op=Make.Add(),
+													right=Make.Constant(1)),
+												upper=Make.Constant(None)))))],
+							orElse=[
+								Make.Assign(
+									targets=[
+										Make.Subscript(
+											value=Make.Name('node'),
+											slice=Make.Name('at'),
+											context=Make.Store())],
+									value=Make.Name('consequences'))])]),
+				Make.Return(
+					value=Make.Name('node'))],
+			returns=Make.Subscript(
+				value=Make.Name('list'),
+				slice=Make.Name('个'))),
+		Make.Return(
+			value=Make.Name('workhorse'))],
+	decorator_list=[Make.Name('staticmethod')],
+	returns=Make.Subscript(
+		value=Make.Name('Callable'),
+		slice=Make.Tuple(
+			[
+				Make.List(
+					[
+						Make.Subscript(
+							value=Make.Name('Sequence'),
+							slice=Make.Name('个'))]),
+				Make.Subscript(
+					value=Make.Name('list'),
+					slice=Make.Name('个'))])))
+
+
+FunctionDefGrab_index: ast.stmt = Make.FunctionDef('index'
+	, Make.arguments(posonlyargs=[Make.arg('at', Make.Name('int'))]
+			, list_arg=[Make.arg('action', Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('Any')]), Make.Name('Any')])))])
+	, body=[Make.FunctionDef('workhorse'
+			, Make.arguments(list_arg=[Make.arg('node', Make.Subscript(Make.Name('Sequence'), Make.Name('个')))])
+			, body=[
+				Make.Assign([Make.Name('node', context=Make.Store())], Make.Call(Make.Name('list'), [Make.Name('node')]))
+				, Make.Assign([Make.Name('consequences', context=Make.Store())], Make.Call(Make.Name('action'), [Make.Subscript(Make.Name('node'), Make.Name('at'))]))
+				, Make.If(Make.Compare(Make.Name('consequences'), [Make.Is()], [Make.Constant(None)])
+					, body=[Make.Delete([Make.Subscript(Make.Name('node'), Make.Name('at'), context=Make.Del())])]
+					, orElse=[Make.If(Make.Call(Make.Name('isinstance'), [Make.Name('consequences'), Make.Name('list')])
+						, body=[Make.Assign([Make.Name('node', context=Make.Store())]
+								, value=Make.Add().join([Make.Subscript(Make.Name('node'), Make.Slice(Make.Constant(0), Make.Name('at')))
+									, Make.Name('consequences')
+									, Make.Subscript(Make.Name('node'), Make.Slice(Make.Add().join([Make.Name('at'), Make.Constant(1)]), Make.Constant(None)))])
+						)]
+						, orElse=[Make.Assign([Make.Subscript(Make.Name('node'), Make.Name('at'), context=Make.Store())], Make.Name('consequences'))])]
+				)
+				, Make.Return(Make.Name('node'))]
+			, returns=Make.Subscript(Make.Name('list'), Make.Name('个'))), Make.Return(Make.Name('workhorse'))]
+		, decorator_list=[astName_staticmethod]
+		, returns=Make.Subscript(Make.Name('Callable')
+			, Make.Tuple([Make.List([Make.Subscript(Make.Name('Sequence'), Make.Name('个'))]), Make.Subscript(Make.Name('list'), Make.Name('个'))])))
+
 # `Index` =====================================================================
 listFunctionDefs_index: list[ast.stmt] = [
 Make.FunctionDef('index'

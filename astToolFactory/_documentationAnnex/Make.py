@@ -2068,25 +2068,7 @@ docstrings[identifierClass]['MatchValue'] = Make.Expr(Make.Constant(
 ))
 
 docstrings[identifierClass]['mod'] = Make.Expr(Make.Constant(
-        f"""Create an appropriate `ast.mod` ({diminutive2etymology['mod']}) node based on the body content.
-
-        (AI generated docstring)
-
-        The `mod` method creates the appropriate module type node based on the
-        provided body. This is a convenience method that determines whether to
-        create a `Module`, `Expression`, or `Interactive` node.
-
-        Parameters
-        ----------
-        body : list[ast.stmt] | ast.expr
-            Either a list of statements or a single expression
-
-        Returns
-        -------
-        nodeMod : ast.mod
-            The constructed module node of appropriate type
-
-        """
+        f"""Create an abstract `ast.mod` ({diminutive2etymology['mod']}) `object`."""
 ))
 
 docstrings[identifierClass]['Module'] = Make.Expr(Make.Constant(

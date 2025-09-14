@@ -1,14 +1,14 @@
 """Module for manufacturing and writing ast tools and modules."""
 
 from astToolFactory import (
-	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, getElementsBe, getElementsDOT,
-	getElementsGrab, getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
+	astASTastAttribute, astName_overload, astName_staticmethod, getElementsBe, getElementsDOT, getElementsGrab,
+	getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
 	settingsManufacturing, settingsPackage)
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
-	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefMake_Attribute,
-	list_argMake_Import, listFunctionDefs_index, listHandmade_astTypes, listOverloads_keyword)
+	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index,
+	FunctionDefMake_Attribute, list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import (
 	astModuleToIngredientsFunction, Be, extractClassDef, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
 	Make, NodeChanger, parseLogicalPath2astModule)
@@ -417,7 +417,7 @@ import ast"""))
 	writeModule(astModule, moduleIdentifier)
 
 def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
-	"""Generate and write the `Grab` tool class.
+	"""Generate and write `class` `Grab`.
 
 	Parameters
 	----------
@@ -434,7 +434,9 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
 	list4ClassDefBody: list[ast.stmt] = [
 		docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
-		, FunctionDefGrab_andDoAllOf]
+		, FunctionDefGrab_andDoAllOf
+		# , FunctionDefGrab_index
+		]
 
 	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(# noqa: B007
 		identifierToolClass, **keywordArguments
@@ -465,7 +467,7 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, Make.Import("ast")
 		, Make.Import("sys")
 		, Make.If(Make.Compare(Make.Attribute(Make.Name("sys"), "version_info"), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]), [Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTdefault_value")])])
-		, *listFunctionDefs_index
+		# , *listFunctionDefs_index
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
