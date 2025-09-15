@@ -7,6 +7,19 @@ from astToolkit import Make
 from typing import NotRequired, TypedDict
 import ast
 
+# `Be` =======================================================================
+FunctionDefBe_at: ast.stmt = Make.FunctionDef('at'
+	, Make.arguments(list_arg=[Make.arg('index', annotation=Make.Name('int')), Make.arg('predicate', annotation=Make.Subscript(Make.Name('Callable')
+				, Make.Tuple([Make.List([Make.Name('Any')]), Make.Subscript(Make.Name('TypeIs'), Make.Name('木'))])))])
+	, body=[Make.FunctionDef('workhorse'
+			, Make.arguments(list_arg=[Make.arg('node', annotation=Make.Subscript(Make.Name('Sequence'), Make.Attribute(Make.Name('ast'), 'AST')))])
+			, body=[Make.Return(Make.Call(Make.Name('predicate'), listParameters=[Make.Subscript(Make.Name('node'), Make.Name('index'))]))]
+			, returns=Make.Subscript(Make.Name('TypeIs'), Make.Name('木')))
+		, Make.Return(Make.Name('workhorse'))]
+	, decorator_list=[astName_staticmethod]
+	, returns=Make.Subscript(Make.Name('Callable')
+		, Make.Tuple([Make.List([Make.Subscript(Make.Name('Sequence'), Make.Attribute(Make.Name('ast'), 'AST'))]), Make.Subscript(Make.Name('TypeIs'), Make.Name('木'))])))
+
 # `Grab` =====================================================================
 FunctionDefGrab_andDoAllOf: ast.stmt = Make.FunctionDef('andDoAllOf'
 	, Make.arguments(list_arg=[Make.arg('listOfActions', Make.Subscript(Make.Name('Sequence'), Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('Any')]), Make.Name('Any')]))))])
@@ -18,124 +31,6 @@ FunctionDefGrab_andDoAllOf: ast.stmt = Make.FunctionDef('andDoAllOf'
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('个')]), Make.Name('个')])))
 
-FunctionDefGrab_indexV2: ast.stmt = Make.FunctionDef(
-	'index',
-	Make.arguments(
-		posonlyargs=[
-			Make.arg(
-				'at',
-				annotation=Make.Name('int'))],
-		list_arg=[
-			Make.arg(
-				'action',
-				annotation=Make.Subscript(
-					value=Make.Name('Callable'),
-					slice=Make.Tuple(
-						[
-							Make.List(
-								[
-									Make.Name('Any')]),
-							Make.Name('Any')])))]),
-	body=[
-		Make.FunctionDef(
-			'workhorse',
-			Make.arguments(
-				list_arg=[
-					Make.arg(
-						'node',
-						annotation=Make.Subscript(
-							value=Make.Name('Sequence'),
-							slice=Make.Name('个')))]),
-			body=[
-				Make.Assign(
-					targets=[
-						Make.Name('node', context=Make.Store())],
-					value=Make.Call(
-						Make.Name('list'),
-						listParameters=[
-							Make.Name('node')])),
-				Make.Assign(
-					targets=[
-						Make.Name('consequences', context=Make.Store())],
-					value=Make.Call(
-						Make.Name('action'),
-						listParameters=[
-							Make.Subscript(
-								value=Make.Name('node'),
-								slice=Make.Name('at'))])),
-				Make.If(
-					test=Make.Compare(
-						left=Make.Name('consequences'),
-						ops=[
-							Make.Is()],
-						comparators=[
-							Make.Constant(None)]),
-					body=[
-						Make.Delete(
-							targets=[
-								Make.Subscript(
-									value=Make.Name('node'),
-									slice=Make.Name('at'),
-									context=Make.Del())])],
-					orElse=[
-						Make.If(
-							test=Make.Call(
-								Make.Name('isinstance'),
-								listParameters=[
-									Make.Name('consequences'),
-									Make.Name('list')]),
-							body=[
-								Make.Assign(
-									targets=[
-										Make.Name('node', context=Make.Store())],
-									value=Make.BinOp(
-										left=Make.BinOp(
-											left=Make.Subscript(
-												value=Make.Name('node'),
-												slice=Make.Slice(
-													lower=Make.Constant(0),
-													upper=Make.Name('at'))),
-											op=Make.Add(),
-											right=Make.Name('consequences')),
-										op=Make.Add(),
-										right=Make.Subscript(
-											value=Make.Name('node'),
-											slice=Make.Slice(
-												lower=Make.BinOp(
-													left=Make.Name('at'),
-													op=Make.Add(),
-													right=Make.Constant(1)),
-												upper=Make.Constant(None)))))],
-							orElse=[
-								Make.Assign(
-									targets=[
-										Make.Subscript(
-											value=Make.Name('node'),
-											slice=Make.Name('at'),
-											context=Make.Store())],
-									value=Make.Name('consequences'))])]),
-				Make.Return(
-					value=Make.Name('node'))],
-			returns=Make.Subscript(
-				value=Make.Name('list'),
-				slice=Make.Name('个'))),
-		Make.Return(
-			value=Make.Name('workhorse'))],
-	decorator_list=[Make.Name('staticmethod')],
-	returns=Make.Subscript(
-		value=Make.Name('Callable'),
-		slice=Make.Tuple(
-			[
-				Make.List(
-					[
-						Make.Subscript(
-							value=Make.Name('Sequence'),
-							slice=Make.Name('个'))]),
-				Make.Subscript(
-					value=Make.Name('list'),
-					slice=Make.Name('个'))])))
-
-
 FunctionDefGrab_index: ast.stmt = Make.FunctionDef('index'
 	, Make.arguments(posonlyargs=[Make.arg('at', Make.Name('int'))]
 			, list_arg=[Make.arg('action', Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('Any')]), Make.Name('Any')])))])
@@ -145,15 +40,13 @@ FunctionDefGrab_index: ast.stmt = Make.FunctionDef('index'
 				Make.Assign([Make.Name('node', context=Make.Store())], Make.Call(Make.Name('list'), [Make.Name('node')]))
 				, Make.Assign([Make.Name('consequences', context=Make.Store())], Make.Call(Make.Name('action'), [Make.Subscript(Make.Name('node'), Make.Name('at'))]))
 				, Make.If(Make.Compare(Make.Name('consequences'), [Make.Is()], [Make.Constant(None)])
-					, body=[Make.Delete([Make.Subscript(Make.Name('node'), Make.Name('at'), context=Make.Del())])]
+					, body=[Make.Expr(Make.Call(Make.Attribute(Make.Name('node'), 'pop'), listParameters=[Make.Name('at')]))]
 					, orElse=[Make.If(Make.Call(Make.Name('isinstance'), [Make.Name('consequences'), Make.Name('list')])
 						, body=[Make.Assign([Make.Name('node', context=Make.Store())]
 								, value=Make.Add().join([Make.Subscript(Make.Name('node'), Make.Slice(Make.Constant(0), Make.Name('at')))
 									, Make.Name('consequences')
-									, Make.Subscript(Make.Name('node'), Make.Slice(Make.Add().join([Make.Name('at'), Make.Constant(1)]), Make.Constant(None)))])
-						)]
-						, orElse=[Make.Assign([Make.Subscript(Make.Name('node'), Make.Name('at'), context=Make.Store())], Make.Name('consequences'))])]
-				)
+									, Make.Subscript(Make.Name('node'), Make.Slice(Make.Add().join([Make.Name('at'), Make.Constant(1)]), Make.Constant(None)))]))]
+						, orElse=[Make.Assign([Make.Subscript(Make.Name('node'), Make.Name('at'), context=Make.Store())], Make.Name('consequences'))])])
 				, Make.Return(Make.Name('node'))]
 			, returns=Make.Subscript(Make.Name('list'), Make.Name('个'))), Make.Return(Make.Name('workhorse'))]
 		, decorator_list=[astName_staticmethod]
@@ -209,35 +102,35 @@ def makeFunctionDef_join(identifierContainer: str, identifierCallee: str, docstr
 		, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
 FunctionDef_boolopJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturing.identifiers['boolopJoinMethod']
-    , Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'boolop')))
-            , Make.arg('expressions', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'expr')))
-            ]
-        , kwarg=Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
-    )
-    , body=[docstrings[settingsManufacturing.identifiers['Make']]['_boolopJoinMethod']
+	, Make.arguments(list_arg=[Make.arg('ast_operator', annotation=Make.Subscript(Make.Name('type'), slice=Make.Attribute(Make.Name('ast'), 'boolop')))
+			, Make.arg('expressions', annotation=Make.Subscript(Make.Name('Sequence'), slice=Make.Attribute(Make.Name('ast'), 'expr')))
+			]
+		, kwarg=Make.arg(settingsManufacturing.keywordArgumentsIdentifier, annotation=Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes')))
+	)
+	, body=[docstrings[settingsManufacturing.identifiers['Make']]['_boolopJoinMethod']
 		, Make.AnnAssign(Make.Name('listExpressions', Make.Store())
-                        , annotation=Make.Subscript(Make.Name('list'), slice=Make.Attribute(Make.Name('ast'), 'expr'))
-                        , value=Make.Call(Make.Name('list'), listParameters=[Make.Name('expressions')])
-                    )
-        , Make.Match(subject=Make.Call(Make.Name('len'), listParameters=[Make.Name('listExpressions')])
-                    , cases=[Make.match_case(pattern=Make.MatchValue(Make.Constant(0))
-                                , body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())], value=Make.Call(Make.Attribute(Make.Name('Make'), 'Constant'), listParameters=[Make.Constant('')], list_keyword=[keywordKeywordArguments4Call]))])
-                            , Make.match_case(pattern=Make.MatchValue(value=Make.Constant(1))
-                                , body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())], value=Make.Subscript(Make.Name('listExpressions'), slice=Make.Constant(0)))])
-                            , Make.match_case(pattern=Make.MatchAs()
-                                , body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())]
-                                                    , value=Make.Call(Make.Attribute(Make.Name('Make'), 'BoolOp')
-                                                            , listParameters=[Make.Call(Make.Name('ast_operator')), Make.Name('listExpressions')]
-                                                            , list_keyword=[keywordKeywordArguments4Call]
-                                                            )
-                                                )
-                                    ]
-                            )
-                        ]
-                    )
-        , Make.Return(Make.Name('expressionsJoined'))]
+						, annotation=Make.Subscript(Make.Name('list'), slice=Make.Attribute(Make.Name('ast'), 'expr'))
+						, value=Make.Call(Make.Name('list'), listParameters=[Make.Name('expressions')])
+					)
+		, Make.Match(subject=Make.Call(Make.Name('len'), listParameters=[Make.Name('listExpressions')])
+					, cases=[Make.match_case(pattern=Make.MatchValue(Make.Constant(0))
+								, body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())], value=Make.Call(Make.Attribute(Make.Name('Make'), 'Constant'), listParameters=[Make.Constant('')], list_keyword=[keywordKeywordArguments4Call]))])
+							, Make.match_case(pattern=Make.MatchValue(value=Make.Constant(1))
+								, body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())], value=Make.Subscript(Make.Name('listExpressions'), slice=Make.Constant(0)))])
+							, Make.match_case(pattern=Make.MatchAs()
+								, body=[Make.Assign([Make.Name('expressionsJoined', Make.Store())]
+													, value=Make.Call(Make.Attribute(Make.Name('Make'), 'BoolOp')
+															, listParameters=[Make.Call(Make.Name('ast_operator')), Make.Name('listExpressions')]
+															, list_keyword=[keywordKeywordArguments4Call]
+															)
+												)
+									]
+							)
+						]
+					)
+		, Make.Return(Make.Name('expressionsJoined'))]
 	, decorator_list=[astName_staticmethod]
-    , returns=Make.BitOr().join([Make.Attribute(Make.Name('ast'), 'expr'), Make.Attribute(Make.Name('ast'), 'BoolOp')]))
+	, returns=Make.BitOr().join([Make.Attribute(Make.Name('ast'), 'expr'), Make.Attribute(Make.Name('ast'), 'BoolOp')]))
 
 FunctionDef_join_boolop: ast.stmt = makeFunctionDef_join('Sequence', settingsManufacturing.identifiers['boolopJoinMethod'], docstrings[settingsManufacturing.identifiers['Make']]['join_boolop'])
 FunctionDef_join_operator: ast.stmt = makeFunctionDef_join('Iterable', settingsManufacturing.identifiers['operatorJoinMethod'], docstrings[settingsManufacturing.identifiers['Make']]['join_operator'])
@@ -328,7 +221,7 @@ del ClassDefIdentifier
 
 # `theSSOT` =====================================================================
 astModule_theSSOT = Make.Module([
-    Make.ImportFrom('hunterMakesPy', list_alias=[Make.alias('PackageSettings')])
+	Make.ImportFrom('hunterMakesPy', list_alias=[Make.alias('PackageSettings')])
 	, Make.Assign([Make.Name('identifierPackage', Make.Store())], value=Make.Constant('astToolkit'))
 	, Make.Assign([Make.Name('packageSettings', Make.Store())]
 		, value=Make.Call(Make.Name('PackageSettings')
@@ -336,8 +229,8 @@ astModule_theSSOT = Make.Module([
 
 # `TypeAlias` =====================================================================
 listHandmade_astTypes: list[ast.stmt] = [
-    # If I were to automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include `bytes` or `range`.
-    # And, I would change the identifier to `ast_ConstantValue`.
+	# If I were to automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include `bytes` or `range`.
+	# And, I would change the identifier to `ast_ConstantValue`.
 	Make.TypeAlias(Make.Name('ConstantValueType', Make.Store()), type_params=[]
 		, value=Make.BitOr().join(Make.Name(identifier)
 			for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float', 'int', 'None', 'range', 'str']))

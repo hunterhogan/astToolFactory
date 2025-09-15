@@ -7,8 +7,8 @@ from astToolFactory import (
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
-	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index,
-	FunctionDefMake_Attribute, list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
+	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf,
+	FunctionDefGrab_index, FunctionDefMake_Attribute, list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import (
 	astModuleToIngredientsFunction, Be, extractClassDef, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
 	Make, NodeChanger, parseLogicalPath2astModule)
@@ -134,7 +134,8 @@ def makeTool_dump() -> None:
 
 def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write `class` `Be`."""
-	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
+	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
+		, FunctionDefBe_at]
 
 	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute, listTupleAttributes in getElementsBe(identifierToolClass, **keywordArguments):
 		if not listTupleAttributes:
@@ -181,7 +182,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 		Make.ImportFrom("typing_extensions", [Make.alias("TypeIs")]),
 		Make.ImportFrom("typing", [Make.alias("Any")]),
 		Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")]),
-		Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("ConstantValueType")]),
+		Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("木")]),
 		Make.Import("ast"),
 		Make.Import("sys"),
 	]
@@ -435,7 +436,7 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	list4ClassDefBody: list[ast.stmt] = [
 		docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
 		, FunctionDefGrab_andDoAllOf
-		# , FunctionDefGrab_index
+		, FunctionDefGrab_index
 		]
 
 	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(# noqa: B007
