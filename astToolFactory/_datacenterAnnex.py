@@ -93,6 +93,7 @@ attributeRename__: dict[Column__attribute | Column__ClassDefIdentifier_attribute
 }
 
 attributeType__ClassDefIdentifier_attribute: dict[Column__ClassDefIdentifier_attribute, column__value] = {
+	# HUNTER-from-the-past! Why is this commented out? An error or a style choice?
 	# Column__ClassDefIdentifier_attribute('alias', 'name'): column__value('attributeType', 'identifierDotAttribute'),  # noqa: ERA001
 	Column__ClassDefIdentifier_attribute('Constant', 'value'): column__value('attributeType', 'ConstantValueType'),
 }
