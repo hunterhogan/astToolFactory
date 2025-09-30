@@ -19,6 +19,9 @@ from typing import Any, cast
 import ast
 import numpy
 import pandas
+import platform
+import subprocess
+import sys
 import typeshed_client
 
 _attributeTypeVarHARDCODED = '_EndPositionT'
@@ -338,6 +341,107 @@ def getMaskByColumnValue(dataframe: pandas.DataFrame, columnValue: MaskTuple) ->
 	"""Convert a specialized `NamedTuple`, which is an arbitrary number of column-names and row-values, to a `True`/`False` mask for a dataframe."""
 	return pandas.concat([*[dataframe[column] == value for column, value in columnValue._asdict().items()]], axis=1).all(axis=1)
 
+def _createPythonInterpreterColumns(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	"""Create columns using the Python Interpreter on Windows with py launcher.
+	
+	Only runs on Windows and uses py launcher to get different Python versions.
+	Creates columns for interpreter version information from
+	version 3.settingsManufacturing.versionMinor_astMinimumSupported
+	to version 3.settingsManufacturing.versionMinorMaximum, inclusive.
+	
+	Columns created:
+	- ClassDefIdentifier
+	- versionMajorPythonInterpreter  
+	- versionMinorPythonInterpreter
+	- versionMicroPythonInterpreter
+	- base
+	"""
+	# Only run on Windows
+	if platform.system() != 'Windows':
+		return dataframe
+	
+	# Initialize columns if they don't exist
+	for col in ['ClassDefIdentifier', 'versionMajorPythonInterpreter', 'versionMinorPythonInterpreter', 'versionMicroPythonInterpreter', 'base']:
+		if col not in dataframe.columns:
+			if col == 'ClassDefIdentifier':
+				dataframe[col] = 'AST'  # Default value
+			elif col == 'base':
+				dataframe[col] = sys.base_prefix  # Default to current interpreter
+			else:
+				# For version columns, use current Python version as default
+				version_info = sys.version_info
+				if col == 'versionMajorPythonInterpreter':
+					dataframe[col] = version_info.major
+				elif col == 'versionMinorPythonInterpreter':
+					dataframe[col] = version_info.minor
+				elif col == 'versionMicroPythonInterpreter':
+					dataframe[col] = version_info.micro
+	
+	# Get the version range from settings
+	version_range = range(
+		settingsManufacturing.versionMinor_astMinimumSupported,
+		raiseIfNone(settingsManufacturing.versionMinorMaximum) + 1
+	)
+	
+	# Collect Python interpreter information using py launcher
+	additional_rows = []
+	
+	for version_minor in version_range:
+		try:
+			# Use py launcher to get version info for specific Python version
+			result = subprocess.run(
+				[sys.executable.replace('python', 'py'), f'-3.{version_minor}', '-c', 
+				 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"); print(sys.base_prefix)'],
+				capture_output=True,
+				text=True,
+				timeout=10
+			)
+			
+			if result.returncode == 0:
+				lines = result.stdout.strip().split('\n')
+				if len(lines) >= 2:
+					version_parts = lines[0].split('.')
+					base_prefix = lines[1]
+					
+					if len(version_parts) >= 3:
+						version_major = int(version_parts[0])
+						version_minor_actual = int(version_parts[1])
+						version_micro = int(version_parts[2])
+						
+						# Get unique class identifiers from existing dataframe
+						class_identifiers = dataframe['ClassDefIdentifier'].drop_duplicates() if 'ClassDefIdentifier' in dataframe.columns else ['AST']
+						
+						for class_id in class_identifiers:
+							# Check if this combination already exists
+							mask = (
+								(dataframe['ClassDefIdentifier'] == class_id) &
+								(dataframe['versionMajorPythonInterpreter'] == version_major) &
+								(dataframe['versionMinorPythonInterpreter'] == version_minor_actual) &
+								(dataframe['versionMicroPythonInterpreter'] == version_micro)
+							)
+							
+							if not mask.any():
+								# Create a new row with all existing columns
+								new_row = {col: None for col in dataframe.columns}
+								new_row.update({
+									'ClassDefIdentifier': class_id,
+									'versionMajorPythonInterpreter': version_major,
+									'versionMinorPythonInterpreter': version_minor_actual,
+									'versionMicroPythonInterpreter': version_micro,
+									'base': base_prefix
+								})
+								additional_rows.append(new_row)
+		except (subprocess.TimeoutExpired, subprocess.SubprocessError, ValueError):
+			# Skip versions that fail to execute or timeout
+			continue
+	
+	# Add new rows if any were collected
+	if additional_rows:
+		additional_df = pandas.DataFrame(additional_rows)
+		dataframe = pandas.concat([dataframe, additional_df], ignore_index=True)
+	
+	return dataframe
+
 def updateDataframe() -> None:
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
 
@@ -356,6 +460,7 @@ def updateDataframe() -> None:
 	# 'versionMinorPythonInterpreter',
 	# 'versionMicroPythonInterpreter',
 	# 'base',
+	dataframe = _createPythonInterpreterColumns(dataframe)
 
 	dataframe = dataframe.astype({
 		'ClassDefIdentifier': 'string',
