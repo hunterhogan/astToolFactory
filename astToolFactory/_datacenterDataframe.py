@@ -19,6 +19,8 @@ from typing import Any, cast
 import ast
 import numpy
 import pandas
+import platform
+import subprocess
 import typeshed_client
 
 _attributeTypeVarHARDCODED = '_EndPositionT'
@@ -42,6 +44,103 @@ def _computeVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list[str
 		-1,
 		dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min"),
 	)
+	return dataframe
+
+def _createPythonInterpreterColumns(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	"""Create columns using the Python Interpreter (Windows only).
+	
+	This function only runs on Windows and uses py launcher to get different Python versions.
+	Creates columns for ClassDefIdentifier, versionMajorPythonInterpreter, 
+	versionMinorPythonInterpreter, versionMicroPythonInterpreter, and base
+	from version 3.versionMinor_astMinimumSupported to 3.versionMinorMaximum inclusive.
+	"""
+	# Only run on Windows
+	if platform.system() != 'Windows':
+		return dataframe
+	
+	# Get the version range from settings
+	version_minor_min = settingsManufacturing.versionMinor_astMinimumSupported
+	version_minor_max = settingsManufacturing.versionMinorMaximum
+	if version_minor_max is None:
+		return dataframe
+	
+	try:
+		# Use py launcher to detect available Python versions
+		result = subprocess.run(['py', '--list'], capture_output=True, text=True, check=True)
+		available_versions = []
+		
+		for line in result.stdout.strip().split('\n'):
+			if line.strip() and not line.strip().startswith('-'):
+				# Parse lines like "3.12-64" or "3.13-64"
+				if '-' in line:
+					version_part = line.split('-')[0].strip()
+				else:
+					version_part = line.strip()
+				
+				if version_part.startswith('3.'):
+					try:
+						minor_version = int(version_part.split('.')[1])
+						if version_minor_min <= minor_version <= version_minor_max:
+							# Get detailed version info using py launcher
+							try:
+								detailed_result = subprocess.run(
+									['py', f'-{version_part}', '-c', 'import sys; print(f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")'],
+									capture_output=True, text=True, check=True
+								)
+								full_version = detailed_result.stdout.strip()
+								if full_version:
+									major, minor, micro = full_version.split('.')
+									available_versions.append({
+										'versionMajorPythonInterpreter': int(major),
+										'versionMinorPythonInterpreter': int(minor),
+										'versionMicroPythonInterpreter': int(micro),
+										'base': f'python{major}.{minor}'
+									})
+							except (subprocess.CalledProcessError, ValueError):
+								# If detailed version fails, use basic info
+								available_versions.append({
+									'versionMajorPythonInterpreter': 3,
+									'versionMinorPythonInterpreter': minor_version,
+									'versionMicroPythonInterpreter': 0,
+									'base': f'python3.{minor_version}'
+								})
+					except (ValueError, IndexError):
+						continue
+		
+		if available_versions:
+			# Get unique ClassDefIdentifier values from existing dataframe
+			class_identifiers = dataframe['ClassDefIdentifier'].unique()
+			
+			# Create new rows for each combination of ClassDefIdentifier and Python version
+			new_rows = []
+			for class_id in class_identifiers:
+				for version_info in available_versions:
+					new_row = {
+						'ClassDefIdentifier': class_id,
+						**version_info
+					}
+					new_rows.append(new_row)
+			
+			if new_rows:
+				# Create a new dataframe with the Python interpreter information
+				new_df = pandas.DataFrame(new_rows)
+				
+				# Merge with existing dataframe, updating the columns as needed
+				# Only update if the combination doesn't already exist
+				merge_columns = ['ClassDefIdentifier', 'versionMajorPythonInterpreter', 'versionMinorPythonInterpreter']
+				existing_combinations = set(dataframe[merge_columns].apply(tuple, axis=1))
+				
+				# Filter new rows to only include those not already present
+				new_df_filtered = new_df[~new_df[merge_columns].apply(tuple, axis=1).isin(existing_combinations)]
+				
+				if not new_df_filtered.empty:
+					# Concatenate the filtered new data with the existing dataframe
+					dataframe = pandas.concat([dataframe, new_df_filtered], ignore_index=True)
+	
+	except (subprocess.CalledProcessError, FileNotFoundError):
+		# py launcher not available or failed, return dataframe unchanged
+		pass
+	
 	return dataframe
 
 @cache
@@ -348,7 +447,7 @@ def updateDataframe() -> None:
 	# Set dtypes for existing columns
 	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
 
-	# TODO Columns to create using the Python Interpreter,
+	# Create columns using the Python Interpreter (Windows only)
 	# from version 3.settingsManufacturing.versionMinor_astMinimumSupported
 	# to version 3.settingsManufacturing.versionMinorMaximum, inclusive.
 	# 'ClassDefIdentifier',
@@ -356,6 +455,7 @@ def updateDataframe() -> None:
 	# 'versionMinorPythonInterpreter',
 	# 'versionMicroPythonInterpreter',
 	# 'base',
+	dataframe = _createPythonInterpreterColumns(dataframe)
 
 	dataframe = dataframe.astype({
 		'ClassDefIdentifier': 'string',
