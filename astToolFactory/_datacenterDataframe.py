@@ -38,9 +38,9 @@ _attributeTypeVar_defaultHARDCODED = 'int | None'
 
 def _computeVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list[str], columnNameTarget: str) -> pandas.DataFrame:
 	dataframe[columnNameTarget] = numpy.where(
-		dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min") == settingsManufacturing.versionMinor_astMinimumSupported,
-		-1,
-		dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min"),
+		dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min") == settingsManufacturing.versionMinor_astMinimumSupported
+		, -1
+		, dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min")
 	)
 	return dataframe
 

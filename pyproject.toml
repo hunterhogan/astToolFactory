@@ -21,7 +21,7 @@ classifiers = [
 ]
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
 dependencies = [
-  "astToolkit==0.7.3",
+  "astToolkit==0.8.0",
   "hunterMakesPy",
   "isort",
   "pandas",

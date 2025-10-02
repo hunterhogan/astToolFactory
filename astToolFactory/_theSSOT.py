@@ -30,7 +30,7 @@ MaskTuple = TypeVar('MaskTuple', bound=NamedTuple, covariant=True)
 
 pathRoot_typeshed: Path = Path(settingsPackage.pathPackage, '..', pathRelativeRoot_typeshedHARDCODED).resolve()
 
-@dataclasses.dataclass
+@dataclasses.dataclass(slots=True)
 class ManufacturedPackageSettings(PackageSettings):
 	astSuperClasses: dict[str, str] = dataclasses.field(default_factory=dict[str, str])
 	autoflake: dict[str, bool] = dataclasses.field(default_factory=dict[str, bool])

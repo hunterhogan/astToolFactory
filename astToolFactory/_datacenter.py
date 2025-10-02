@@ -37,9 +37,10 @@ def _makeColumn_guardVersion(dataframe: pandas.DataFrame, byColumn: str) -> pand
 
 	"""
 	dataframe["guardVersion"] = numpy.where(
-		((versionsTotal := (seriesGroupByVersion := dataframe.groupby(byColumn)["versionMinorMinimum"]).transform("nunique")) == 1) & (seriesGroupByVersion.transform("max") <= settingsManufacturing.pythonMinimumVersionMinor),
-		False,  # noqa: FBT003
-		numpy.maximum(1, versionsTotal - seriesGroupByVersion.rank(method="first", ascending=False).astype(int) + 1),
+		((versionsTotal := (seriesGroupByVersion := dataframe.groupby(byColumn)["versionMinorMinimum"]).transform("nunique")) == 1)
+			& (seriesGroupByVersion.transform("max") <= settingsManufacturing.pythonMinimumVersionMinor)
+		, False # noqa: FBT003
+		, numpy.maximum(1, versionsTotal - seriesGroupByVersion.rank(method="first", ascending=False).astype(int) + 1)
 	)
 	return dataframe
 

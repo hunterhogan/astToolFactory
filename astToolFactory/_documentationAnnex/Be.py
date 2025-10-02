@@ -5,16 +5,13 @@ NOTE Use special indentation in this file.
     2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So,
         indent one or two levels as appropriate.
 """
-import ast
 from ast import AST, Constant
-from itertools import chain
-
 from astToolFactory import settingsManufacturing
-from astToolFactory.documentation import (diminutive2etymology, docstrings,
-                                          map2PythonDelimiters,
-                                          map2PythonKeywords,
-                                          map2PythonOperators)
-from astToolkit import Make, identifierDotAttribute
+from astToolFactory.documentation import (
+	diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators)
+from astToolkit import identifierDotAttribute, Make
+from itertools import chain
+import ast
 
 ImaIndent4aMethod: str = ' ' * 8
 identifierToolClass: str = 'Be'
