@@ -233,7 +233,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.ClassDef"
             keywords=[Make.keyword('metaclass', Make.Name('ABCMeta'))],
             body=[Make.Pass()]
         )
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.cmpop"
@@ -266,7 +267,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.Compare"
             ops=[Make.LtE(), Make.Lt()],
             comparators=[Make.Name('inventory'), Make.Constant(100)]
         )
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.comprehension"
@@ -302,7 +304,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.Del"
     , {'Examples': _document("""Creates AST equivalent to deletion: del bicycle.wheel
         ```python
         wheelDeletion = Make.Attribute(Make.Name('bicycle'), 'wheel', Make.Del())
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.Delete"
@@ -338,7 +341,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.DictComp"
                 ifs=[]
             )]
         )
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.Eq"
@@ -439,7 +443,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.FunctionDef"
             [Make.Return(Make.Constant(True))],
             returns=Make.Name('bool')
         )
-        ```""")}
+        ```
+		""")}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.FunctionType"
@@ -514,7 +519,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.If"
                 [Make.Assign([Make.Name('grade')], Make.Constant('C'))]
             )]
         )
-        ```""")}
+        ```
+		""")}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.IfExp"
@@ -538,7 +544,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.IfExp"
             body = Make.Constant("sunny"),
             orElse = Make.Constant("cloudy")
         )
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.Import"
@@ -561,7 +568,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.Import"
 
         # To represent: `import scipy.signal.windows as SciPy`
         Make.Import(dotModule = 'scipy.signal.windows', asName = 'SciPy')
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.ImportFrom"
@@ -661,7 +669,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.keyword"
         Creates AST equivalent to: **settings (keyword arguments unpacking)
         ```python
         unpackedArguments = Make.keyword(None, Make.Name('settings'))
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.Lambda"
@@ -807,7 +816,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.Module"
             Make.FunctionDef('calculate', body=[Make.Return(Make.Constant(100))]),
             Make.Assign([Make.Name('result')], Make.Call(Make.Name('calculate'), []))
         ])
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.Name"
@@ -834,7 +844,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.NamedExpr"
             ops=[Make.Gt()],
             comparators=[Make.Constant(10)]
         )
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.Nonlocal"
@@ -945,7 +956,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.Starred"
 
         # Creates AST equivalent to: `*remaining` in assignment like `first, *remaining = groceries`
         unpackRemaining = Make.Starred(Make.Name('remaining'), ast.Store())
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.stmt"
@@ -962,7 +974,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.Store"
     , {'Examples': _document("""Creates AST equivalent to assignment: bicycle.wheel = newWheel
         ```python
         wheelAssignment = Make.Attribute(Make.Name('bicycle'), 'wheel', Make.Store())
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.Subscript"
@@ -1036,7 +1049,8 @@ listDocstring.append(Docstring(f"{identifierToolClass}.TypeIgnore"
         Creates AST equivalent to: # type: ignore[assignment] (on line 15)
         ```python
         taggedIgnore = Make.TypeIgnore(15, '[assignment]')
-        ```""")}
+        ```
+        """)}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.TypeVar"
