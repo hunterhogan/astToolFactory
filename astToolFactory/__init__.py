@@ -24,6 +24,7 @@ from astToolFactory._snippets import (
 from astToolFactory._datacenter import (
 	getElementsBe as getElementsBe,
 	getElementsDOT as getElementsDOT,
+    getElementsDocstringGrab as getElementsDocstringGrab,
 	getElementsGrab as getElementsGrab,
 	getElementsMake as getElementsMake,
 	getElementsTypeAlias as getElementsTypeAlias,

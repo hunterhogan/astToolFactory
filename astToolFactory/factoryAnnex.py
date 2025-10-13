@@ -234,12 +234,7 @@ listHandmade_astTypes: list[ast.stmt] = [
 ]
 
 class dataTypeVariables(TypedDict):
-	"""Type specification for `TypeVar` configuration data.
-
-	(AI generated docstring)
-
-	Defines the structure for configuration parameters used when creating `TypeVar` instances.
-	All fields are optional and provide different aspects of type variable behavior.
+	"""Data to manufacture a `TypeVar`.
 
 	Attributes
 	----------
@@ -288,6 +283,7 @@ for identifierTypeVariable, data in typeVariables.items():
 	listHandmade_astTypes.append(Make.Assign([Make.Name(identifierTypeVariable, Make.Store())] , value=Make.Call(Make.Name('typing_TypeVar')
 		, listParameters=listParameters
 		, list_keyword=list_keyword)))
+	listHandmade_astTypes.append(docstrings[settingsManufacturing.identifiers['types']][identifierTypeVariable])
 
 listHandmade_astTypes.extend([
 # ruff: noqa: FBT003

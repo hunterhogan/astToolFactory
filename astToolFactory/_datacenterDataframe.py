@@ -38,9 +38,9 @@ _attributeTypeVar_defaultHARDCODED = 'int | None'
 
 def _computeVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list[str], columnNameTarget: str) -> pandas.DataFrame:
 	dataframe[columnNameTarget] = numpy.where(
-		dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min") == settingsManufacturing.versionMinor_astMinimumSupported
+		dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min") == settingsManufacturing.versionMinor_astMinimumSupported # pyright: ignore[reportArgumentType]
 		, -1
-		, dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min")
+		, dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min") # pyright: ignore[reportArgumentType]
 	)
 	return dataframe
 
@@ -52,7 +52,7 @@ def _get_astModule_astStub() -> ast.Module:
 def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 	dictionary_Attributes: dict[str, str] = {}
 	NodeTourist[ast.AnnAssign, Mapping[str, str]](findThis=Be.AnnAssign.targetIs(Be.Name)
-		, doThat=Then.updateKeyValueIn(key=lambda node: cast('ast.Name', node.target).id
+		, doThat=Then.updateKeyValueIn(key=lambda node: cast(ast.Name, node.target).id
 			, value=lambda node: ast.unparse(node.annotation)
 			, dictionary=dictionary_Attributes)
 	).visit(astClassDef)
@@ -64,7 +64,7 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 
 def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	def amIDeprecated(ClassDefIdentifier: str) -> bool:
-		return bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(Make.Module(cast("list[ast.stmt]", dictionaryClassDef[ClassDefIdentifier].decorator_list))))
+		return bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(Make.Module(cast(list[ast.stmt], dictionaryClassDef[ClassDefIdentifier].decorator_list))))
 
 	def getThe_Attributes(ClassDefIdentifier: str) -> dict[str, str]:
 		the_Attributes: dict[str, str] = {}
@@ -105,9 +105,9 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 				findThis=lambda node: Be.Name(node) and isinstance(eval(node.id), type) and issubclass(eval(node.id), ast.AST)  # noqa: S307
 				, doThat=lambda node: Make.Attribute(Make.Name("ast"), eval(node.id).__name__)  # noqa: S307
 				).visit(raiseIfNone(NodeTourist[ast.AnnAssign, ast.expr](
-					findThis = Be.AnnAssign.targetIs(IfThis.isNameIdentifier(cast('str', dddataframeee['attribute'])))
+					findThis = Be.AnnAssign.targetIs(IfThis.isNameIdentifier(cast(str, dddataframeee['attribute'])))
 					, doThat = Then.extractIt(DOT.annotation)
-					).captureLastMatch(dictionaryClassDef[cast('str', dddataframeee['ClassDefIdentifier'])]))))
+					).captureLastMatch(dictionaryClassDef[cast(str, dddataframeee['ClassDefIdentifier'])]))))
 
 			return dddataframeee['attributeType']
 
@@ -163,12 +163,12 @@ def _make_astAttribute(ClassDefIdentifier: str) -> ast.expr:
 	return Make.Attribute(Make.Name("ast"), ClassDefIdentifier)
 
 def _make_keywordOrList(attributePROXY: dict[str, str | bool | ast.expr]) -> ast.keyword:
-	keywordValue = Make.Name(cast('str', attributePROXY["attributeRename"]))
+	keywordValue = Make.Name(cast(str, attributePROXY["attributeRename"]))
 	if attributePROXY["list2Sequence"] is True:
-		keywordValue = Make.IfExp(test=keywordValue, body=Make.Call(Make.Name("list"), [keywordValue]), orElse=cast("ast.expr", attributePROXY['orElse']))
+		keywordValue = Make.IfExp(test=keywordValue, body=Make.Call(Make.Name("list"), [keywordValue]), orElse=cast(ast.expr, attributePROXY['orElse']))
 	else:
-		keywordValue = Make.Or.join([keywordValue, cast("ast.expr", attributePROXY['orElse'])])
-	return Make.keyword(cast('str', attributePROXY['attribute']), keywordValue)
+		keywordValue = Make.Or.join([keywordValue, cast(ast.expr, attributePROXY['orElse'])])
+	return Make.keyword(cast(str, attributePROXY['attribute']), keywordValue)
 
 def _make4ColumnsOfLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dictionaryTupleAttributes: dict[tuple[str, int], list[tuple[str, ast.expr]]] = {}
@@ -208,7 +208,7 @@ def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	def workhorse(dataframeTarget: pandas.DataFrame) -> Any:
 		if cast("str | bool", dataframeTarget["move2keywordArguments"]) != False:  # noqa: E712
 			return 'No'
-		return Make.arg(cast('str', dataframeTarget["attributeRename"]), annotation=cast("ast.expr", dataframeTarget["type_ast_expr"]))
+		return Make.arg(cast(str, dataframeTarget["attributeRename"]), annotation=cast(ast.expr, dataframeTarget["type_ast_expr"]))
 
 	dataframe[columnNew] = dataframe.apply(workhorse, axis="columns")
 	return dataframe
@@ -230,14 +230,14 @@ def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	def workhorse(dataframeTarget: pandas.DataFrame) -> Any:
-		if cast("bool", (dataframeTarget['attributeKind'] == "_field") & ((dataframeTarget['move2keywordArguments'] != 'No') & (dataframeTarget['move2keywordArguments'] != 'Unpack'))):
-			if cast("bool", dataframeTarget["move2keywordArguments"]):
-				keywordValue: ast.expr = cast("ast.expr", dataframeTarget["defaultValue"])
+		if cast(bool, (dataframeTarget['attributeKind'] == "_field") & ((dataframeTarget['move2keywordArguments'] != 'No') & (dataframeTarget['move2keywordArguments'] != 'Unpack'))):
+			if cast(bool, dataframeTarget["move2keywordArguments"]):
+				keywordValue: ast.expr = cast(ast.expr, dataframeTarget["defaultValue"])
 			else:
-				keywordValue = Make.Name(cast('str', dataframeTarget["attributeRename"]))
+				keywordValue = Make.Name(cast(str, dataframeTarget["attributeRename"]))
 				if dataframeTarget["list2Sequence"] is True:
 					keywordValue = Make.Call(Make.Name("list"), [keywordValue])
-			return Make.keyword(cast('str', dataframeTarget['attribute']), keywordValue)
+			return Make.keyword(cast(str, dataframeTarget['attribute']), keywordValue)
 		return 'No'
 
 	dataframe["Call_keyword"] = dataframe.apply(workhorse, axis="columns")
@@ -309,15 +309,15 @@ def _moveMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			raise ValueError(message)
 
 		attributePROXY = cast("dict[str, str | bool | ast.expr]", attributePROXY[0])
-		if cast("bool", attributePROXY["move2keywordArguments"]):
+		if cast(bool, attributePROXY["move2keywordArguments"]):
 			message = f"Your current system assumes attribute '{attributePROXY['attribute']}' is not a keyword argument, but this function got {attributePROXY}."
 			raise ValueError(message)
 
 		dataframe.loc[maskByColumnValue, "defaultValue"] = Make.Constant(None) # pyright: ignore[reportCallIssue, reportArgumentType]
-		attributeType = cast('str', attributePROXY['attributeType']) + " | None"
+		attributeType = cast(str, attributePROXY['attributeType']) + " | None"
 		if attributePROXY["list2Sequence"] is True:
 			attributeType = attributeType.replace("list", "Sequence")
-		dataframe.loc[maskByColumnValue, 'ast_arg'] = Make.arg(cast('str', attributePROXY["attributeRename"]), annotation=cast("ast.expr", _pythonCode2expr(attributeType))) # pyright: ignore[reportCallIssue, reportArgumentType]
+		dataframe.loc[maskByColumnValue, 'ast_arg'] = Make.arg(cast(str, attributePROXY["attributeRename"]), annotation=cast(ast.expr, _pythonCode2expr(attributeType))) # pyright: ignore[reportCallIssue, reportArgumentType]
 		attributePROXY['orElse'] = orElse
 		dataframe.loc[maskByColumnValue, "Call_keyword"] = _make_keywordOrList(attributePROXY) # pyright: ignore[reportCallIssue, reportArgumentType]
 
@@ -383,8 +383,8 @@ def updateDataframe() -> None:
 	dataframe = _makeColumn_type_ast_expr(dataframe)
 	dataframe['type_astSuperClasses'] = dataframe['attributeType'].replace({f'ast.{ClassDefIdentifier}': identifierTypeVar for ClassDefIdentifier, identifierTypeVar in settingsManufacturing.astSuperClasses.items()}, regex=True)
 	dataframe = _makeColumn_ast_arg(dataframe)
-	dataframe['type_astSuperClasses_ast_expr'] = numpy.where(dataframe['type_astSuperClasses'] == 'No', 'No', dataframe['type_astSuperClasses'].apply(_pythonCode2expr))
-	dataframe['TypeAlias_hasDOTIdentifier'] = numpy.where(dataframe['attributeKind'] == '_field', 'hasDOT' + cast('str', dataframe['attribute']), 'No')
+	dataframe['type_astSuperClasses_ast_expr'] = numpy.where(dataframe['type_astSuperClasses'] == 'No', 'No', dataframe['type_astSuperClasses'].apply(_pythonCode2expr)) # pyright: ignore[reportArgumentType]
+	dataframe['TypeAlias_hasDOTIdentifier'] = numpy.where(dataframe['attributeKind'] == '_field', 'hasDOT' + cast(str, dataframe['attribute']), 'No') # pyright: ignore[reportArgumentType]
 	dataframe = _makeColumnTypeAlias_hasDOTSubcategory(dataframe)
 	dataframe = _makeColumn_list4TypeAlias(dataframe)
 	dataframe = _makeColumn_list4TypeAliasSubcategories(dataframe)

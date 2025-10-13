@@ -9,17 +9,15 @@ from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
 	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf,
 	FunctionDefGrab_index, FunctionDefMake_Attribute, list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
-from astToolkit import (
-	astModuleToIngredientsFunction, Be, extractClassDef, IfThis, IngredientsFunction, IngredientsModule, LedgerOfImports,
-	Make, NodeChanger, parseLogicalPath2astModule)
-from astToolkit.transformationTools import unjoinBinOP, write_astModule
+from astToolkit import extractClassDef, Make, parseLogicalPath2astModule
+from astToolkit.containers import LedgerOfImports
+from astToolkit.transformationTools import unjoinBinOP
 from collections.abc import Sequence
-from hunterMakesPy import raiseIfNone, writeStringToHere
-from isort import code as isort_code
+from hunterMakesPy import raiseIfNone, writePython
+from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT
 from pathlib import PurePosixPath
-from typing import Any, TypedDict
+from typing import Any, cast, TypedDict
 import ast
-import autoflake
 
 class GuardIfThen(TypedDict):
 	"""Guard for Python versions."""
@@ -114,23 +112,6 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 		, *list4ModuleBody])
 
 	writeModule(astModule, identifierModule)
-
-def makeTool_dump() -> None:
-	"""Generate and write `dump`."""
-	ingredientsFunction: IngredientsFunction = astModuleToIngredientsFunction(parseLogicalPath2astModule("ast"), "dump")
-
-	def doThat(node: ast.FunctionDef) -> ast.expr | Any:
-		return NodeChanger[ast.Attribute, ast.expr](
-			Be.Attribute.valueIs(IfThis.isAttributeNamespaceIdentifier("node", "__class__")),
-			lambda node: Make.Add.join([Make.Constant("ast."), node]),
-		).visit(node)
-
-	# Nested NodeChanger, find the correct function, then find the statements to replace.
-	NodeChanger(IfThis.isFunctionDefIdentifier("_format"), doThat).visit(ingredientsFunction.astFunctionDef)
-
-	pathFilename = PurePosixPath(settingsManufacturing.pathPackage, "_dumpFunctionDef" + settingsManufacturing.fileExtension)
-
-	write_astModule(IngredientsModule(ingredientsFunction), pathFilename, settingsManufacturing.identifierPackage)
 
 def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write `class` `Be`."""
@@ -592,7 +573,7 @@ def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 	"""
 	ast.fix_missing_locations(astModule)
 	pythonSource: str = ast.unparse(astModule)
-	# https://github.com/hunterhogan/astToolFactory/issues/3  # noqa: ERA001
+# TODO https://github.com/hunterhogan/astToolFactory/issues/3
 	if "Grab" in identifierModule:
 		pythonSource = "# ruff: noqa: B009, B010\n" + pythonSource
 	if "Find" in identifierModule:
@@ -619,11 +600,10 @@ def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 		pythonSource = "# ruff: noqa: A002\n" + pythonSource
 		pythonSource = pythonSource.replace("# type: ignore[", "# pyright: ignore[")
 		pythonSource = pythonSource.replace("# type: ignore", "# noqa: ")
-	pythonSource = autoflake.fix_code(pythonSource, additional_imports=[settingsManufacturing.identifierPackage], **settingsManufacturing.autoflake)
-	pythonSource = isort_code(code=pythonSource, **settingsManufacturing.isort_code)  # pyright: ignore[reportArgumentType]
 	pathFilenameModule = PurePosixPath(settingsManufacturing.pathPackage, identifierModule + settingsManufacturing.fileExtension)
-	pythonSource += "\n"
-	writeStringToHere(pythonSource, pathFilenameModule)
+	settings: dict[str, dict[str, list[str] | bool]] = {'autoflake': settings_autoflakeDEFAULT}
+	cast(list[str], settings['autoflake']['additional_imports']).append(settingsManufacturing.identifierPackage)
+	writePython(pythonSource, pathFilenameModule)
 
 def writeClass(identifierClass: str, list4ClassDefBody: list[ast.stmt], list4ModuleBody: list[ast.stmt], identifierModulePrefix: str | None = '_tool') -> None:
 	"""Write a class definition and its module to disk.
@@ -669,7 +649,6 @@ def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None
 	makeToolFind(settingsManufacturing.identifiers['Be'])
 	makeToolGrab(settingsManufacturing.identifiers['Grab'])
 	makeToolMake(settingsManufacturing.identifiers['Make'])
-	makeTool_dump()
 	write_theSSOT(settingsManufacturing.identifiers['SSOT'])
 
 if __name__ == "__main__":

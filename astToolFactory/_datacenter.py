@@ -38,9 +38,9 @@ def _makeColumn_guardVersion(dataframe: pandas.DataFrame, byColumn: str) -> pand
 	"""
 	dataframe["guardVersion"] = numpy.where(
 		((versionsTotal := (seriesGroupByVersion := dataframe.groupby(byColumn)["versionMinorMinimum"]).transform("nunique")) == 1)
-			& (seriesGroupByVersion.transform("max") <= settingsManufacturing.pythonMinimumVersionMinor)
+			& (seriesGroupByVersion.transform("max") <= settingsManufacturing.pythonMinimumVersionMinor) # pyright: ignore[reportArgumentType]
 		, False # noqa: FBT003
-		, numpy.maximum(1, versionsTotal - seriesGroupByVersion.rank(method="first", ascending=False).astype(int) + 1)
+		, numpy.maximum(1, versionsTotal - seriesGroupByVersion.rank(method="first", ascending=False).astype(int) + 1) # pyright: ignore[reportUnknownArgumentType]
 	)
 	return dataframe
 
@@ -142,7 +142,7 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 
 	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
 		if bool(dataframeTarget["overloadDefinition"]):
-			return [cast("ast.expr", dataframeTarget["type_ast_expr"])]
+			return [cast(ast.expr, dataframeTarget["type_ast_expr"])]
 		matchingRows: pandas.DataFrame = (
 			dataframe.loc[
 				(dataframe["attribute"] == dataframeTarget["attribute"])
@@ -164,6 +164,10 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 
 	dataframe = dataframe[elementsTarget]
 	return dataframe.to_records(index=False).tolist()
+
+def getElementsDocstringGrab(identifierToolClass: str, **keywordArguments: Any) -> dict[str, dict]:  # noqa: ARG001
+	"""Get docstring elements for Grab."""
+	return {}
 
 def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:  # noqa: ARG001
 	listColumnsHARDCODED: list[str] = ["attribute", "type_astSuperClasses", "versionMinorMinimumAttribute", "TypeAlias_hasDOTIdentifier", "type_astSuperClasses_ast_expr"]

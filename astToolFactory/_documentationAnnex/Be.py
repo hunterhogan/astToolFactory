@@ -5,13 +5,10 @@ NOTE Use special indentation in this file.
     2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So,
         indent one or two levels as appropriate.
 """
-from ast import AST, Constant
 from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import (
-	diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators)
+	dictionary_astClasses, diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators)
 from astToolkit import identifierDotAttribute, Make
-from itertools import chain
-import ast
 
 ImaIndent4aMethod: str = ' ' * 8
 identifierToolClass: str = 'Be'
@@ -78,18 +75,16 @@ docstrings[identifierClass][identifierMethod] = Make.Expr(Make.Constant(
 """
     ClassDefIdentifier: str = 'For'
 """
-for astClass in [C for C in [AST,*chain(*(c.__subclasses__() for c in [AST,Constant,*AST.__subclasses__()]))] if issubclass(C,AST)]:
+for ClassDefIdentifier, astClassInfo in dictionary_astClasses.items():
 
-    ClassDefIdentifier: str = astClass.__name__
-    astClassDefIdentifier: identifierDotAttribute = 'ast.' + ClassDefIdentifier
+    matchesClasses: list[identifierDotAttribute] = astClassInfo['matchesClasses']
+    parentClass: identifierDotAttribute = astClassInfo['parentClass']
 
     ImaDocstring: str = f"`{identifierToolClass}.{ClassDefIdentifier}`"
     if (etymology := diminutive2etymology.get(ClassDefIdentifier, None)):
         ImaDocstring += f", {etymology},"
 
     ImaDocstring += " matches"
-
-    matchesClasses: list[identifierDotAttribute] = list(dict.fromkeys([f"`{astClassDefIdentifier}`", *sorted([f"`ast.{c.__name__}`" for c in astClass.__subclasses__() if issubclass(c, ast.AST)], key=lambda s: s.lower())]))
 
     if len(matchesClasses) > 1:
         ImaDocstring += " any of"
@@ -121,8 +116,6 @@ for astClass in [C for C in [AST,*chain(*(c.__subclasses__() for c in [AST,Const
         if associatedOperators:
             ImaDocstring += f" Python operators '{associatedOperators}'"
         ImaDocstring += "."
-
-    parentClass: identifierDotAttribute = f"`ast.{astClass.__base__.__name__}`" # pyright: ignore[reportOptionalMemberAccess]
 
     ImaDocstring += f"\n{ImaIndent4aMethod}It is a subclass of {parentClass}.\n{ImaIndent4aMethod}"
 
