@@ -3,17 +3,17 @@
 from astToolFactory import (
 	astASTastAttribute, astName_overload, astName_staticmethod, getElementsBe, getElementsDOT, getElementsGrab,
 	getElementsMake, getElementsTypeAlias, keywordKeywordArguments4Call, ManufacturedPackageSettings,
-	settingsManufacturing, settingsPackage)
+	settingsManufacturing)
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
 	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf,
 	FunctionDefGrab_index, FunctionDefMake_Attribute, list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
-from astToolkit import extractClassDef, Make, parseLogicalPath2astModule
+from astToolkit import Make
 from astToolkit.containers import LedgerOfImports
 from astToolkit.transformationTools import unjoinBinOP
 from collections.abc import Sequence
-from hunterMakesPy import raiseIfNone, writePython
+from hunterMakesPy import writePython
 from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT
 from pathlib import PurePosixPath
 from typing import Any, cast, TypedDict
@@ -238,166 +238,6 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolFind(identifierToolClass: str, **keywordArguments: Any) -> None:
-	"""Find."""
-	list4ModuleBody: list[ast.stmt] = []
-	list4ClassDefBody: list[ast.stmt] = []
-
-	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute, listTupleAttributes in getElementsBe(identifierToolClass, **keywordArguments):
-
-		"""With workhorse
-		ast_stmt: ast.stmt = Make.FunctionDef(ClassDefIdentifier
-			, Make.arguments(list_arg=[Make.arg("self")])
-			, body=[
-				# docstrings[identifierToolClass][ClassDefIdentifier]
-				# ,
-				Make.FunctionDef("workhorse"
-					, Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)])
-					, body=[Make.Return(ast.Tuple([Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]), Make.Name("node")]))]
-					, returns=Make.Subscript(Make.Name("tuple"), slice=Make.Tuple([Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute), astASTastAttribute]))
-				)
-				, Make.Assign([Make.Name("dontMutateMyQueue", Make.Store())]
-					, value=Make.List([Make.Starred(Make.Attribute(Make.Name("self"), "queueOfTruth")), Make.Name("workhorse")])
-				)
-				, Make.Return(Make.Call(Make.Name("Find"), listParameters=[Make.Name("dontMutateMyQueue")]))
-			]
-			, returns=Make.Constant("Find")
-		)
-		"""
-
-		"""Separate subclass and attributes
-		"""
-		ast_stmt: ast.stmt = Make.FunctionDef(
-			ClassDefIdentifier
-			, Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)])
-			, body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
-			, decorator_list=[astName_staticmethod]
-			, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute)
-		)
-
-		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
-			ast_stmt = Make.If(
-				Make.Compare(Make.Attribute(Make.Name("sys"), 'version_info')
-					, ops=[Make.GtE()]
-					, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-				, body=[ast_stmt])
-
-		list4ClassDefBody.append(ast_stmt)
-
-		if listTupleAttributes:
-			list4subClassDefBody: list[ast.stmt] = []
-
-			for attribute, type_ast_expr in listTupleAttributes:
-				list4subClassDefBody.append(Make.FunctionDef(ClassDefIdentifier + '_' + attribute
-					, argumentSpecification=Make.arguments(list_arg=[Make.arg("node", annotation=classAs_astAttribute)])
-					, returns=type_ast_expr
-					, decorator_list=[astName_staticmethod]
-					, body=[Make.Return(Make.Attribute(Make.Name('node'), attribute))]
-					))
-
-			list_ast_stmt: list[ast.stmt] = list4subClassDefBody
-
-			if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
-				list_ast_stmt = [
-					Make.If(Make.Compare(
-							Make.Attribute(Make.Name("sys"), "version_info")
-							, ops=[Make.GtE()]
-							, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-						, body=list_ast_stmt)]
-
-			list4ClassDefBody.extend(list_ast_stmt)
-
-		"""Classes within classes
-		list4subClassDefBody: list[ast.stmt] = [
-			Make.FunctionDef(
-			'__call__'
-			, Make.arguments(list_arg=[Make.arg('cls'), Make.arg("node", annotation=astASTastAttribute)])
-			, body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
-			, decorator_list=[astName_classmethod]
-			, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute)
-			)
-		]
-
-		for attribute, type_ast_expr in listTupleAttributes:
-			list4subClassDefBody.append(
-				Make.ClassDef(
-					attribute
-					, body=[Make.FunctionDef(
-						'__call__'
-						, Make.arguments(list_arg=[Make.arg('cls'), Make.arg("node", annotation=classAs_astAttribute)])
-						, body=[Make.Return(Make.Attribute(Make.Name("node"), attribute))]
-						, decorator_list=[astName_classmethod]
-						, returns=type_ast_expr
-					)])
-			)
-
-		list_ast_stmt: list[ast.stmt] = [Make.ClassDef(ClassDefIdentifier, body=list4subClassDefBody)]
-
-		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
-			list_ast_stmt = [
-				Make.If(Make.Compare(
-						Make.Attribute(Make.Name("sys"), "version_info")
-						, ops=[Make.GtE()]
-						, comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])])
-					, body=list_ast_stmt)]
-
-		list4ClassDefBody.extend(list_ast_stmt)
-		"""
-
-		"""Eleventy thousand classes
-		list4paraClassDefBody: list[ast.stmt] = [
-			Make.FunctionDef(
-				'__call__'
-				, Make.arguments(list_arg=[Make.arg('self'), Make.arg("node", annotation=astASTastAttribute)])
-				, body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
-				, decorator_list=[]
-				, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute)
-			)
-		]
-
-		for attribute, type_ast_expr in listTupleAttributes:
-			list4paraClassDefBody.append(
-				Make.FunctionDef(
-					attribute
-					, Make.arguments(list_arg=[Make.arg("node", annotation=classAs_astAttribute)])
-					, body=[Make.Return(Make.Attribute(Make.Name("node"), attribute))]
-					, decorator_list=[astName_staticmethod]
-					, returns=type_ast_expr
-				)
-			)
-
-		list_ast_stmt: list[ast.stmt] = [Make.ClassDef(ClassDefIdentifier, body=list4paraClassDefBody)]
-		appendAsMethod = Make.Assign([Make.Name(ClassDefIdentifier, context=Make.Store())], value=Make.Call(Make.Name(ClassDefIdentifier)))
-
-		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
-			list_ast_stmt = [_makeSimpleGuardVersion(list_ast_stmt, versionMinorMinimum)]
-			appendAsMethod = _makeSimpleGuardVersion([appendAsMethod], versionMinorMinimum)
-
-		list4ModuleBody.extend(list_ast_stmt)
-		list4ClassDefBody.append(appendAsMethod)
-		"""
-
-	# NOTE A temporary system during prototype development.
-	identifierToolClassOVERRIDE: str = "Find"
-	identifierToolClass = identifierToolClassOVERRIDE
-	moduleIdentifier = "_prototype" + identifierToolClass
-
-	astModule: ast.Module = parseLogicalPath2astModule(f"{settingsPackage.identifierPackage}.{moduleIdentifier}")
-	astClassDef: ast.ClassDef = raiseIfNone(extractClassDef(astModule, identifierToolClass))
-	list4ModuleBody.append(raiseIfNone(extractClassDef(astModule, "Findonaut")))
-	ledgerOfImports = LedgerOfImports(astModule)
-	del astModule
-	ledgerOfImports.walkThis(ast.parse("""from astToolkit import ConstantValueType, 木
-from collections.abc import Callable, Sequence
-from typing_extensions import TypeIs
-import ast"""))
-
-	astClassDef.body.extend(list4ClassDefBody)
-
-	astModule = Make.Module([*ledgerOfImports.makeList_ast(), *list4ModuleBody, astClassDef])
-
-	writeModule(astModule, moduleIdentifier)
-
 def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write `class` `Grab`.
 
@@ -427,13 +267,15 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 		ast_stmt = Make.FunctionDef(attribute + "Attribute"
 			, Make.arguments(list_arg=[Make.arg("action", annotation=Make.BitOr.join([Make.Subscript(Make.Name("Callable"), Make.Tuple([Make.List([ast_expr]), ast_expr])) for ast_expr in list_ast_expr]))])
-			, body=[Make.FunctionDef("workhorse"
+			, body=[docstrings[settingsManufacturing.identifiers[identifierToolClass]][attribute]
+				, Make.FunctionDef("workhorse"
 				, Make.arguments(list_arg=[Make.arg("node", annotation=astNameTypeOfNode)])
 				, body=[Make.Expr(Make.Call(Make.Name("setattr"), listParameters=[Make.Name("node"), Make.Constant(f"{attribute}")
 									, Make.Call(Make.Name("action"), listParameters=[
 										Make.Call(Make.Name("getattr"), listParameters=[Make.Name("node"), Make.Constant(f"{attribute}")])])]))
 					, Make.Return(Make.Name("node"))]
-				, returns=astNameTypeOfNode), Make.Return(Make.Name("workhorse"))]
+				, returns=astNameTypeOfNode)
+				, Make.Return(Make.Name("workhorse"))]
 			, decorator_list=[astName_staticmethod]
 			, returns=Make.Subscript(Make.Name("Callable"), Make.Tuple([Make.List([astNameTypeOfNode]), astNameTypeOfNode])))
 
@@ -449,7 +291,6 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, Make.Import("ast")
 		, Make.Import("sys")
 		, Make.If(Make.Compare(Make.Attribute(Make.Name("sys"), "version_info"), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]), [Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTdefault_value")])])
-		# , *listFunctionDefs_index
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
@@ -646,7 +487,6 @@ def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None
 	make_astTypes(settingsManufacturing.identifiers['types'])
 	makeToolBe(settingsManufacturing.identifiers['Be'])
 	makeToolDOT(settingsManufacturing.identifiers['DOT'])
-	makeToolFind(settingsManufacturing.identifiers['Be'])
 	makeToolGrab(settingsManufacturing.identifiers['Grab'])
 	makeToolMake(settingsManufacturing.identifiers['Make'])
 	write_theSSOT(settingsManufacturing.identifiers['SSOT'])

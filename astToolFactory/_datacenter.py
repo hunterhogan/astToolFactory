@@ -112,8 +112,8 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 			.reset_index(drop=True))
 
 	dataframe = dataframe.rename(columns={
-			listColumns[index_type_ast_expr]: "type_ast_expr",
-			listColumns[index_versionMinorMinimum]: "versionMinorMinimum"})
+			listColumns[index_type_ast_expr]: "type_ast_expr"
+			, listColumns[index_versionMinorMinimum]: "versionMinorMinimum"})
 
 	del listColumns
 
@@ -198,8 +198,8 @@ def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
 		matchingRows: pandas.DataFrame = dataframe.loc[
 			(dataframe["attribute"] == dataframeTarget["attribute"])
-			& (dataframe["versionMinorMinimum"] <= dataframeTarget["versionMinorMinimum"]),
-			["type_ast_expr", "attributeType"],
+			& (dataframe["versionMinorMinimum"] <= dataframeTarget["versionMinorMinimum"])
+			, ["type_ast_expr", "attributeType"]
 		].sort_values("attributeType", key=lambda x: x.str.lower())
 
 		return matchingRows["type_ast_expr"].tolist()
@@ -243,9 +243,7 @@ def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	return dataframe.to_records(index=False).tolist()
 
 def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.expr], int, int]]:
-	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "ClassDefIdentifier", "versionMinorMinimumAttribute",
-		"classAs_astAttribute", "TypeAlias_hasDOTIdentifier", "list4TypeAlias_value",
-		"hashable_list4TypeAlias_value", "list4TypeAliasSubcategories"]
+	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "ClassDefIdentifier", "versionMinorMinimumAttribute", "classAs_astAttribute", "TypeAlias_hasDOTIdentifier", "list4TypeAlias_value", "hashable_list4TypeAlias_value", "list4TypeAliasSubcategories"]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
 
@@ -272,9 +270,9 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 			return groupBy
 
 		rows_hasDOTIdentifier: pandas.DataFrame = (groupBy.drop_duplicates(subset="TypeAlias_hasDOTSubcategory", keep="last")[["versionMinorMinimum"]].drop_duplicates()
-			.assign(attribute=groupBy["attribute"].iloc[0], TypeAlias_hasDOTSubcategory="No",
-				TypeAlias_hasDOTIdentifier=groupBy["TypeAlias_hasDOTIdentifier"].iloc[0],
-				list4TypeAlias_value=[groupBy["list4TypeAliasSubcategories"].iloc[0]])
+			.assign(attribute=groupBy["attribute"].iloc[0], TypeAlias_hasDOTSubcategory="No"
+				, TypeAlias_hasDOTIdentifier=groupBy["TypeAlias_hasDOTIdentifier"].iloc[0]
+				, list4TypeAlias_value=[groupBy["list4TypeAliasSubcategories"].iloc[0]])
 		)
 		return pandas.concat([groupBy, rows_hasDOTIdentifier])
 
