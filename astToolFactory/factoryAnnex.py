@@ -1,10 +1,9 @@
 """Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
 from astToolFactory import (
 	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, astSubscriptUnpack_ast_attributes,
-	keywordKeywordArguments4Call, settingsManufacturing)
+	dataTypeVariables, keywordKeywordArguments4Call, settingsManufacturing)
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
-from typing import NotRequired, TypedDict
 import ast
 
 # ======= `Be` =======================================================================
@@ -211,27 +210,6 @@ listHandmade_astTypes: list[ast.stmt] = [
 		, value=Make.BitOr().join([astASTastAttribute, Make.Name('ConstantValueType'), Make.Subscript(Make.Name('list'), astASTastAttribute), Make.Subscript(Make.Name('list'), Make.BitOr.join([astASTastAttribute, Make.Constant(None)])), Make.Subscript(Make.Name('list'), Make.Name('str'))]))
 	, Make.TypeAlias(Make.Name('identifierDotAttribute', Make.Store()), type_params=[], value=Make.Name('str'))
 ]
-
-class dataTypeVariables(TypedDict):
-	"""Data to manufacture a `TypeVar`.
-
-	Attributes
-	----------
-	constraints : NotRequired[list[ast.expr]]
-		List of constraint expressions that limit the type variable to specific types.
-	bound : NotRequired[ast.expr]
-		Upper bound expression that constrains the type variable to subtypes.
-	tuple_keyword : NotRequired[list[tuple[str, bool]]]
-		Keyword arguments as tuples of parameter name and boolean value.
-	default_value : NotRequired[ast.expr]
-		Default value expression for the type variable.
-
-	"""
-
-	constraints: NotRequired[list[ast.expr]]
-	bound: NotRequired[ast.expr]
-	tuple_keyword: NotRequired[list[tuple[str, bool]]]
-	default_value: NotRequired[ast.expr]
 
 typeVariables: dict[str, dataTypeVariables] = {
 	'个': {'tuple_keyword': [('covariant', True)]},

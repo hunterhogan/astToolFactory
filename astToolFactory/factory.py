@@ -417,8 +417,6 @@ def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 # TODO https://github.com/hunterhogan/astToolFactory/issues/3
 	if "Grab" in identifierModule:
 		pythonSource = "# ruff: noqa: B009, B010\n" + pythonSource
-	if "Find" in identifierModule:
-		"""pythonSource = "# ruff: noqa: A001\n" + pythonSource"""
 
 	if "Make" in identifierModule:
 

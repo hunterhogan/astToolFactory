@@ -1,6 +1,7 @@
 """astToolFactory manufactures ast tools for astToolkit."""
 from astToolFactory._theSSOT import (
     column__value as column__value,
+    dataTypeVariables as dataTypeVariables,
 	ManufacturedPackageSettings as ManufacturedPackageSettings,
     MaskTuple as MaskTuple,
 	pathRoot_typeshed as pathRoot_typeshed,
