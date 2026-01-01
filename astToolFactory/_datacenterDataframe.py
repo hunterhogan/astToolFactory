@@ -177,7 +177,7 @@ def _make4ColumnsOfLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dictionaryCall_keyword: dict[tuple[str, int], list[ast.keyword]] = {}
 
 	for (ClassDefIdentifier, versionMinorMinimum_match_args), dataframeGroupBy in dataframe.groupby(['ClassDefIdentifier', "versionMinorMinimum_match_args"]):
-		groupKey: tuple[str, int] = (ClassDefIdentifier, versionMinorMinimum_match_args)
+		groupKey: tuple[str, int] = (ClassDefIdentifier, versionMinorMinimum_match_args) # pyright: ignore[reportAssignmentType]
 		match_argsCategoricalSort: tuple[str, ...] = dataframeGroupBy['match_args'].iloc[0]
 		dataframeGroupBy['attribute'] = pandas.Categorical(dataframeGroupBy['attribute'], categories=match_argsCategoricalSort, ordered=True)
 		dataframeGroupBy: pandas.DataFrame = dataframeGroupBy.sort_values(['attribute', 'versionMinorMinimum_match_args'], ascending=[True, False])  # noqa: PLW2901

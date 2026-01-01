@@ -39,7 +39,7 @@ class ManufacturedPackageSettings(PackageSettings):
 	pathFilenameDataframeAST: Path = dataclasses.field(default=settingsPackage.pathPackage / 'dataframeAST.pkl')
 	pythonMinimumVersionMinor: int = 12
 	versionMinor_astMinimumSupported: int = versionMinor_astMinimumSupportedHARDCODED
-	versionMinorMaximum: int | None = 13
+	versionMinorMaximum: int | None = 14
 
 settings_astToolkit = ManufacturedPackageSettings(
 	astSuperClasses=dictionary_astSuperClasses,

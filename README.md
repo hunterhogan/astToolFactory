@@ -47,3 +47,7 @@ The astToolFactory manufactures all the ast manufacturing that manufacturing-gra
 - All 100+ manufactured ast node types that populate Python's factory-built ast.Module modules
 
 astToolFactory manufactures astToolkit's tools that refactor Python's ast.AST abstract syntax trees through systematic manufacturing processes. Whether you need to factor ast trees, refactor ast nodes, manufacture ast data, or factory-build ast code, astToolkit's manufactured ast tools help you ast through industrial-grade manufacturing.
+
+## I'm tired
+
+I'm tired of being homeless and in pain all the time. If you like my work, please consider supporting me on [Patreon](https://www.patreon.com/integrated) so I can recover.

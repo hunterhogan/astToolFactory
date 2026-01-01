@@ -20,8 +20,8 @@ dictionary_astSuperClasses: dict[str, str] = {
 	'mod': '本',
 
 	'stmt': '口',
-	'expr': '工',
 	'expr_context': '工位',
+	'expr': '工',
 
 	'unaryop': '一符',
 	'operator': '二符',

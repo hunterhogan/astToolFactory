@@ -17,6 +17,7 @@ classifiers = [
   "Programming Language :: Python :: 3",
   "Programming Language :: Python :: 3.12",
   "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
 ]
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
@@ -54,9 +55,9 @@ run = { branch = true, concurrency = [
 ] }
 xml = { output = "tests/coverage/coverage.xml" }
 
-[tool.pytest.ini_options]
+[tool.pytest]
 addopts = ["--color=auto"]
-log_auto_indent = true
+log_auto_indent = "On"
 testpaths = ["tests"]
 
 [tool.setuptools]
