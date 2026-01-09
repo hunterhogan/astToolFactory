@@ -6,6 +6,7 @@ from astToolFactory._warehouse.map2PythonOperators import map2PythonOperators as
 from astToolkit import identifierDotAttribute, Make
 from collections import defaultdict
 from dataclasses import dataclass
+from hunterMakesPy import raiseIfNone
 from itertools import chain
 from typing import TypedDict
 import ast
@@ -40,7 +41,7 @@ for astClass in [C for C in [ast.AST, *chain(*(c.__subclasses__() for c in [ast.
 	identifierDotClass: identifierDotAttribute = f'`ast.{identifierClass}`'
 	subclassList: list[str] = sorted([c.__name__ for c in astClass.__subclasses__() if issubclass(c, ast.AST)], key=lambda s: s.lower())
 	matchesClasses: list[identifierDotAttribute] = list(dict.fromkeys([identifierDotClass, *[f'`ast.{name}`' for name in subclassList]]))
-	parentClass: identifierDotAttribute = f'`ast.{astClass.__base__.__name__}`'  # pyright: ignore[reportOptionalMemberAccess]
+	parentClass: identifierDotAttribute = f'`ast.{raiseIfNone(raiseIfNone(astClass.__base__).__name__)}`'
 
 	dictionary_astClasses[identifierClass] = {
 		'identifierClass': identifierClass,

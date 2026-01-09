@@ -165,7 +165,7 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 	dataframe = dataframe[elementsTarget]
 	return dataframe.to_records(index=False).tolist()
 
-def getElementsDocstringGrab(identifierToolClass: str, **keywordArguments: Any) -> dict[str, dict]:  # noqa: ARG001
+def getElementsDocstringGrab(identifierToolClass: str, **keywordArguments: Any) -> dict[str, dict[Any, Any]]:  # noqa: ARG001
 	"""Get docstring elements for Grab."""
 	return {}
 

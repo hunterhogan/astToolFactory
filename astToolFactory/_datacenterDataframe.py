@@ -38,18 +38,9 @@ def _get_astModule_astStub() -> ast.Module:
 	ImaSearchContext: typeshed_client.SearchContext = typeshed_client.get_search_context(typeshed=pathRoot_typeshed)
 	return parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file("ast", search_context=ImaSearchContext)))
 
-def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
-	dictionary_Attributes: dict[str, str] = {}
-	NodeTourist[ast.AnnAssign, Mapping[str, str]](findThis=Be.AnnAssign.targetIs(Be.Name)
-		, doThat=Then.updateKeyValueIn(key=lambda node: cast(ast.Name, node.target).id
-			, value=lambda node: ast.unparse(node.annotation)
-			, dictionary=dictionary_Attributes)
-	).visit(astClassDef)
-	for _attribute in dictionary_Attributes:
-		_attributeTypeVar = _attributeTypeVarHARDCODED
-		_attributeTypeVar_default = _attributeTypeVar_defaultHARDCODED
-		dictionary_Attributes[_attribute] = dictionary_Attributes[_attribute].replace(_attributeTypeVar, _attributeTypeVar_default)
-	return dictionary_Attributes
+def _getDataFromInterpreter(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	# TODO implement
+	return dataframe
 
 def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	def amIDeprecated(ClassDefIdentifier: str) -> bool:
@@ -210,28 +201,6 @@ def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		dataframe.loc[mask_attributeType, columnNew] = True
 	return dataframe
 
-def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	columnNew = 'type_ast_expr'
-	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype="object", name=columnNew)
-	dataframe.loc[dataframe["list2Sequence"], columnNew] = dataframe['attributeType'].str.replace("list", "Sequence").apply(cast(Any, pythonCode2ast_expr))
-	dataframe.loc[~dataframe["list2Sequence"], columnNew] = dataframe['attributeType'].apply(cast(Any, pythonCode2ast_expr))
-	return dataframe
-
-def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	def workhorse(dataframeTarget: pandas.DataFrame) -> Any:
-		if cast(bool, (dataframeTarget['attributeKind'] == "_field") & ((dataframeTarget['move2keywordArguments'] != 'No') & (dataframeTarget['move2keywordArguments'] != 'Unpack'))):
-			if cast(bool, dataframeTarget["move2keywordArguments"]):
-				keywordValue: ast.expr = cast(ast.expr, dataframeTarget["defaultValue"])
-			else:
-				keywordValue = Make.Name(cast(str, dataframeTarget["attributeRename"]))
-				if dataframeTarget["list2Sequence"] is True:
-					keywordValue = Make.Call(Make.Name("list"), [keywordValue])
-			return Make.keyword(cast(str, dataframeTarget['attribute']), keywordValue)
-		return 'No'
-
-	dataframe["Call_keyword"] = dataframe.apply(workhorse, axis="columns")
-	return dataframe
-
 def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dataframe["list4TypeAlias_value"] = pandas.Series(data='No', index=dataframe.index, dtype=object)
 	dataframe["hashable_list4TypeAlias_value"] = pandas.Series(data='No', index=dataframe.index, dtype=str)
@@ -280,12 +249,47 @@ def _makeColumn_list4TypeAliasSubcategories(dataframe: pandas.DataFrame) -> pand
 
 	return dataframe
 
+def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	columnNew = 'type_ast_expr'
+	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype="object", name=columnNew)
+	dataframe.loc[dataframe["list2Sequence"], columnNew] = dataframe['attributeType'].str.replace("list", "Sequence").apply(cast(Any, pythonCode2ast_expr))
+	dataframe.loc[~dataframe["list2Sequence"], columnNew] = dataframe['attributeType'].apply(cast(Any, pythonCode2ast_expr))
+	return dataframe
+
+def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	def workhorse(dataframeTarget: pandas.DataFrame) -> Any:
+		if cast(bool, (dataframeTarget['attributeKind'] == "_field") & ((dataframeTarget['move2keywordArguments'] != 'No') & (dataframeTarget['move2keywordArguments'] != 'Unpack'))):
+			if cast(bool, dataframeTarget["move2keywordArguments"]):
+				keywordValue: ast.expr = cast(ast.expr, dataframeTarget["defaultValue"])
+			else:
+				keywordValue = Make.Name(cast(str, dataframeTarget["attributeRename"]))
+				if dataframeTarget["list2Sequence"] is True:
+					keywordValue = Make.Call(Make.Name("list"), [keywordValue])
+			return Make.keyword(cast(str, dataframeTarget['attribute']), keywordValue)
+		return 'No'
+
+	dataframe["Call_keyword"] = dataframe.apply(workhorse, axis="columns")
+	return dataframe
+
 def _makeColumnTypeAlias_hasDOTSubcategory(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	columnNew = 'TypeAlias_hasDOTSubcategory'
 	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype="object", name=columnNew)
 	mask_hasDOTIdentifier = dataframe["TypeAlias_hasDOTIdentifier"] != 'No'
 	dataframe.loc[mask_hasDOTIdentifier, columnNew] = dataframe["TypeAlias_hasDOTIdentifier"] + "_" + dataframe['attributeType'].str.replace("|", "Or").str.replace("[", "_").str.replace("[\\] ]", "", regex=True).str.replace("ast.", "")
 	return dataframe
+
+def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
+	dictionary_Attributes: dict[str, str] = {}
+	NodeTourist[ast.AnnAssign, Mapping[str, str]](findThis=Be.AnnAssign.targetIs(Be.Name)
+		, doThat=Then.updateKeyValueIn(key=lambda node: cast(ast.Name, node.target).id
+			, value=lambda node: ast.unparse(node.annotation)
+			, dictionary=dictionary_Attributes)
+	).visit(astClassDef)
+	for _attribute in dictionary_Attributes:
+		_attributeTypeVar = _attributeTypeVarHARDCODED
+		_attributeTypeVar_default = _attributeTypeVar_defaultHARDCODED
+		dictionary_Attributes[_attribute] = dictionary_Attributes[_attribute].replace(_attributeTypeVar, _attributeTypeVar_default)
+	return dictionary_Attributes
 
 def _moveMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	for columnValue, orElse in dictionary_defaultValue_ast_arg_Call_keyword_orElse.items():
@@ -329,9 +333,6 @@ def updateDataframe() -> None:
 	# columns: reorder; drop columns, but they might be recreated later in the flow.  # noqa: ERA001
 	# dataframe = dataframe[_columns]  # noqa: ERA001
 
-	# Set dtypes for existing columns
-	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
-
 	# TODO Columns to create using the Python Interpreter,
 	# from version 3.settingsManufacturing.versionMinor_astMinimumSupported
 	# to version 3.settingsManufacturing.versionMinorMaximum, inclusive.
@@ -341,6 +342,9 @@ def updateDataframe() -> None:
 	# 'versionMicroPythonInterpreter',
 	# 'base',
 
+	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
+
+	# Set dtypes for existing columns
 	dataframe = dataframe.astype({
 		'ClassDefIdentifier': 'string',
 		'versionMajorPythonInterpreter': 'int64',
