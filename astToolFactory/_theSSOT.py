@@ -12,10 +12,13 @@ from typing import Any, NamedTuple, NotRequired, TypedDict, TypeVar
 import ast
 import dataclasses
 
+# TODO In general, now that Py3.9 is not supported, AFAIK, the package doesn't need the "deprecated" flag anymore. IIRC, I created
+# it to deal with the deprecated subclasses of `ast.Constant`.
+
 """Eliminate hardcoding"""
 pathRelativeRoot_typeshedHARDCODED: Path = Path('typings/stdlib')
 # https://github.com/hunterhogan/astToolFactory/issues/2
-versionMinor_astMinimumSupportedHARDCODED = 9
+versionMinor_astMinimumSupportedHARDCODED = 10
 
 identifierPackagePACKAGING = "astToolFactory"
 settingsPackage = PackageSettings(identifierPackageFALLBACK=identifierPackagePACKAGING)

@@ -1,11 +1,11 @@
 """Extract `__match_args__` from Python.asdl across multiple Python versions."""
 
-from astToolFactory import column__value, settingsManufacturing, settingsPackage
+from astToolFactory import settingsManufacturing, settingsPackage
 from astToolkit import identifierDotAttribute
 from hunterMakesPy import importLogicalPath2Identifier, raiseIfNone
 from pathlib import Path
 from pprint import pprint
-from typing import Any, Literal, NamedTuple, Protocol, TYPE_CHECKING
+from typing import Any, Literal, Protocol, TYPE_CHECKING
 import sys
 
 if TYPE_CHECKING:
@@ -16,13 +16,6 @@ filename_asdlData: str = 'Python.asdl'
 formatRelativePathVersionMinor = '_py3{versionMinor}'
 rangeVersionMinor = range(settingsManufacturing.versionMinor_astMinimumSupported, raiseIfNone(settingsManufacturing.versionMinorMaximum) + 1)
 relativePathCpython: str = 'cpython'
-
-class Column__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated(NamedTuple):
-	"""`MaskTuple` used by `getMaskByColumnValue`."""
-
-	ClassDefIdentifier: str
-	versionMinorPythonInterpreter: int
-	deprecated: bool
 
 class asdlModuleProtocol(Protocol):
 	"""Protocol for ASDL parser modules across Python versions.
@@ -145,20 +138,6 @@ def extract_match_args() -> dict[int, dict[str, tuple[str, ...]]]:
 		dictionaryByVersion[versionMinor] = dictionaryMatchArgumentsForVersion
 
 	return dictionaryByVersion
-
-# def getDictionary_match_args() -> dict[Column__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated, column__value]:
-# 	"""Create dictionary structured as ClassDefIdentifier -> versionMinorPythonInterpreter -> match_args."""
-# 	dictionaryByVersion: dict[int, dict[str, tuple[str, ...]]] = extract_match_args()
-
-# 	match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated: dict[Column__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated, column__value] = {}
-
-# 	for versionMinor, dictionaryClass_match_args in dictionaryByVersion.items():
-# 		for ClassDefIdentifier, match_args in dictionaryClass_match_args.items():
-# 			match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated[
-# 				Column__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated(ClassDefIdentifier, versionMinor, False)
-# 				] = column__value('match_args', match_args)
-
-# 	return match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated
 
 def getDictionary_match_args() -> dict[tuple[str, int, Literal[False]], tuple[str, ...]]:
 	"""Create dictionary structured as ClassDefIdentifier -> versionMinorPythonInterpreter -> match_args."""

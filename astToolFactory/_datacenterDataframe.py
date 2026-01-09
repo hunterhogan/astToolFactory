@@ -11,10 +11,11 @@ from astToolFactory.cpython import getDictionary_match_args
 from astToolkit import (
 	Be, ConstantValueType as _ConstantValue, DOT, Grab, IfThis, Make, NodeChanger, NodeTourist,
 	parsePathFilename2astModule, Then)
-from astToolkit.transformationTools import makeDictionaryClassDef
+from astToolkit.transformationTools import makeDictionaryClassDef, pythonCode2ast_expr
 from collections.abc import Mapping
 from functools import cache
 from hunterMakesPy import raiseIfNone
+from numpy.typing import ArrayLike
 from typing import Any, cast
 import ast
 import numpy
@@ -24,23 +25,11 @@ import typeshed_client
 _attributeTypeVarHARDCODED = '_EndPositionT'
 _attributeTypeVar_defaultHARDCODED = 'int | None'
 
-"""Use idiomatic pandas.
-- No `lambda`, except `key=lambda`.
-- No intermediate data structures.
-- A dataframe is a data structure: no intermediate dataframes.
-- A column is a data structure: no intermediate columns.
-- No `for`, no `iterrows`, no loops, no loops hidden in comprehension.
-- No `zip`.
-- No new classes.
-- No helper dataframes, no helper classes.
-- Use idiomatic pandas.
-"""
-
 def _computeVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list[str], columnNameTarget: str) -> pandas.DataFrame:
 	dataframe[columnNameTarget] = numpy.where(
-		dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min") == settingsManufacturing.versionMinor_astMinimumSupported # pyright: ignore[reportArgumentType]
+		dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min") == settingsManufacturing.versionMinor_astMinimumSupported
 		, -1
-		, dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min") # pyright: ignore[reportArgumentType]
+		, dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min")
 	)
 	return dataframe
 
@@ -56,7 +45,7 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 			, value=lambda node: ast.unparse(node.annotation)
 			, dictionary=dictionary_Attributes)
 	).visit(astClassDef)
-	for _attribute in dictionary_Attributes:  # noqa: PLC0206
+	for _attribute in dictionary_Attributes:
 		_attributeTypeVar = _attributeTypeVarHARDCODED
 		_attributeTypeVar_default = _attributeTypeVar_defaultHARDCODED
 		dictionary_Attributes[_attribute] = dictionary_Attributes[_attribute].replace(_attributeTypeVar, _attributeTypeVar_default)
@@ -176,13 +165,13 @@ def _make4ColumnsOfLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dictionaryDefaults: dict[tuple[str, int], list[ast.expr]] = {}
 	dictionaryCall_keyword: dict[tuple[str, int], list[ast.keyword]] = {}
 
-	for (ClassDefIdentifier, versionMinorMinimum_match_args), dataframeGroupBy in dataframe.groupby(['ClassDefIdentifier', "versionMinorMinimum_match_args"]):
+	for (ClassDefIdentifier, versionMinorMinimum_match_args), dataframeGroupBy in dataframe.groupby(['ClassDefIdentifier', "versionMinorMinimum_match_args"]):  # ty:ignore[not-iterable]
 		groupKey: tuple[str, int] = (ClassDefIdentifier, versionMinorMinimum_match_args) # pyright: ignore[reportAssignmentType]
 		match_argsCategoricalSort: tuple[str, ...] = dataframeGroupBy['match_args'].iloc[0]
 		dataframeGroupBy['attribute'] = pandas.Categorical(dataframeGroupBy['attribute'], categories=match_argsCategoricalSort, ordered=True)
-		dataframeGroupBy: pandas.DataFrame = dataframeGroupBy.sort_values(['attribute', 'versionMinorMinimum_match_args'], ascending=[True, False])  # noqa: PLW2901
+		dataframeGroupBy: pandas.DataFrame = dataframeGroupBy.sort_values(['attribute', 'versionMinorMinimum_match_args'], ascending=[True, False])
 
-		dataframeGroupBy = dataframeGroupBy[dataframeGroupBy['attributeKind'] == "_field"]  # noqa: PLW2901
+		dataframeGroupBy = dataframeGroupBy[dataframeGroupBy['attributeKind'] == "_field"]
 
 		dictionaryTupleAttributes[groupKey] = (dataframeGroupBy.copy().drop_duplicates(subset='attribute')[['attribute', "type_ast_expr"]].apply(tuple, axis="columns").tolist())
 
@@ -224,8 +213,8 @@ def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	columnNew = 'type_ast_expr'
 	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype="object", name=columnNew)
-	dataframe.loc[dataframe["list2Sequence"], columnNew] = dataframe['attributeType'].str.replace("list", "Sequence").apply(_pythonCode2expr)
-	dataframe.loc[~dataframe["list2Sequence"], columnNew] = dataframe['attributeType'].apply(_pythonCode2expr)
+	dataframe.loc[dataframe["list2Sequence"], columnNew] = dataframe['attributeType'].str.replace("list", "Sequence").apply(cast(Any, pythonCode2ast_expr))
+	dataframe.loc[~dataframe["list2Sequence"], columnNew] = dataframe['attributeType'].apply(cast(Any, pythonCode2ast_expr))
 	return dataframe
 
 def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -313,20 +302,15 @@ def _moveMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			message = f"Your current system assumes attribute '{attributePROXY['attribute']}' is not a keyword argument, but this function got {attributePROXY}."
 			raise ValueError(message)
 
-		dataframe.loc[maskByColumnValue, "defaultValue"] = Make.Constant(None) # pyright: ignore[reportCallIssue, reportArgumentType]
+		dataframe.loc[maskByColumnValue, "defaultValue"] = Make.Constant(None) # pyright: ignore[reportArgumentType, reportCallIssue]
 		attributeType = cast(str, attributePROXY['attributeType']) + " | None"
 		if attributePROXY["list2Sequence"] is True:
 			attributeType = attributeType.replace("list", "Sequence")
-		dataframe.loc[maskByColumnValue, 'ast_arg'] = Make.arg(cast(str, attributePROXY["attributeRename"]), annotation=cast(ast.expr, _pythonCode2expr(attributeType))) # pyright: ignore[reportCallIssue, reportArgumentType]
+		dataframe.loc[maskByColumnValue, 'ast_arg'] = Make.arg(cast(str, attributePROXY["attributeRename"]), annotation=pythonCode2ast_expr(attributeType)) # pyright: ignore[reportArgumentType, reportCallIssue]
 		attributePROXY['orElse'] = orElse
-		dataframe.loc[maskByColumnValue, "Call_keyword"] = _make_keywordOrList(attributePROXY) # pyright: ignore[reportCallIssue, reportArgumentType]
+		dataframe.loc[maskByColumnValue, "Call_keyword"] = _make_keywordOrList(attributePROXY) # pyright: ignore[reportArgumentType, reportCallIssue]
 
 	return dataframe
-
-def _pythonCode2expr(string: str) -> Any:
-	"""Convert *one* expression as a string of Python code to an `ast.expr`."""
-	astModule: ast.Module = ast.parse(string)
-	return raiseIfNone(NodeTourist(Be.Expr, Then.extractIt(DOT.value)).captureLastMatch(astModule))
 
 def dictionary2UpdateDataframe(dictionary: Mapping[MaskTuple, column__value], dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	"""Convert a hyper-marked-up dictionary to columns and values, but not new rows, in a dataframe."""
@@ -383,8 +367,8 @@ def updateDataframe() -> None:
 	dataframe = _makeColumn_type_ast_expr(dataframe)
 	dataframe['type_astSuperClasses'] = dataframe['attributeType'].replace({f'ast.{ClassDefIdentifier}': identifierTypeVar for ClassDefIdentifier, identifierTypeVar in settingsManufacturing.astSuperClasses.items()}, regex=True)
 	dataframe = _makeColumn_ast_arg(dataframe)
-	dataframe['type_astSuperClasses_ast_expr'] = numpy.where(dataframe['type_astSuperClasses'] == 'No', 'No', dataframe['type_astSuperClasses'].apply(_pythonCode2expr)) # pyright: ignore[reportArgumentType]
-	dataframe['TypeAlias_hasDOTIdentifier'] = numpy.where(dataframe['attributeKind'] == '_field', 'hasDOT' + cast(str, dataframe['attribute']), 'No') # pyright: ignore[reportArgumentType]
+	dataframe['type_astSuperClasses_ast_expr'] = numpy.where(dataframe['type_astSuperClasses'] == 'No', 'No', cast(ArrayLike, dataframe['type_astSuperClasses'].apply(cast(Any, pythonCode2ast_expr))))
+	dataframe['TypeAlias_hasDOTIdentifier'] = numpy.where(dataframe['attributeKind'] == '_field', 'hasDOT' + cast(str, dataframe['attribute']), 'No')
 	dataframe = _makeColumnTypeAlias_hasDOTSubcategory(dataframe)
 	dataframe = _makeColumn_list4TypeAlias(dataframe)
 	dataframe = _makeColumn_list4TypeAliasSubcategories(dataframe)
