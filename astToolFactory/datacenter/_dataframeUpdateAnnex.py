@@ -48,6 +48,11 @@ _columns: list[str] = [
 	'type_astSuperClasses',
 	'type_astSuperClasses_ast_expr',
 	'listTupleAttributes',
+
+	# columns computed from other columns and a dictionary per group
+	'list4TypeAlias_value',
+	'hashable_list4TypeAlias_value',
+	'list4TypeAliasSubcategories',
 ]
 
 """

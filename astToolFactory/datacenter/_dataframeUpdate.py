@@ -2,12 +2,12 @@
 from ast import (
 	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, keyword, match_case,
 	Name, operator, pattern, stmt, Subscript, type_param, TypeIgnore, unaryop, withitem)
-from astToolFactory import column__value, MaskTuple, pathRoot_typeshed, settingsManufacturing
-from astToolFactory._datacenter import _sortCaseInsensitive, getDataframe
-from astToolFactory._datacenterAnnex import (
+from astToolFactory import column__value, MaskTuple, noMinimum, pathRoot_typeshed, settingsManufacturing
+from astToolFactory.cpython import getDictionary_match_args
+from astToolFactory.datacenter._dataframeUpdateAnnex import (
 	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, Column__ClassDefIdentifier_attribute,
 	defaultValue__, dictionary_defaultValue_ast_arg_Call_keyword_orElse, move2keywordArguments__)
-from astToolFactory.cpython import getDictionary_match_args
+from astToolFactory.datacenter._dataServer import _sortCaseInsensitive, getDataframe
 from astToolkit import (
 	Be, ConstantValueType as _ConstantValue, DOT, Grab, IfThis, Make, NodeChanger, NodeTourist,
 	parsePathFilename2astModule, Then)
@@ -18,17 +18,21 @@ from hunterMakesPy import raiseIfNone
 from numpy.typing import ArrayLike
 from typing import Any, cast
 import ast
+import builtins
 import numpy
 import pandas
 import typeshed_client
 
+# TODO `kwarg_annotationIdentifier` does not seem to update in some cases.
+
+# TODO remove hardcoding.
 _attributeTypeVarHARDCODED = '_EndPositionT'
 _attributeTypeVar_defaultHARDCODED = 'int | None'
 
 def _computeVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list[str], columnNameTarget: str) -> pandas.DataFrame:
 	dataframe[columnNameTarget] = numpy.where(
 		dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min") == settingsManufacturing.versionMinor_astMinimumSupported
-		, -1
+		, noMinimum
 		, dataframe.groupby(list_byColumns)["versionMinorPythonInterpreter"].transform("min")
 	)
 	return dataframe
@@ -39,7 +43,14 @@ def _get_astModule_astStub() -> ast.Module:
 	return parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file("ast", search_context=ImaSearchContext)))
 
 def _getDataFromInterpreter(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	# TODO implement
+	# TODO Columns to create using the Python Interpreter,
+	# from version 3.settingsManufacturing.versionMinor_astMinimumSupported
+	# to version 3.settingsManufacturing.versionMinorMaximum, inclusive.
+	# 'ClassDefIdentifier',
+	# 'versionMajorPythonInterpreter',
+	# 'versionMinorPythonInterpreter',
+	# 'versionMicroPythonInterpreter',
+	# 'base',
 	return dataframe
 
 def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -114,8 +125,6 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dataframe['match_args'] = pandas.Series(data=[()] * len(dataframe), index=dataframe.index, dtype=object, name='match_args')
 	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last')
 
-	# dataframe = dictionary2UpdateDataframe(getDictionary_match_args(), dataframe)
-
 	new_match_args = (dataframe[['ClassDefIdentifier', "versionMinorPythonInterpreter", 'deprecated']]
 		.apply(tuple, axis="columns")
 		.map(getDictionary_match_args())
@@ -126,10 +135,10 @@ def _getDataFromStubFile(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last')
 
-	# dataframe['attribute'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attribute')
+	dataframe['attribute'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attribute')
 	dataframe.attrs['drop_duplicates'].extend(['attribute'])
-	# dataframe['attributeKind'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeKind')
-	# dataframe['attributeType'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeType')
+	dataframe['attributeKind'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeKind')
+	dataframe['attributeType'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeType')
 
 	# NOTE these two functions each create ~4 times more rows than necessary.
 	dataframe = pandas.concat(objs=[dataframe, newRowsFrom_match_args(dataframe)], axis='index', ignore_index=True)
@@ -329,20 +338,12 @@ def getMaskByColumnValue(dataframe: pandas.DataFrame, columnValue: MaskTuple) ->
 def updateDataframe() -> None:
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
 
-	# TODO think of a clever, simple way to optionally apply this.
+	# TODO think of a clever, simple way to optionally apply this instead of toggling comments.
 	# columns: reorder; drop columns, but they might be recreated later in the flow.  # noqa: ERA001
 	# dataframe = dataframe[_columns]  # noqa: ERA001
 
-	# TODO Columns to create using the Python Interpreter,
-	# from version 3.settingsManufacturing.versionMinor_astMinimumSupported
-	# to version 3.settingsManufacturing.versionMinorMaximum, inclusive.
-	# 'ClassDefIdentifier',
-	# 'versionMajorPythonInterpreter',
-	# 'versionMinorPythonInterpreter',
-	# 'versionMicroPythonInterpreter',
-	# 'base',
-
-	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
+	# TODO Get data using the Python Interpreter,
+	dataframe = _getDataFromInterpreter(dataframe)
 
 	# Set dtypes for existing columns
 	dataframe = dataframe.astype({
@@ -352,6 +353,8 @@ def updateDataframe() -> None:
 		'versionMicroPythonInterpreter': 'int64',
 		'base': 'string',
 	})
+
+	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
 
 	dataframe = _getDataFromStubFile(dataframe)
 

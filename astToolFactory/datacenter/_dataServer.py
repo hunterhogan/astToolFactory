@@ -4,7 +4,7 @@ This module provides a set of functions to interact with the data source, allowi
 
 """
 
-from astToolFactory import settingsManufacturing
+from astToolFactory import noMinimum, settingsManufacturing
 from collections.abc import Sequence
 from typing import Any, cast
 import ast
@@ -70,7 +70,7 @@ def getDataframe(*indices: str, **keywordArguments: Any) -> pandas.DataFrame:
 		columnsVersion: list[str] = ["versionMinorMinimumAttribute", "versionMinorMinimumClass", "versionMinorMinimum_match_args"]
 		dataframe[columnsVersion] = dataframe[columnsVersion].where(
 			dataframe[columnsVersion] > settingsManufacturing.pythonMinimumVersionMinor
-			, -1
+			, noMinimum
 		)
 	if indices:
 		dataframe = dataframe.set_index(list(indices))

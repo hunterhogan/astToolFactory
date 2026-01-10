@@ -1,10 +1,18 @@
 """astToolFactory manufactures ast tools for astToolkit."""
+
+# isort: split
+from astToolFactory._semiotics import (
+	dictionary_astSuperClasses as dictionary_astSuperClasses, dictionaryIdentifiers as dictionaryIdentifiers,
+	noMinimum as noMinimum)
+
+# isort: split
+from astToolFactory._theTypes import (
+	column__value as column__value, dataTypeVariables as dataTypeVariables, MaskTuple as MaskTuple)
+
 # isort: split
 from astToolFactory._theSSOT import (
-	column__value as column__value, dataTypeVariables as dataTypeVariables,
-	ManufacturedPackageSettings as ManufacturedPackageSettings, MaskTuple as MaskTuple,
-	pathRoot_typeshed as pathRoot_typeshed, settingsManufacturing as settingsManufacturing,
-	settingsPackage as settingsPackage)
+	ManufacturedPackageSettings as ManufacturedPackageSettings, pathRoot_typeshed as pathRoot_typeshed,
+	settingsManufacturing as settingsManufacturing, settingsPackage as settingsPackage)
 
 # isort: split
 from astToolFactory._snippets import (
@@ -14,8 +22,3 @@ from astToolFactory._snippets import (
 	astSubscriptUnpack_ast_attributes as astSubscriptUnpack_ast_attributes,
 	format_hasDOTIdentifier as format_hasDOTIdentifier, formatTypeAliasSubcategory as formatTypeAliasSubcategory,
 	keywordKeywordArguments4Call as keywordKeywordArguments4Call)
-
-# isort: split
-from astToolFactory._datacenter import (
-	getElementsBe as getElementsBe, getElementsDocstringGrab as getElementsDocstringGrab, getElementsDOT as getElementsDOT,
-	getElementsGrab as getElementsGrab, getElementsMake as getElementsMake, getElementsTypeAlias as getElementsTypeAlias)

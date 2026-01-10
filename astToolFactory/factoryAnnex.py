@@ -1,7 +1,8 @@
 """Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
 from astToolFactory import (
 	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, astSubscriptUnpack_ast_attributes,
-	dataTypeVariables, keywordKeywordArguments4Call, settingsManufacturing)
+	keywordKeywordArguments4Call, settingsManufacturing)
+from astToolFactory._theTypes import dataTypeVariables
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
 import ast
