@@ -2,6 +2,7 @@
 
 # ======= Replacements for ambiguous values =======
 
+inclusive: int = 1
 noMinimum: int = -1
 
 # ======= Centralized dictionaries =======

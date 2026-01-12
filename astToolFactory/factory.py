@@ -91,10 +91,11 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
 	list4ModuleBody: list[ast.stmt] = []
-	ledgerOfImports = LedgerOfImports(Make.Module([
+	ledgerOfImports: LedgerOfImports = LedgerOfImports(Make.Module([
 		Make.ImportFrom("types", [Make.alias("EllipsisType")])
 		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("TypeAlias", "typing_TypeAlias"), Make.alias("TypedDict"), Make.alias("TypeVar", "typing_TypeVar")])
 		, Make.Import("ast")
+		, Make.Import("builtins")
 		, Make.Import("sys")]))
 
 	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias(**keywordArguments):  # noqa: B007
@@ -195,7 +196,7 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		else:
 			body = [Make.Return(Make.Attribute(Make.Name("node"), attribute))]
-			workbench = list_ast_expr.copy()
+			workbench: list[ast.expr] = list_ast_expr.copy()
 			list_ast_expr.clear()
 			caseInsensitiveSort: list[str] = []
 			while workbench:
@@ -203,9 +204,9 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 				if isinstance(ast_expr, ast.BinOp):
 					workbench.extend(unjoinBinOP(ast_expr, ast.BitOr))
 				else:
-					checkMe = str(ast.unparse(ast_expr)).lower()
+					checkMe: str = str(ast.unparse(ast_expr)).lower()
 					if checkMe not in caseInsensitiveSort:
-						index = len([item for item in caseInsensitiveSort if item <= checkMe])
+						index: int = len([item for item in caseInsensitiveSort if item <= checkMe])
 						caseInsensitiveSort.insert(index, checkMe)
 						list_ast_expr.insert(index, ast_expr)
 
@@ -226,6 +227,7 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, Make.ImportFrom("collections.abc", [Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("overload")])
 		, Make.Import("ast")
+		, Make.Import("builtins")
 		, Make.Import("sys")
 		, Make.If(
 			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
@@ -233,6 +235,13 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 				, [Make.Tuple([Make.Constant(3), Make.Constant(13)])]
 			)
 			, body=[Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTdefault_value")])]
+		)
+		, Make.If(
+			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
+				, [Make.GtE()]
+				, [Make.Tuple([Make.Constant(3), Make.Constant(14)])]
+			)
+			, body=[Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTstr")])]
 		)
 	]
 
@@ -291,6 +300,13 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, Make.Import("ast")
 		, Make.Import("sys")
 		, Make.If(Make.Compare(Make.Attribute(Make.Name("sys"), "version_info"), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]), [Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTdefault_value")])])
+		, Make.If(
+			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
+				, [Make.GtE()]
+				, [Make.Tuple([Make.Constant(3), Make.Constant(14)])]
+			)
+			, body=[Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTstr")])]
+		)
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
@@ -314,7 +330,8 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 	ledgerOfImports: LedgerOfImports = LedgerOfImports(Make.Module([
 		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any")])
-		, Make.Import("ast")]))
+		, Make.Import("ast")
+		, Make.Import("builtins")]))
 	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "ConstantValueType")
 	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "identifierDotAttribute")
 	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "ast_attributes")
@@ -439,7 +456,7 @@ def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 		pythonSource = "# ruff: noqa: A002\n" + pythonSource
 		pythonSource = pythonSource.replace("# type: ignore[", "# pyright: ignore[")
 		pythonSource = pythonSource.replace("# type: ignore", "# noqa: ")
-	pathFilenameModule = PurePosixPath(settingsManufacturing.pathPackage, identifierModule + settingsManufacturing.fileExtension)
+	pathFilenameModule: PurePosixPath = PurePosixPath(settingsManufacturing.pathPackage, identifierModule + settingsManufacturing.fileExtension)
 	settings: dict[str, dict[str, list[str] | bool]] = {'autoflake': settings_autoflakeDEFAULT}
 	cast(list[str], settings['autoflake']['additional_imports']).append(settingsManufacturing.identifierPackage)
 	writePython(pythonSource, pathFilenameModule)
@@ -482,12 +499,12 @@ def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None
 	None
 
 	"""
-	make_astTypes(settingsManufacturing.identifiers['types'])
 	makeToolBe(settingsManufacturing.identifiers['Be'])
 	makeToolDOT(settingsManufacturing.identifiers['DOT'])
 	makeToolGrab(settingsManufacturing.identifiers['Grab'])
 	makeToolMake(settingsManufacturing.identifiers['Make'])
 	write_theSSOT(settingsManufacturing.identifiers['SSOT'])
+	make_astTypes(settingsManufacturing.identifiers['types'])
 
 if __name__ == "__main__":
 	manufactureTools(settingsManufacturing)

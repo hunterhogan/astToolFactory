@@ -10,6 +10,7 @@ from typing import Any, cast
 import ast
 import numpy
 import pandas
+import pprint
 import typing_extensions
 
 if typing_extensions.TYPE_CHECKING:
@@ -243,6 +244,39 @@ def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[t
 	return dataframe.to_records(index=False).tolist()
 
 def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.expr], int, int]]:
+	"""Retrieve and refine TypeAlias definitions for code generation.
+
+	(AI generated docstring)
+
+	This function is the **Runtime Assembly Step**. It queries the
+	pre-computed dataframe for TypeAlias information matching the user's
+	requested Python version range.
+
+	Because the user's constraints (e.g., 'minimum Python 3.10') may differ
+	from the dataframe's full history, pre-computed values alone are not
+	enough. This function:
+	1. Filters the data to the matching versions.
+	2. Identifies whether a TypeAlias needs multiple version-guarded
+		definitions (via `addRows_hasDOTIdentifier4Subcategories`) or if it can
+		collapse into a single definition.
+	3. Applies version guards (`_makeColumn_guardVersion`) to the final set.
+
+	It serves as the bridge between the comprehensive, pre-calculated history
+	and the specific requirements of the current generation task.
+
+	Parameters
+	----------
+	keywordArguments : Any
+		Filtering arguments passed to `getDataframe` (e.g.,
+		`versionMinorMinimum`, `includeDeprecated`).
+
+	Returns
+	-------
+	elements : list[tuple[str, list[ast.expr], int, int]]
+		A list of tuples, each representing a TypeAlias definition:
+		(Identifier, List of Types, Guard Version, Minimum Minor Version).
+
+	"""
 	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "ClassDefIdentifier", "versionMinorMinimumAttribute", "classAs_astAttribute", "TypeAlias_hasDOTIdentifier", "list4TypeAlias_value", "hashable_list4TypeAlias_value", "list4TypeAliasSubcategories"]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
@@ -265,15 +299,48 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 	dataframe = dataframe.drop_duplicates(subset=["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimum", "hashable_list4TypeAlias_value"])
 
 	def addRows_hasDOTIdentifier4Subcategories(groupBy: pandas.DataFrame) -> pandas.DataFrame:
+		"""Inject summary rows when multiple TypeAlias subcategories coincide.
+
+		(AI generated docstring)
+
+		When the filtered timeframe contains multiple distinct definitions
+		(subcategories) for the same TypeAlias, we cannot just emit them as-is.
+		We often need a 'master' definition that unifies them or directs the
+		generation logic to use the breakdown.
+
+		This function detects if more than one subcategory exists for an
+		attribute in the current result set. If so, it appends a structural row
+		that helps the template engine understand that this TypeAlias splits
+		into version-specific variants.
+
+		Parameters
+		----------
+		groupBy : pandas.DataFrame
+			A subset of the dataframe grouped by `attribute`.
+
+		Returns
+		-------
+		dataframe : pandas.DataFrame
+			The group, potentially augmented with a summary row if multiple
+			subcategories were found.
+
+		"""
 		arrayGroupBy: NDArray[numpy.str_] = groupBy["TypeAlias_hasDOTSubcategory"].to_numpy()
 		if (arrayGroupBy[0] == arrayGroupBy).all():
 			return groupBy
 
-		rows_hasDOTIdentifier: pandas.DataFrame = (groupBy.drop_duplicates(subset="TypeAlias_hasDOTSubcategory", keep="last")[["versionMinorMinimum"]].drop_duplicates()
-			.assign(attribute=groupBy["attribute"].iloc[0], TypeAlias_hasDOTSubcategory="No"
-				, TypeAlias_hasDOTIdentifier=groupBy["TypeAlias_hasDOTIdentifier"].iloc[0]
-				, list4TypeAlias_value=[groupBy["list4TypeAliasSubcategories"].iloc[0]])
+		rows_hasDOTIdentifier: pandas.DataFrame = (groupBy.drop_duplicates(subset="TypeAlias_hasDOTSubcategory", keep="last")
+			.drop_duplicates(subset=["versionMinorMinimum"])
+			.copy()
 		)
+
+		rows_hasDOTIdentifier["attribute"] = groupBy["attribute"].iloc[0]
+		rows_hasDOTIdentifier["TypeAlias_hasDOTSubcategory"] = "No"
+		rows_hasDOTIdentifier["TypeAlias_hasDOTIdentifier"] = groupBy["TypeAlias_hasDOTIdentifier"].iloc[0]
+		rows_hasDOTIdentifier["list4TypeAlias_value"] = [
+			groupBy["list4TypeAliasSubcategories"].iloc[0]
+		] * len(rows_hasDOTIdentifier)
+
 		return pandas.concat([groupBy, rows_hasDOTIdentifier])
 
 	dataframe = dataframe.groupby("attribute")[dataframe.columns].apply(addRows_hasDOTIdentifier4Subcategories).reset_index(drop=True)
@@ -286,6 +353,8 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 
 	byColumn: str = "identifierTypeAlias"
 	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
+
+	dataframe = dataframe.sort_values(by=["identifierTypeAlias", "versionMinorMinimum"], ascending=[True, False])
 
 	dataframe = dataframe[elementsTarget]
 	return dataframe.to_records(index=False).tolist()

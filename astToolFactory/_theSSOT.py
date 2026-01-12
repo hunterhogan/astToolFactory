@@ -20,6 +20,20 @@ pathRootPackageToManufactureHARDCODED: Path = Path('/apps')
 
 identifierPackagePACKAGING = "astToolFactory"
 settingsPackage = PackageSettings(identifierPackageFALLBACK=identifierPackagePACKAGING)
+"""Settings for the `astToolFactory` package itself.
+
+(AI generated docstring)
+
+Contains path resolution and package identification for the running tool.
+
+Attributes
+----------
+identifierPackage : str
+    The name of the package ("astToolFactory").
+pathPackage : Path
+    The resolved path to the package root.
+
+"""
 
 # ======= Settings for manufacturing ===============================
 
@@ -35,7 +49,7 @@ class ManufacturedPackageSettings(PackageSettings):
 	pathFilenameDataframeAST: Path = dataclasses.field(default=settingsPackage.pathPackage / 'dataframeAST.pkl')
 	pythonMinimumVersionMinor: int = noMinimum
 	versionMinor_astMinimumSupported: int = noMinimum
-	versionMinorMaximum: int | None = None
+	versionMinorMaximum: int = 9001
 
 # ------- Settings for manufacturing `astToolkit` --------
 
@@ -60,8 +74,40 @@ settings_astToolkit = ManufacturedPackageSettings(
 
 # ------- Abstracted settings identifier to use in the package --------
 
-settingsManufacturing: ManufacturedPackageSettings = deepcopy(settings_astToolkit)
-"""1) An abstract, predictable identifier for the "factory".
+"""NOTE 1) An abstract, predictable identifier for the "factory".
 2) Infrastructure for more than one `ManufacturedPackageSettings` instance.
 It will probably never be used but it's the "right" way to design this."""
+
+settingsManufacturing: ManufacturedPackageSettings = deepcopy(settings_astToolkit)
+"""Configuration for the manufacturing process.
+
+(AI generated docstring)
+
+This settings object controls how the `astToolkit` (or other target package)
+is manufactured.
+
+Attributes
+----------
+astSuperClasses : dict[str, str]
+    Mapping of AST node names to their superclass names.
+identifiers : dict[str, str]
+    Mapping of internal identifiers to their external names.
+includeDeprecated : bool = False
+    Whether to include deprecated AST nodes.
+keywordArgumentsIdentifier : str = "keywordArguments"
+    The identifier to use for keyword arguments.
+pathFilenameDataframeAST : Path
+    Path to the pickle file containing the AST dataframe.
+pythonMinimumVersionMinor : int
+    The minimum supported Python minor version.
+versionMinor_astMinimumSupported : int
+    The minimum supported AST minor version from typeshed.
+versionMinorMaximum : int = 9001
+    The maximum supported Python minor version.
+identifierPackage : str
+    The name of the package being manufactured.
+pathPackage : Path
+    The root path of the package being manufactured.
+
+"""
 

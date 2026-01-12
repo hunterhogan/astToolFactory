@@ -1,21 +1,24 @@
 """Extract `__match_args__` from Python.asdl across multiple Python versions."""
 
-from astToolFactory import settingsManufacturing, settingsPackage
+from astToolFactory import inclusive, settingsManufacturing, settingsPackage
 from astToolkit import identifierDotAttribute
-from hunterMakesPy import importLogicalPath2Identifier, raiseIfNone
+from collections.abc import Callable, Sequence
+from hunterMakesPy import importLogicalPath2Identifier
 from pathlib import Path
 from pprint import pprint
-from typing import Any, Literal, Protocol, TYPE_CHECKING
+from typing import Any, Literal, Protocol
 import sys
-
-if TYPE_CHECKING:
-	from collections.abc import Callable
 
 # Configuration
 filename_asdlData: str = 'Python.asdl'
-formatRelativePathVersionMinor = '_py3{versionMinor}'
-rangeVersionMinor = range(settingsManufacturing.versionMinor_astMinimumSupported, raiseIfNone(settingsManufacturing.versionMinorMaximum) + 1)
+formatRelativePathVersionMinor: str = '_py3{versionMinor}'
+rangeVersionMinor: range = range(settingsManufacturing.versionMinor_astMinimumSupported, settingsManufacturing.versionMinorMaximum + inclusive)
 relativePathCpython: str = 'cpython'
+
+
+class _asdlTypeDefinitionProtocol(Protocol):
+	name: str
+	value: Any
 
 class asdlModuleProtocol(Protocol):
 	"""Protocol for ASDL parser modules across Python versions.
@@ -27,7 +30,7 @@ class asdlModuleProtocol(Protocol):
 
 	"""
 
-	def parse(self, pathFilename: str) -> Any:
+	def parse(self, pathFilename: str) -> 'asdlParsedProtocol':
 		"""Parse an ASDL file and return the parsed structure.
 
 		(AI generated docstring)
@@ -55,16 +58,16 @@ class asdlParsedProtocol(Protocol):
 
 	"""
 
-	dfns: list[Any]
+	dfns: Sequence[_asdlTypeDefinitionProtocol]
 
 def getPathFilename_asdl(versionMinor: int) -> Path:
 	"""Create physical path filename for Python.asdl file."""
-	relativePathVersionMinor = formatRelativePathVersionMinor.format(versionMinor=versionMinor)
+	relativePathVersionMinor: str = formatRelativePathVersionMinor.format(versionMinor=versionMinor)
 	return settingsPackage.pathPackage / relativePathCpython / relativePathVersionMinor / filename_asdlData
 
 def getLogicalPath_asdl(versionMinor: int) -> identifierDotAttribute:
 	"""Create logical path for ASDL module import."""
-	relativePathVersionMinor = formatRelativePathVersionMinor.format(versionMinor=versionMinor)
+	relativePathVersionMinor: str = formatRelativePathVersionMinor.format(versionMinor=versionMinor)
 	return f'{settingsPackage.identifierPackage}.{relativePathCpython}.{relativePathVersionMinor}.asdl'
 
 def extract_match_argsForVersion(versionMinor: int) -> dict[str, tuple[str, ...]]:
@@ -94,8 +97,8 @@ def extract_match_argsForVersion(versionMinor: int) -> dict[str, tuple[str, ...]
 	dictionaryMatchArguments["AST"] = ()
 
 	for typeDefinition in asdlModule.dfns:
-		typeName = typeDefinition.name
-		typeValue = typeDefinition.value
+		typeName: str = typeDefinition.name
+		typeValue: Any = typeDefinition.value
 
 		# Check if this is a Sum type, using duck typing to handle version differences
 		if hasattr(typeValue, 'types') and hasattr(typeValue, 'attributes'):
@@ -103,15 +106,15 @@ def extract_match_argsForVersion(versionMinor: int) -> dict[str, tuple[str, ...]
 			dictionaryMatchArguments[typeName] = ()
 
 			for constructor in typeValue.types:
-				className = constructor.name
-				fieldNames = tuple(field.name for field in constructor.fields if field.name is not None)
+				className: str = constructor.name
+				fieldNames: tuple[str, ...] = tuple(field.name for field in constructor.fields if field.name is not None)
 				dictionaryMatchArguments[className] = fieldNames
 
 		# Check if this is a Product type
 		elif hasattr(typeValue, 'fields') and hasattr(typeValue, 'attributes'):
 			# Product types have a single constructor
-			className = typeName
-			fieldNames = tuple(field.name for field in typeValue.fields if field.name is not None)
+			className: str = typeName
+			fieldNames: tuple[str, ...] = tuple(field.name for field in typeValue.fields if field.name is not None)
 			dictionaryMatchArguments[className] = fieldNames
 
 	return dictionaryMatchArguments
@@ -134,7 +137,7 @@ def extract_match_args() -> dict[int, dict[str, tuple[str, ...]]]:
 	dictionaryByVersion: dict[int, dict[str, tuple[str, ...]]] = {}
 
 	for versionMinor in rangeVersionMinor:
-		dictionaryMatchArgumentsForVersion = extract_match_argsForVersion(versionMinor)
+		dictionaryMatchArgumentsForVersion: dict[str, tuple[str, ...]] = extract_match_argsForVersion(versionMinor)
 		dictionaryByVersion[versionMinor] = dictionaryMatchArgumentsForVersion
 
 	return dictionaryByVersion
@@ -154,7 +157,7 @@ def getDictionary_match_args() -> dict[tuple[str, int, Literal[False]], tuple[st
 def main() -> None:
 	"""Extract match arguments from all Python versions and display results."""
 	sys.stderr.write("Extracting match arguments from all Python versions...\n")
-	dictionaryByClass = getDictionary_match_args()
+	dictionaryByClass: dict[tuple[str, int, Literal[False]], tuple[str, ...]] = getDictionary_match_args()
 
 	sys.stdout.write("# Unified AST class __match_args__ extracted from Python.asdl across versions\n")
 	sys.stdout.write("dictionaryMatchArguments_byClassByVersion = ")
