@@ -300,7 +300,7 @@ directly. See module docstring for the full system description.
 """
 
 move2keywordArguments__: dict[Column__attribute | Column__attributeKind, column__value] = {
-	Column__attribute('simple'): column__value('move2keywordArguments', True),  # noqa: FBT003
+	Column__attribute('simple'): column__value('move2keywordArguments', 'True'),
 	Column__attribute('type_comment'): column__value('move2keywordArguments', 'Unpack'),
 	Column__attributeKind('_attribute'): column__value('move2keywordArguments', 'No'),
 	Column__attributeKind('No'): column__value('move2keywordArguments', 'No'),
