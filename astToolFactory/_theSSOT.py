@@ -47,6 +47,7 @@ class ManufacturedPackageSettings(PackageSettings):
 	includeDeprecated: bool = False
 	keywordArgumentsIdentifier: str = 'keywordArguments'
 	pathFilenameDataframeAST: Path = dataclasses.field(default=settingsPackage.pathPackage / 'dataframeAST.pkl')
+	pathRoot_typeshed: Path = Path(settingsPackage.pathPackage, '..', 'typings', 'stdlib')
 	pythonMinimumVersionMinor: int = noMinimum
 	versionMinor_astMinimumSupported: int = noMinimum
 	versionMinorMaximum: int = 9001
@@ -67,6 +68,7 @@ settings_astToolkit = ManufacturedPackageSettings(
 	identifiers=dictionaryIdentifiers,
 	pathFilenameDataframeAST=pathFilenameDataframeAST,
 	pathPackage=pathPackageToManufacture,
+	pathRoot_typeshed=pathRoot_typeshed,
 	pythonMinimumVersionMinor=12,
 	versionMinor_astMinimumSupported=versionMinorTypeshed_astMinimumSupported,
 	versionMinorMaximum=14,

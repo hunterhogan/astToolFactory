@@ -355,7 +355,8 @@ def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 					, doThat = Then.extractIt(DOT.annotation)
 					).captureLastMatch(dictionaryClassDef[cast(str, dddataframeee['ClassDefIdentifier'])]))))
 
-			dddataframeee['attributeType'] = dddataframeee['attributeType'].replace('builtins.str', 'str') # https://github.com/python/cpython/issues/143661
+			dddataframeee['attributeType'] = dddataframeee['attributeType'].replace('builtins.str', 'str')
+# https://github.com/python/cpython/issues/143661
 
 			return dddataframeee['attributeType']
 
@@ -502,12 +503,13 @@ def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	"""
 	columnNew: str = 'ast_arg'
 	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype='object', name=columnNew)
-	def workhorse(dataframeTarget: pandas.Series) -> ast.arg | str:
-		if dataframeTarget['move2keywordArguments'] != 'False':
-			return 'No'
-		return Make.arg(dataframeTarget['attributeRename'], annotation=cast(ast.expr, dataframeTarget['type_ast_expr']))
 
-	dataframe[columnNew] = dataframe.apply(workhorse, axis='columns')
+	selectorAttributeArguments: pandas.Series[bool] = dataframe['move2keywordArguments'] == 'False'
+
+	def make_ast_arg(row: pandas.Series) -> ast.arg:
+		return Make.arg(row['attributeRename'], annotation=cast(ast.expr, row['type_ast_expr']))
+
+	dataframe.loc[selectorAttributeArguments, columnNew] = dataframe[selectorAttributeArguments].apply(make_ast_arg, axis='columns')
 	return dataframe
 
 def _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -596,8 +598,8 @@ def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	columnNew: str = 'list2Sequence'
 	dataframe[columnNew] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name=columnNew)
 	for ClassDefIdentifier in settingsManufacturing.astSuperClasses:
-		mask_attributeType: pandas.Series[bool] = dataframe['attributeType'].str.contains('list', na=False) & dataframe['attributeType'].str.contains(ClassDefIdentifier, na=False)
-		dataframe.loc[mask_attributeType, columnNew] = True
+		selector_attributeType: pandas.Series[bool] = dataframe['attributeType'].str.contains('list', na=False) & dataframe['attributeType'].str.contains(ClassDefIdentifier, na=False)
+		dataframe.loc[selector_attributeType, columnNew] = True
 	return dataframe
 
 def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -646,7 +648,7 @@ def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	return dataframe
 
 def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	"""Generate `ast.keyword` nodes for constructor calls.
+	"""Generate `ast.keyword` nodes for constructor calls; these are used in the call to `ast` not in `Make`.
 
 	(AI generated docstring)
 
@@ -669,21 +671,27 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		The dataframe with a new column `Call_keyword`.
 
 	"""
-	def workhorse(dataframeTarget: pandas.Series) -> ast.keyword | str:
-		if ((dataframeTarget['attributeKind'] == '_field')
-			& ((dataframeTarget['move2keywordArguments'] != 'No')
-			& (dataframeTarget['move2keywordArguments'] != 'Unpack'))
-		):
-			if dataframeTarget['move2keywordArguments'] == 'True':
-				keywordValue: ast.expr = cast(ast.expr, dataframeTarget['defaultValue'])
-			else:
-				keywordValue = Make.Name(cast(str, dataframeTarget['attributeRename']))
-				if dataframeTarget['list2Sequence'] is True:
-					keywordValue = Make.Call(Make.Name('list'), [keywordValue])
-			return Make.keyword(cast(str, dataframeTarget['attribute']), keywordValue)
-		return 'No'
+	columnNew: str = 'Call_keyword'
+	dataframe[columnNew] = 'No'
 
-	dataframe['Call_keyword'] = dataframe.apply(workhorse, axis='columns')
+	selectorCall_keyword: pandas.Series[bool] = (dataframe['attributeKind'] == '_field') & (dataframe['move2keywordArguments'] != 'No') & (dataframe['move2keywordArguments'] != 'Unpack')
+
+	selector_defaultValue: pandas.Series[bool] = selectorCall_keyword & (dataframe['move2keywordArguments'] == 'True')
+
+	def make_ast_keywordWith_defaultValue(dataframeTarget: pandas.Series) -> ast.keyword:
+		return Make.keyword(dataframeTarget['attribute'], dataframeTarget['defaultValue'])
+
+	dataframe.loc[selector_defaultValue, columnNew] = dataframe.loc[selector_defaultValue].apply(make_ast_keywordWith_defaultValue, axis='columns')
+
+	selectorNameValue: pandas.Series[bool] = selectorCall_keyword & (dataframe['move2keywordArguments'] != 'True')
+
+	def make_ast_keywordFrom_attributeRename(dataframeTarget: pandas.Series) -> ast.keyword:
+		keywordValue: ast.expr = Make.Name(dataframeTarget['attributeRename'])
+		if dataframeTarget['list2Sequence'] is True:
+			keywordValue = Make.Call(Make.Name('list'), [keywordValue])
+		return Make.keyword(dataframeTarget['attribute'], keywordValue)
+
+	dataframe.loc[selectorNameValue, columnNew] = dataframe.loc[selectorNameValue].apply(make_ast_keywordFrom_attributeRename, axis='columns')
 	return dataframe
 
 # ------- Aggregate data: transformations create identical values in their group ------------
@@ -743,25 +751,25 @@ def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			hashable string representation of the identifiers.
 
 		"""
-		maskSubcategory: pandas.Series[bool] = (
+		selectorSubcategory: pandas.Series[bool] = (
 			(dataframe['attributeKind'] == '_field')
 			& ~ (dataframe['deprecated'])
 			& (dataframe['TypeAlias_hasDOTSubcategory'] == dataframeTarget['TypeAlias_hasDOTSubcategory'])
 			& (dataframe['versionMinorMinimumAttribute'] <= dataframeTarget['versionMinorMinimumAttribute'])
 		)
-		if not maskSubcategory.any():
+		if not selectorSubcategory.any():
 			return [], '[]'
 		matchingRows: pandas.DataFrame = (
-			dataframe.loc[maskSubcategory, ['classAs_astAttribute', 'ClassDefIdentifier']]
+			dataframe.loc[selectorSubcategory, ['classAs_astAttribute', 'ClassDefIdentifier']]
 			.drop_duplicates(subset='ClassDefIdentifier')
 			.sort_values('ClassDefIdentifier', key=lambda x: x.str.lower())
 		)
 		return matchingRows['classAs_astAttribute'].tolist(), str(matchingRows['ClassDefIdentifier'].tolist())
 
-	mask_assign: pandas.Series[bool] = dataframe['attributeKind'] == '_field'
-	computed_values: pandas.DataFrame = dataframe[mask_assign].apply(compute_list4TypeAliasByRow, axis='columns', result_type='expand')
+	selector_assign: pandas.Series[bool] = dataframe['attributeKind'] == '_field'
+	computed_values: pandas.DataFrame = dataframe[selector_assign].apply(compute_list4TypeAliasByRow, axis='columns', result_type='expand')
 	computed_values.columns = ['list4TypeAlias_value', 'hashable_list4TypeAlias_value']
-	dataframe.loc[mask_assign, ['list4TypeAlias_value', 'hashable_list4TypeAlias_value']] = computed_values
+	dataframe.loc[selector_assign, ['list4TypeAlias_value', 'hashable_list4TypeAlias_value']] = computed_values
 	return dataframe
 
 def _makeColumn_list4TypeAliasSubcategories(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -790,7 +798,7 @@ def _makeColumn_list4TypeAliasSubcategories(dataframe: pandas.DataFrame) -> pand
 		containing lists of possible variant names.
 
 	"""
-	mask_field: pandas.Series[bool] = (dataframe['attributeKind'] == '_field')
+	selector_field: pandas.Series[bool] = (dataframe['attributeKind'] == '_field')
 
 	columnNew: str = 'list4TypeAliasSubcategories'
 	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype=object, name=columnNew)
@@ -819,11 +827,11 @@ def _makeColumn_list4TypeAliasSubcategories(dataframe: pandas.DataFrame) -> pand
 
 	# Create a mapping from attribute to subcategory names
 	list4TypeAliasSubcategories__attributeKind_attribute: dict[str, list[ast.expr]] = {}
-	for attribute, groupBy in dataframe[mask_field].groupby('attribute'):
+	for attribute, groupBy in dataframe[selector_field].groupby('attribute'):
 		list4TypeAliasSubcategories__attributeKind_attribute[str(attribute)] = compute_list4TypeAliasSubcategories(groupBy)
 
 	# Map the subcategory names to the appropriate rows using pandas map
-	dataframe.loc[mask_field, 'list4TypeAliasSubcategories'] = dataframe.loc[mask_field, 'attribute'].map(list4TypeAliasSubcategories__attributeKind_attribute)
+	dataframe.loc[selector_field, 'list4TypeAliasSubcategories'] = dataframe.loc[selector_field, 'attribute'].map(list4TypeAliasSubcategories__attributeKind_attribute)
 
 	return dataframe
 
@@ -913,8 +921,8 @@ def _makeColumnTypeAlias_hasDOTSubcategory(dataframe: pandas.DataFrame) -> panda
 	"""
 	columnNew: str = 'TypeAlias_hasDOTSubcategory'
 	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype='object', name=columnNew)
-	mask_hasDOTIdentifier: pandas.Series[bool] = dataframe['TypeAlias_hasDOTIdentifier'] != 'No'
-	dataframe.loc[mask_hasDOTIdentifier, columnNew] = dataframe['TypeAlias_hasDOTIdentifier'] + '_' + dataframe['attributeType'].str.replace('|', 'Or').str.replace('[', '_').str.replace('[\\] ]', '', regex=True).str.replace('ast.', '')
+	selector_hasDOTIdentifier: pandas.Series[bool] = dataframe['TypeAlias_hasDOTIdentifier'] != 'No'
+	dataframe.loc[selector_hasDOTIdentifier, columnNew] = dataframe['TypeAlias_hasDOTIdentifier'] + '_' + dataframe['attributeType'].str.replace('|', 'Or').str.replace('[', '_').str.replace('[\\] ]', '', regex=True).str.replace('ast.', '')
 	return dataframe
 
 def _makeColumnsVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list[str], columnNameTarget: str) -> pandas.DataFrame:

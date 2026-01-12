@@ -95,7 +95,6 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 		Make.ImportFrom("types", [Make.alias("EllipsisType")])
 		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("TypeAlias", "typing_TypeAlias"), Make.alias("TypedDict"), Make.alias("TypeVar", "typing_TypeVar")])
 		, Make.Import("ast")
-		, Make.Import("builtins")
 		, Make.Import("sys")]))
 
 	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias(**keywordArguments):  # noqa: B007
@@ -227,7 +226,7 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, Make.ImportFrom("collections.abc", [Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("overload")])
 		, Make.Import("ast")
-		, Make.Import("builtins")
+		, Make.Import("builtins") # https://github.com/python/cpython/issues/143661
 		, Make.Import("sys")
 		, Make.If(
 			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
@@ -331,7 +330,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any")])
 		, Make.Import("ast")
-		, Make.Import("builtins")]))
+		, Make.Import("builtins")])) # https://github.com/python/cpython/issues/143661
 	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "ConstantValueType")
 	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "identifierDotAttribute")
 	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "ast_attributes")

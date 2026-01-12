@@ -15,8 +15,8 @@ from astToolFactory._theTypes import (
 
 # isort: split
 from astToolFactory._theSSOT import (
-	ManufacturedPackageSettings as ManufacturedPackageSettings, pathRoot_typeshed as pathRoot_typeshed,
-	settingsManufacturing as settingsManufacturing, settingsPackage as settingsPackage)
+	ManufacturedPackageSettings as ManufacturedPackageSettings, settingsManufacturing as settingsManufacturing,
+	settingsPackage as settingsPackage)
 
 # isort: split
 from astToolFactory._snippets import (

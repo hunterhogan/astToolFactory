@@ -557,6 +557,17 @@ listDocstring.append(Docstring(f"{identifierToolClass}.Interactive"
     , {'nodeInteractive': aDocument("The constructed interactive module node", 'ast.Interactive')}
 ))
 
+listDocstring.append(Docstring(f"{identifierToolClass}.Interpolation"
+    , aDocument("Make an interpolation AST `object` for template strings.")
+    , aDocument("""The `ast.Interpolation` `object` represents a single interpolation within a template string. It captures the expression being interpolated, along with any conversion flags and format specifiers.""")
+    , {'value': aDocument("The expression to be evaluated and interpolated.", 'ast.expr'),
+		'string': aDocument("The original string representation of the interpolation. https://github.com/python/cpython/issues/143661", 'builtins.str'),
+		'conversion': aDocument("The conversion flag (e.g., -1 for none, 115 for 's', 114 for 'r', 97 for 'a').", 'int'),
+		'format_spec': aDocument("Optional format specifier expression.", 'ast.expr | None = None')
+	}
+    , {'nodeInterpolation': aDocument("AST `object` representing an interpolation component of a template string.", 'ast.Interpolation')}
+))
+
 listDocstring.append(Docstring(f"{identifierToolClass}.Invert"
     , aDocument("Make a bitwise complement operator representing Python '`~`' operator.")
     , aDocument("""Class `ast.Invert` is a subclass of `ast.unaryop` and represents the bitwise complement or inversion operator '`~`' in Python source code. This operator performs bitwise NOT operation, flipping all bits of its operand. Used within `ast.UnaryOp` as the `op` parameter.""")
@@ -947,6 +958,13 @@ listDocstring.append(Docstring(f"{identifierToolClass}.Subscript"
         , 'slice': aDocument("The subscript expression, which can be an index, slice, or key.")
         , 'context': aDocument("Expression context for how the subscript is used.")}
     , {'subscriptExpression': aDocument("AST `object` representing a subscription operation with brackets.", 'ast.Subscript')}
+))
+
+listDocstring.append(Docstring(f"{identifierToolClass}.TemplateStr"
+    , aDocument("Make a template string AST `object`.")
+    , aDocument("""The `ast.TemplateStr` `object` represents a template string. It consists of a sequence of components which can be constant strings or interpolations.""")
+    , {'values': aDocument( "A sequence of nodes (typically `ast.Constant` or `ast.Interpolation`) forming the template string.", 'Sequence[ast.expr]')}
+    , {'templateString': aDocument("AST `object` representing a template string.", 'ast.TemplateStr')}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.Try"
