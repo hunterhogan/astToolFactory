@@ -1,7 +1,7 @@
 """Module for manufacturing and writing ast tools and modules."""
 from astToolFactory import (
-	astASTastAttribute, astName_overload, astName_staticmethod, keywordKeywordArguments4Call, ManufacturedPackageSettings,
-	settingsManufacturing)
+	astASTastAttribute, astAttribute_builtins_str, astName_overload, astName_staticmethod, keywordKeywordArguments4Call,
+	ManufacturedPackageSettings, settingsManufacturing)
 from astToolFactory.datacenter import (
 	getElementsBe, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias)
 from astToolFactory.documentation import docstrings, docstringWarning
@@ -9,7 +9,7 @@ from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
 	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf,
 	FunctionDefGrab_index, FunctionDefMake_Attribute, list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
-from astToolkit import Make
+from astToolkit import IfThis, Make, NodeChanger, Then
 from astToolkit.containers import LedgerOfImports
 from astToolkit.transformationTools import unjoinBinOP
 from collections.abc import Sequence
@@ -160,8 +160,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 			list4ClassDefBody.extend(list_ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom("typing_extensions", [Make.alias("TypeIs")]),
-		Make.ImportFrom("typing", [Make.alias("Any")]),
+		Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("TypeIs")]),
 		Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")]),
 		Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("木")]),
 		Make.Import("ast"),
@@ -190,6 +189,22 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	for identifierTypeOfNode, overloadDefinition, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass, **keywordArguments):  # noqa: B007
 		decorator_list: list[ast.expr] = [astName_staticmethod]
+
+# python/cpython#143661
+		listOfNonIssues: list[ast.expr] = list_ast_expr.copy()
+		list_ast_expr.clear()
+		for shadowingIsNotAnIssue in listOfNonIssues:
+			NodeChanger(
+				IfThis.isNameIdentifier('str')
+				, doThat=Then.replaceWith(astAttribute_builtins_str)
+			).visit(shadowingIsNotAnIssue)
+# TODO Investigate if `NodeChanger` will NOT replace a node if the "match" is the _entire_ node.
+			if ast.unparse(shadowingIsNotAnIssue) == 'str':
+				shadowingIsNotAnIssue: ast.expr = astAttribute_builtins_str
+
+			list_ast_expr.append(shadowingIsNotAnIssue)
+		del listOfNonIssues
+
 		if overloadDefinition:
 			decorator_list.append(astName_overload)
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
@@ -228,13 +243,6 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, Make.Import("ast")
 		, Make.Import("builtins") # https://github.com/python/cpython/issues/143661
 		, Make.Import("sys")
-		, Make.If(
-			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
-				, [Make.GtE()]
-				, [Make.Tuple([Make.Constant(3), Make.Constant(13)])]
-			)
-			, body=[Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTdefault_value")])]
-		)
 		, Make.If(
 			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
 				, [Make.GtE()]
@@ -298,7 +306,6 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("cast")])
 		, Make.Import("ast")
 		, Make.Import("sys")
-		, Make.If(Make.Compare(Make.Attribute(Make.Name("sys"), "version_info"), [Make.GtE()], [Make.Tuple([Make.Constant(3), Make.Constant(13)])]), [Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTdefault_value")])])
 		, Make.If(
 			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
 				, [Make.GtE()]
