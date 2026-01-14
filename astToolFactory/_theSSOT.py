@@ -69,7 +69,7 @@ settings_astToolkit = ManufacturedPackageSettings(
 	pathFilenameDataframeAST=pathFilenameDataframeAST,
 	pathPackage=pathPackageToManufacture,
 	pathRoot_typeshed=pathRoot_typeshed,
-	pythonMinimumVersionMinor=12,
+	pythonMinimumVersionMinor=13,
 	versionMinor_astMinimumSupported=versionMinorTypeshed_astMinimumSupported,
 	versionMinorMaximum=14,
 )

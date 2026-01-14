@@ -1,13 +1,15 @@
-from typing import Any, NamedTuple, NotRequired, TypedDict, TypeVar
-import ast
+from typing import Any, NamedTuple, NotRequired, TYPE_CHECKING, TypedDict, TypeVar
+
+if TYPE_CHECKING:
+	import ast
 
 class column__value(NamedTuple):
 	"""Assignment tuple representing exactly one `column = value` operation.
 
 	(AI generated docstring)
 
-	This tuple is the "right-hand side" of the mask-based dataframe update system.
-	When paired with a mask tuple (such as `Column__attribute`) in a dictionary,
+	This tuple is the "right-hand side" of the selector-based dataframe update system.
+	When paired with a selector specification (such as `Column__attribute`) in a dictionary,
 	it specifies which column to update and what value to assign to the selected
 	rows.
 
@@ -24,7 +26,7 @@ class column__value(NamedTuple):
 	See Also
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-		the complete mask-based dataframe update system.
+		the complete selector-based dataframe update system.
 
 	"""
 
@@ -41,16 +43,15 @@ class column__value(NamedTuple):
 """
 
 class Column__attribute(NamedTuple):
-	"""Mask tuple selecting rows where the `attribute` column matches a value.
+	"""Selector specification selecting rows where the `attribute` column matches a value.
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the mask-based dataframe update system. The field
+	Used as a dictionary key in the selector-based dataframe update system. The field
 	name `attribute` corresponds to the dataframe column name, and the field value
 	specifies which rows to select.
 
-	The identifier `Column__attribute` decodes to "Column = attribute", meaning
-	"mask by the `attribute` column."
+	The identifier `Column__attribute` decodes to "Column = attribute". It selects by the `attribute` column.
 
 	Attributes
 	----------
@@ -60,18 +61,18 @@ class Column__attribute(NamedTuple):
 	See Also
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-		the complete mask-based dataframe update system.
+		the complete selector-based dataframe update system.
 
 	"""
 
 	attribute: str
 
 class Column__attributeKind(NamedTuple):
-	"""Mask tuple selecting rows where the `attributeKind` column matches a value.
+	"""Selector specification selecting rows where the `attributeKind` column matches a value.
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the mask-based dataframe update system. The field
+	Used as a dictionary key in the selector-based dataframe update system. The field
 	name `attributeKind` corresponds to the dataframe column name, and the field
 	value specifies which rows to select.
 
@@ -85,22 +86,21 @@ class Column__attributeKind(NamedTuple):
 	See Also
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-		the complete mask-based dataframe update system.
+		the complete selector-based dataframe update system.
 
 	"""
 
 	attributeKind: str
 
 class Column__attributeType_attribute(NamedTuple):
-	"""Mask tuple selecting rows by both `attributeType` and `attribute` columns.
+	"""Selector specification selecting rows by both `attributeType` and `attribute` columns.
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the mask-based dataframe update system. Both
+	Used as a dictionary key in the selector-based dataframe update system. Both
 	conditions must match for a row to be selected (logical AND).
 
-	The identifier `Column__attributeType_attribute` decodes to
-	"Column = attributeType, attribute", meaning "mask by both columns."
+	The identifier `Column__attributeType_attribute` decodes to "Column = attributeType, attribute". It selects by both columns.
 
 	Attributes
 	----------
@@ -112,7 +112,7 @@ class Column__attributeType_attribute(NamedTuple):
 	See Also
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-		the complete mask-based dataframe update system.
+		the complete selector-based dataframe update system.
 
 	"""
 
@@ -120,13 +120,13 @@ class Column__attributeType_attribute(NamedTuple):
 	attribute: str
 
 class Column__ClassDefIdentifier_attribute(NamedTuple):
-	"""Mask tuple selecting rows by both `ClassDefIdentifier` and `attribute` columns.
+	"""Selector specification selecting rows by both `ClassDefIdentifier` and `attribute` columns.
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the mask-based dataframe update system. Both
+	Used as a dictionary key in the selector-based dataframe update system. Both
 	conditions must match for a row to be selected (logical AND). This is the most
-	specific mask tuple, selecting rows for a particular attribute of a particular
+	specific selector specification. It selects rows for a particular attribute of a particular
 	AST class.
 
 	The identifier `Column__ClassDefIdentifier_attribute` decodes to
@@ -142,7 +142,7 @@ class Column__ClassDefIdentifier_attribute(NamedTuple):
 	See Also
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-		the complete mask-based dataframe update system.
+		the complete selector-based dataframe update system.
 
 	"""
 
@@ -150,13 +150,13 @@ class Column__ClassDefIdentifier_attribute(NamedTuple):
 	attribute: str
 
 class Column__ClassDefIdentifier_versionMinorPythonInterpreter(NamedTuple):
-	"""Mask tuple selecting rows by both `ClassDefIdentifier` and `versionMinorPythonInterpreter` columns.
+	"""Selector specification selecting rows by both `ClassDefIdentifier` and `versionMinorPythonInterpreter` columns.
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the mask-based dataframe update system. Both
+	Used as a dictionary key in the selector-based dataframe update system. Both
 	conditions must match for a row to be selected (logical AND). This is the most
-	specific mask tuple, selecting rows for a particular attribute of a particular
+	specific selector specification, selecting rows for a particular attribute of a particular
 	AST class.
 
 	The identifier `Column__ClassDefIdentifier_versionMinorPythonInterpreter` decodes to
@@ -172,24 +172,24 @@ class Column__ClassDefIdentifier_versionMinorPythonInterpreter(NamedTuple):
 	See Also
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-		the complete mask-based dataframe update system.
+		the complete selector-based dataframe update system.
 
 	"""
 
 	ClassDefIdentifier: str
 	versionMinorPythonInterpreter: int
 
-MaskTuple = TypeVar('MaskTuple', bound=NamedTuple, covariant=True)
-"""Type variable representing any mask tuple in the dataframe update system.
+SelectorSpecification = TypeVar('SelectorSpecification', bound=NamedTuple, covariant=True)
+"""Type variable representing any selector specification in the dataframe update system.
 
-Bound to `NamedTuple` so that `getMaskByColumnValue` can iterate over the tuple's
-field names and values via `._asdict()`. Covariant because mask tuples are used
+Bound to `NamedTuple` so that `getSelectorFromSpecification` can iterate over the tuple's
+field names and values via `._asdict()`. Covariant because selector specifications are used
 only as dictionary keys (read-only position).
 
 See Also
 --------
 `astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-	the complete mask-based dataframe update system.
+	the complete selector-based dataframe update system.
 
 """
 

@@ -1,8 +1,7 @@
 """Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
 from astToolFactory import (
 	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, astSubscriptUnpack_ast_attributes,
-	keywordKeywordArguments4Call, settingsManufacturing)
-from astToolFactory._theTypes import dataTypeVariables
+	dataTypeVariables, keywordKeywordArguments4Call, settingsManufacturing)
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
 import ast
@@ -223,6 +222,7 @@ for astSuperClass, identifierTypeVariable in settingsManufacturing.astSuperClass
 		'bound': Make.Attribute(Make.Name('ast'), astSuperClass),
 		'tuple_keyword': [('covariant', True)],
 	}
+
 for identifierTypeVariable, data in typeVariables.items():
 	listParameters: list[ast.expr] = [Make.Constant(identifierTypeVariable)]
 	if 'constraints' in data:

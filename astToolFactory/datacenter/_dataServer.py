@@ -5,7 +5,6 @@ This module provides a set of functions to interact with the data source, allowi
 """
 
 from astToolFactory import noMinimum, settingsManufacturing
-from collections.abc import Sequence
 from typing import Any, cast
 import ast
 import numpy
@@ -13,6 +12,7 @@ import pandas
 import typing_extensions
 
 if typing_extensions.TYPE_CHECKING:
+	from collections.abc import Sequence
 	from numpy.typing import NDArray
 	from pathlib import Path
 

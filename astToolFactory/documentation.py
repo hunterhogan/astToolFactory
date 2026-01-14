@@ -24,24 +24,32 @@ class astClassData(TypedDict):
 	"""Data about an AST class and its relationships."""
 
 	identifierClass: str
-	"""The class name, e.g., 'FunctionDef'."""
+	"""The class name, *e.g.*, 'FunctionDef'."""
 	identifierDotClass: identifierDotAttribute
-	"""The fully qualified class identifier with backticks, e.g., '`ast.FunctionDef`'."""
+	"""The fully qualified class identifier with backticks, *e.g.*, '`ast.FunctionDef`'."""
 	matchesClasses: list[identifierDotAttribute]
 	"""List of class identifiers this class matches, including itself and subclasses with backticks."""
 	subclasses: list[str]
 	"""List of direct subclass names without backticks or module prefix."""
 	parentClass: identifierDotAttribute
-	"""The parent class identifier with backticks, e.g., '`ast.stmt`'."""
+	"""The parent class identifier with backticks, *e.g.*, '`ast.stmt`'."""
 
 dictionary_astClasses: dict[str, astClassData] = {}
 
-for astClass in [C for C in [ast.AST, *chain(*(c.__subclasses__() for c in [ast.AST, ast.Constant, *ast.AST.__subclasses__()]))] if issubclass(C, ast.AST)]:
-	identifierClass: str = astClass.__name__
-	identifierDotClass: identifierDotAttribute = f'`ast.{identifierClass}`'
-	subclassList: list[str] = sorted([c.__name__ for c in astClass.__subclasses__() if issubclass(c, ast.AST)], key=lambda s: s.lower())
-	matchesClasses: list[identifierDotAttribute] = list(dict.fromkeys([identifierDotClass, *[f'`ast.{name}`' for name in subclassList]]))
-	parentClass: identifierDotAttribute = f'`ast.{raiseIfNone(raiseIfNone(astClass.__base__).__name__)}`'
+for astClass in [
+	aClass
+	for aClass in [ast.AST, *chain(*(aSubclass.__subclasses__() for aSubclass in [ast.AST, ast.Constant, *ast.AST.__subclasses__()]))]
+	if issubclass(aClass, ast.AST)
+]:
+	identifierClass: str = str(astClass.__name__)
+	identifierDotClass: identifierDotAttribute = f"`ast.{identifierClass}`"
+	subclassList: list[str] = sorted(
+		[aSubclass.__name__ for aSubclass in astClass.__subclasses__() if issubclass(aSubclass, ast.AST)]
+		, key=lambda subclass: subclass.lower()
+	)
+
+	matchesClasses: list[identifierDotAttribute] = list(dict[identifierDotAttribute, None].fromkeys([identifierDotClass, *[f"`ast.{name}`" for name in subclassList]]))
+	parentClass: identifierDotAttribute = f"`ast.{raiseIfNone(raiseIfNone(astClass.__base__).__name__)}`"
 
 	dictionary_astClasses[identifierClass] = {
 		'identifierClass': identifierClass,
@@ -86,9 +94,18 @@ class Docstring:
 		sherpa: bool = False
 		if self.uncategorized:
 			sherpa = self.uncategorized.AIgenerated
-		return (self.summary.AIgenerated and sherpa
-			and all(document.AIgenerated for document in itertools.chain(
-				self.Parameters.values(), self.Returns.values(), self.categories.values())))
+		return (
+			self.summary.AIgenerated
+			and sherpa
+			and all(
+				document.AIgenerated
+				for document in itertools.chain(
+					self.Parameters.values()
+					, self.Returns.values()
+					, self.categories.values()
+				)
+			)
+		)
 
 def make1docstring(data: Docstring, ImaIndent: str = ' ' * 4, firstIndent: int = 0) -> str:
 	"""Make a docstring from a Docstring dataclass."""
@@ -100,7 +117,7 @@ def make1docstring(data: Docstring, ImaIndent: str = ' ' * 4, firstIndent: int =
 		, expand_tabs=True, tabsize=4, replace_whitespace=False, break_long_words=False, drop_whitespace=True)
 	paragraphParameter = textwrap.TextWrapper(width=120, initial_indent=indentTo+ImaIndent, subsequent_indent=indentTo+ImaIndent
 		, expand_tabs=True, tabsize=4, replace_whitespace=False, break_long_words=False, drop_whitespace=True)
-	docstring: str = f'{data.summary.description}'
+	docstring: str = f"{data.summary.description}"
 	if data.summary.AIgenerated:
 		docstring += '\n\n' + paragraph.fill('(AI generated docstring.)')
 	if data.uncategorized:
@@ -111,13 +128,13 @@ def make1docstring(data: Docstring, ImaIndent: str = ' ' * 4, firstIndent: int =
 		docstring += '\n\n' + paragraph.fill('Parameters')
 		docstring += '\n' + paragraph.fill('----------')
 		for parameter, description in data.Parameters.items():
-			docstring += '\n' + paragraph.fill(f'{parameter} : {description.subtitle}')
+			docstring += '\n' + paragraph.fill(f"{parameter} : {description.subtitle}")
 			docstring += '\n' + paragraphParameter.fill(description.description)
 	if data.Returns:
 		docstring += '\n\n' + paragraph.fill('Returns')
 		docstring += '\n' + paragraph.fill('-------')
 		for returnIdentifier, description in data.Returns.items():
-			docstring += '\n' + paragraph.fill(f'{returnIdentifier} : {description.subtitle}')
+			docstring += '\n' + paragraph.fill(f"{returnIdentifier} : {description.subtitle}")
 			docstring += '\n' + paragraphParameter.fill(description.description)
 	if data.categories:
 		for category, description in data.categories.items():

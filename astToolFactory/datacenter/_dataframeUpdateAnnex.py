@@ -1,34 +1,40 @@
-"""Mask-based dataframe update system for declarative bulk assignments.
+"""Selector-based dataframe update system for declarative bulk assignments.
 
 (AI generated docstring)
 
-This module defines a system for applying bulk updates to a `pandas.DataFrame` using
-declarative dictionaries. The system separates *what* to update from *how* to update it,
-making large-scale data transformations readable and maintainable.
+This module provides the declarative configuration for updating the AST dataframe.
+It defines selector-based dictionaries that are consumed by
+`astToolFactory.datacenter._dataframeUpdate.updateDataframe` after the dataframe has been
+populated from authoritative sources.
+
+The goal is to keep the full update assembly line readable by separating policy from
+execution. This file states which rows should be selected and which values should be
+assigned. The executor in `_dataframeUpdate.py` performs the selection and assignment.
 
 System Overview
 ---------------
-The system has three components:
+The system has three components.
 
-1. **Mask tuples** (defined in `astToolFactory._theTypes`): `NamedTuple` classes whose
-   field names are dataframe column names and whose values are cell values. These tuples
-   define *which rows* to update. Examples:
+1. **Selector specifications** (defined in `astToolFactory._theTypes`).
+	These are `NamedTuple` classes whose field names are dataframe column names and whose
+	values are cell values. These tuples define which rows are selected. Examples.
    - `Column__attribute('ctx')` selects rows where the `attribute` column equals `'ctx'`.
    - `Column__ClassDefIdentifier_attribute('FunctionDef', 'args')` selects rows where
      `ClassDefIdentifier` equals `'FunctionDef'` AND `attribute` equals `'args'`.
 
-2. **Assignment tuple** (`column__value` in `astToolFactory._theTypes`): A `NamedTuple`
-   holding exactly one assignment: the `.column` field names the target column, and the
-   `.value` field holds the value to assign.
+2. **Assignment tuple** (`column__value` in `astToolFactory._theTypes`).
+	This is a `NamedTuple` holding exactly one assignment. The `.column` field names the
+	target column, and the `.value` field holds the value to assign.
 
-3. **Executor functions** (in `astToolFactory.datacenter._dataframeUpdate`):
-   - `getMaskByColumnValue`: Converts a mask tuple to a boolean `pandas.Series`.
-   - `dictionary2UpdateDataframe`: Iterates a dictionary of mask→assignment pairs and
-     applies each update to the dataframe.
+3. **Executor functions** (in `astToolFactory.datacenter._dataframeUpdate`).
+	- `getSelectorFromSpecification` converts a selector specification to a boolean row
+		selector `pandas.Series`.
+	- `dictionaryToUpdateDataframe` iterates a mapping of
+		selector specification to `column__value` and applies each update.
 
 Naming Convention
 -----------------
-Identifiers in this module use a punctuation-to-underscore cipher to embed semantics:
+Identifiers in this module use a punctuation-to-underscore cipher to embed semantics.
 
 ==========  ==========  ==========================================
 Character   Encodes     Meaning
@@ -41,25 +47,22 @@ Character   Encodes     Meaning
 
 Examples
 --------
-- `Column__attribute` decodes to "Column = attribute", meaning "mask by the `attribute`
-  column."
-- `attributeRename__` decodes to "attributeRename =", meaning "this dictionary assigns
-  to the `attributeRename` column."
-- `Column__ClassDefIdentifier_attribute` decodes to "Column = ClassDefIdentifier,
-  attribute", meaning "mask by both columns."
+- `Column__attribute` decodes to "Column = attribute". It selects by the `attribute` column.
+- `attributeRename__` decodes to "attributeRename =". It assigns to the `attributeRename` column.
+- `Column__ClassDefIdentifier_attribute` decodes to "Column = ClassDefIdentifier, attribute". It selects by both columns.
 
 Usage Pattern
 -------------
-1. Define a dictionary with mask tuples as keys and `column__value` as values::
+1. Define a dictionary with selector specifications as keys and `column__value` as values.
 
     attributeRename__: dict[Column__attribute, column__value] = {
         Column__attribute('ctx'): column__value('attributeRename', 'context'),
         Column__attribute('func'): column__value('attributeRename', 'callee'),
     }
 
-2. Apply to a dataframe::
+2. Apply to a dataframe.
 
-    dataframe = dictionary2UpdateDataframe(attributeRename__, dataframe)
+	dataframe = dictionaryToUpdateDataframe(attributeRename__, dataframe)
 
 This sets `dataframe.loc[dataframe['attribute'] == 'ctx', 'attributeRename'] = 'context'`
 and `dataframe.loc[dataframe['attribute'] == 'func', 'attributeRename'] = 'callee'`.
@@ -74,21 +77,26 @@ Dictionaries in This Module
     Assigns default values (as `ast` nodes) to attributes.
 `dictionary_defaultValue_ast_arg_Call_keyword_orElse`
     Maps attributes to their fallback expressions for keyword arguments.
+`kwarg_annotationIdentifier__`
+	Assigns the `TypedDict` identifier used for keyword arguments in generated signatures.
 `move2keywordArguments__`
     Flags attributes that should become keyword-only arguments.
 
 See Also
 --------
-`astToolFactory._theTypes` : Defines the mask and assignment tuple classes.
-`astToolFactory.datacenter._dataframeUpdate.dictionary2UpdateDataframe` : Applies updates.
-`astToolFactory.datacenter._dataframeUpdate.getMaskByColumnValue` : Builds boolean masks.
+`astToolFactory._theTypes` : Defines the selector specification and assignment tuple classes.
+`astToolFactory.datacenter._dataframeUpdate.dictionaryToUpdateDataframe` : Applies updates.
+`astToolFactory.datacenter._dataframeUpdate.getSelectorFromSpecification` : Builds boolean selectors.
 
 """
 from astToolFactory import (
 	Column__attribute, Column__attributeKind, Column__attributeType_attribute, Column__ClassDefIdentifier_attribute,
 	Column__ClassDefIdentifier_versionMinorPythonInterpreter, column__value)
 from astToolkit import Make
-import ast
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+	import ast
 
 _columns: list[str] = [
 	# All column names used in the package dataframe, grouped by data source and
@@ -153,8 +161,8 @@ _columns: list[str] = [
 	Convert punctuation to underscores:
 		`_` -> `,`
 		`,` -> `_`
-		`__` -> `==`
-		`==` -> `__`
+		`__` -> `=`
+		`=` -> `__`
 """
 
 attributeRename__: dict[Column__attribute | Column__ClassDefIdentifier_attribute, column__value] = {
@@ -177,13 +185,13 @@ attributeRename__: dict[Column__attribute | Column__ClassDefIdentifier_attribute
 	Column__ClassDefIdentifier_attribute('ImportFrom', 'names'): column__value('attributeRename', 'list_alias'),
 	Column__ClassDefIdentifier_attribute('Lambda', 'args'): column__value('attributeRename', 'argumentSpecification'),
 }
-"""Mask-to-assignment dictionary for the `attributeRename` column.
+"""Selector-to-assignment dictionary for the `attributeRename` column.
 
-Each key is a mask tuple selecting rows by `attribute` or by
+Each key is a selector specification selecting rows by `attribute` or by
 (`ClassDefIdentifier`, `attribute`). Each value assigns a renamed
 identifier to the `attributeRename` column for those rows.
 
-Applied via `dictionary2UpdateDataframe`. See module docstring for the
+Applied via `dictionaryToUpdateDataframe`. See module docstring for the
 full system description.
 """
 
@@ -192,12 +200,12 @@ attributeType__ClassDefIdentifier_attribute: dict[Column__ClassDefIdentifier_att
 	# Column__ClassDefIdentifier_attribute('alias', 'name'): column__value('attributeType', 'identifierDotAttribute'),  # noqa: ERA001
 	Column__ClassDefIdentifier_attribute('Constant', 'value'): column__value('attributeType', 'ConstantValueType'),
 }
-"""Mask-to-assignment dictionary for overriding the `attributeType` column.
+"""Selector-to-assignment dictionary for overriding the `attributeType` column.
 
 Keys select rows by (`ClassDefIdentifier`, `attribute`) pairs. Values
 assign a custom type string to override the default type inference.
 
-Applied via `dictionary2UpdateDataframe`. See module docstring for the
+Applied via `dictionaryToUpdateDataframe`. See module docstring for the
 full system description.
 """
 
@@ -237,14 +245,14 @@ defaultValue__: dict[Column__attribute | Column__attributeType_attribute | Colum
 	Column__ClassDefIdentifier_attribute('Return', 'value'): column__value('defaultValue', Make.Constant(None)),
 	Column__ClassDefIdentifier_attribute('Yield', 'value'): column__value('defaultValue', Make.Constant(None)),
 }
-"""Mask-to-assignment dictionary for the `defaultValue` column.
+"""Selector-to-assignment dictionary for the `defaultValue` column.
 
-Keys are mask tuples of varying specificity: by `attribute` alone, by
+Keys are selector specifications of varying specificity, by `attribute` alone, by
 (`attributeType`, `attribute`), or by (`ClassDefIdentifier`, `attribute`).
 Values are `ast` node expressions representing the default value for code
 generation.
 
-Applied via `dictionary2UpdateDataframe`. See module docstring for the
+Applied via `dictionaryToUpdateDataframe`. See module docstring for the
 full system description.
 """
 
@@ -287,7 +295,7 @@ dictionary_defaultValue_ast_arg_Call_keyword_orElse: dict[Column__attribute | Co
 	Column__ClassDefIdentifier_attribute('TryStar', 'orelse'): Make.List(),
 	Column__ClassDefIdentifier_attribute('While', 'orelse'): Make.List(),
 }
-"""Maps mask tuples to fallback `ast.expr` nodes for mutable default handling.
+"""Maps selector specifications to fallback `ast.expr` nodes for mutable default handling.
 
 When an attribute has a mutable default (like an empty list), the generated
 code must use a sentinel pattern: accept `None` and replace with the mutable
@@ -295,7 +303,7 @@ value at runtime. This dictionary provides the `orElse` expression used in
 that pattern.
 
 Unlike other dictionaries here, this one is NOT applied via
-`dictionary2UpdateDataframe`. Instead, `_moveMutable_defaultValue` uses it
+`dictionaryToUpdateDataframe`. Instead, `_fixMutable_defaultValue` uses it
 directly. See module docstring for the full system description.
 """
 
@@ -305,14 +313,14 @@ move2keywordArguments__: dict[Column__attribute | Column__attributeKind, column_
 	Column__attributeKind('_attribute'): column__value('move2keywordArguments', 'No'),
 	Column__attributeKind('No'): column__value('move2keywordArguments', 'No'),
 }
-"""Mask-to-assignment dictionary for the `move2keywordArguments` column.
+"""Selector-to-assignment dictionary for the `move2keywordArguments` column.
 
 Keys select rows by `attribute` or `attributeKind`. Values indicate whether
 the attribute should become a keyword-only argument in generated function
 signatures: `True` for keyword-only, `'No'` for positional, `'Unpack'` for
 special handling.
 
-Applied via `dictionary2UpdateDataframe`. See module docstring for the
+Applied via `dictionaryToUpdateDataframe`. See module docstring for the
 full system description.
 """
 

@@ -1,9 +1,26 @@
+"""AST dataframe manufacturing assembly line.
+
+(AI generated docstring)
+
+This module is the executor for manufacturing the authoritative AST dataframe used by
+`astToolFactory`. The public entry point `updateDataframe` builds a base dataframe from
+source material, applies selector-based policy decisions from
+`astToolFactory.datacenter._dataframeUpdateAnnex`, computes derived columns required for
+code generation, aggregates per-class lists, and persists the final dataframe.
+
+Selector-based updates are expressed as mappings from a `SelectorSpecification` to a
+`column__value`. A selector specification is a `NamedTuple` whose field names are
+dataframe columns and whose values are the required cell values for a row to match.
+`getSelectorFromSpecification` turns that specification into a boolean row selector, and
+`dictionaryToUpdateDataframe` applies the resulting assignment.
+
+"""
 # pyright: reportUnusedImport=false
 from ast import (
 	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, Interpolation,
 	keyword, match_case, Name, operator, pattern, stmt, Subscript, TemplateStr, type_param, TypeIgnore, unaryop, withitem)
 from astToolFactory import (
-	Column__ClassDefIdentifier_attribute, column__value, MaskTuple, noMinimum, settingsManufacturing)
+	Column__ClassDefIdentifier_attribute, column__value, noMinimum, SelectorSpecification, settingsManufacturing)
 from astToolFactory.cpython import getDictionary_match_args
 from astToolFactory.datacenter._dataframeUpdateAnnex import (
 	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, defaultValue__,
@@ -16,6 +33,7 @@ from astToolkit.transformationTools import makeDictionaryClassDef, pythonCode2as
 from collections.abc import Mapping
 from functools import cache
 from hunterMakesPy import raiseIfNone
+from more_itertools import loops
 from numpy.typing import ArrayLike
 from operator import getitem
 from typing import Any, cast
@@ -78,10 +96,11 @@ def _make_keywordOrList(attributePROXY: dict[str, str | bool | ast.expr]) -> ast
 
 	(AI generated docstring)
 
-	Helper function for `_moveMutable_defaultValue`. It creates a keyword
+	Helper function for `_fixMutable_defaultValue`. It creates a keyword
 	argument node where the value is conditionally handled:
-	- If `list2Sequence` is true, it wraps the value in a `list()` call if it's not the sentinel.
-	- It uses an `orElse` structure (sentinel pattern) to handle defaults.
+	- If `list2Sequence` is `True`, it wraps the value in a `list()` call when the value is
+		not the sentinel.
+	- It uses an `orElse` expression (sentinel pattern) to handle defaults.
 
 	Parameters
 	----------
@@ -129,7 +148,7 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 	ast_keyword: ast.keyword = getitem(raiseIfNone(NodeTourist(
 					findThis = IfThis.isAllOf(
 						Be.Call.funcIs(IfThis.isAttributeNamespaceIdentifier(namespace, identifier))
-						, Be.Call.keywordsIs(lambda node: IfThis.is_keywordIdentifier('default')(node[0]))
+						, Be.Call.keywordsIs(Be.at(0, IfThis.is_keywordIdentifier('default')))
 					)
 					, doThat = Then.extractIt(DOT.keywords)
 				).captureLastMatch(_get_astModule_astStub())
@@ -146,7 +165,7 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 	).visit(astClassDef)
 
 	for _attribute in dictionary_Attributes:
-		_attributeTypeVar = _attributeTypeVarHARDCODED
+		_attributeTypeVar: str = _attributeTypeVarHARDCODED
 		dictionary_Attributes[_attribute] = dictionary_Attributes[_attribute].replace(_attributeTypeVar, _attributeTypeVar_default)
 	return dictionary_Attributes
 
@@ -197,9 +216,9 @@ def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	See also `getDictionary_match_args` for extracting `match_args` from ASDL files.
 
-	The function creates two types of rows for each class:
-	1. `_field`: Defined in `match_args`, representing synthesized attributes.
-	2. `_attribute`: Defined in `_Attributes`, representing metadata like line numbers.
+	The function creates two types of rows for each class.
+	1. `_field` is defined in `match_args` and represents a primary AST field.
+	2. `_attribute` is defined via `_Attributes` and represents metadata like line numbers.
 
 	Parameters
 	----------
@@ -443,10 +462,10 @@ def _fixMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		as a keyword argument.
 
 	"""
-	for columnValue, orElse in dictionary_defaultValue_ast_arg_Call_keyword_orElse.items():
-		maskByColumnValue: pandas.Series[bool] = getMaskByColumnValue(dataframe, columnValue)
+	for specifiedColumnsAndValues, orElse in dictionary_defaultValue_ast_arg_Call_keyword_orElse.items():
+		selector: pandas.Series[bool] = getSelectorFromSpecification(dataframe, specifiedColumnsAndValues)
 
-		attributePROXY = dataframe.loc[maskByColumnValue, ['attribute', 'attributeType', 'attributeRename', 'move2keywordArguments', 'list2Sequence']].drop_duplicates().to_dict(orient='records')
+		attributePROXY = dataframe.loc[selector, ['attribute', 'attributeType', 'attributeRename', 'move2keywordArguments', 'list2Sequence']].drop_duplicates().to_dict(orient='records')
 
 		if len(attributePROXY) > 1:
 			message: str = f"Your current system assumes attribute '{attributePROXY[0]['attribute']}' is the same whenever it is used, but this function got {len(attributePROXY)} variations."
@@ -457,13 +476,13 @@ def _fixMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			message = f"Your current system assumes attribute '{attributePROXY['attribute']}' is not a keyword argument, but this function got {attributePROXY}."
 			raise ValueError(message)
 
-		dataframe.loc[maskByColumnValue, 'defaultValue'] = Make.Constant(None) # pyright: ignore[reportArgumentType, reportCallIssue]
+		dataframe.loc[selector, 'defaultValue'] = Make.Constant(None) # pyright: ignore[reportArgumentType, reportCallIssue]
 		attributeType: str = cast(str, attributePROXY['attributeType']) + ' | None'
 		if attributePROXY['list2Sequence'] is True:
 			attributeType = attributeType.replace('list', 'Sequence')
-		dataframe.loc[maskByColumnValue, 'ast_arg'] = Make.arg(cast(str, attributePROXY['attributeRename']), annotation=pythonCode2ast_expr(attributeType)) # pyright: ignore[reportArgumentType, reportCallIssue]
+		dataframe.loc[selector, 'ast_arg'] = Make.arg(cast(str, attributePROXY['attributeRename']), annotation=pythonCode2ast_expr(attributeType)) # pyright: ignore[reportArgumentType, reportCallIssue]
 		attributePROXY['orElse'] = orElse
-		dataframe.loc[maskByColumnValue, 'Call_keyword'] = _make_keywordOrList(attributePROXY) # pyright: ignore[reportArgumentType, reportCallIssue]
+		dataframe.loc[selector, 'Call_keyword'] = _make_keywordOrList(attributePROXY) # pyright: ignore[reportArgumentType, reportCallIssue]
 	return dataframe
 
 def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -501,15 +520,14 @@ def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		the `type_ast_expr` used here.
 
 	"""
-	columnNew: str = 'ast_arg'
-	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype='object', name=columnNew)
+	dataframe['ast_arg'] = 'No'
 
 	selectorAttributeArguments: pandas.Series[bool] = dataframe['move2keywordArguments'] == 'False'
 
 	def make_ast_arg(row: pandas.Series) -> ast.arg:
 		return Make.arg(row['attributeRename'], annotation=cast(ast.expr, row['type_ast_expr']))
 
-	dataframe.loc[selectorAttributeArguments, columnNew] = dataframe[selectorAttributeArguments].apply(make_ast_arg, axis='columns')
+	dataframe.loc[selectorAttributeArguments, 'ast_arg'] = dataframe[selectorAttributeArguments].apply(make_ast_arg, axis='columns')
 	return dataframe
 
 def _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -552,7 +570,7 @@ def _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe: pandas.DataFrame)
 	dictionaries or add new dictionaries, there will be a temporary Catch-22: the new dictionaries will not be in the existing
 	version of astToolkit, so this function will not be able to match them.
 	"""
-	dataframe = dictionary2UpdateDataframe(kwarg_annotationIdentifier__, dataframe)
+	dataframe = dictionaryToUpdateDataframe(kwarg_annotationIdentifier__, dataframe)
 	dataframe['kwarg_annotationIdentifier'] = dataframe['kwarg_annotationIdentifier'].fillna('No')
 	return dataframe
 
@@ -572,9 +590,9 @@ def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	`_makeColumn_type_ast_expr` to generate type signatures using `Sequence`,
 	allowing covariance (safe read-only access) where appropriate.
 
-	The function scans for attributes whose types involve `list` containing
-	any of the superclasses defined in `settingsManufacturing.astSuperClasses`
-	(e.g., `ast.stmt`, `ast.expr`).
+	The function uses a vectorized regular expression scan to identify
+	attributes whose types involve `list` containing any of the superclasses
+	defined in `settingsManufacturing.astSuperClasses`.
 
 	Parameters
 	----------
@@ -595,11 +613,10 @@ def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		build function arguments.
 
 	"""
-	columnNew: str = 'list2Sequence'
-	dataframe[columnNew] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name=columnNew)
-	for ClassDefIdentifier in settingsManufacturing.astSuperClasses:
-		selector_attributeType: pandas.Series[bool] = dataframe['attributeType'].str.contains('list', na=False) & dataframe['attributeType'].str.contains(ClassDefIdentifier, na=False)
-		dataframe.loc[selector_attributeType, columnNew] = True
+	dataframe['list2Sequence'] = (
+		dataframe['attributeType'].str.contains('list', regex=False, na=False)
+		& dataframe['attributeType'].str.contains('|'.join(settingsManufacturing.astSuperClasses), regex=True, na=False)
+	)
 	return dataframe
 
 def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -639,12 +656,11 @@ def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	`_makeColumn_ast_arg` : The **Usage Step** that consumes these AST expressions.
 
 	"""
-	columnNew: str = 'type_ast_expr'
-	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype='object', name=columnNew)
-	dataframe.loc[dataframe['list2Sequence'], columnNew] = dataframe['attributeType'].str.replace('list', 'Sequence').apply(cast(Any, pythonCode2ast_expr))
-	dataframe.loc[~dataframe['list2Sequence'], columnNew] = dataframe['attributeType'].apply(cast(Any, pythonCode2ast_expr))
+	dataframe['type_ast_expr'] = 'No'
+	dataframe.loc[dataframe['list2Sequence'], 'type_ast_expr'] = dataframe['attributeType'].str.replace('list', 'Sequence').apply(cast(Any, pythonCode2ast_expr))
+	dataframe.loc[~dataframe['list2Sequence'], 'type_ast_expr'] = dataframe['attributeType'].apply(cast(Any, pythonCode2ast_expr))
 
-	dataframe.loc[dataframe['attribute'] == 'str', columnNew] = cast(Any, pythonCode2ast_expr(string='builtins.str')) # <-- This is called "irony" because the parameter name is `string`, the parameter type is `str`, and I am using this function that I made a long time ago to fix the new `ast.Interpolation.str`. https://github.com/python/cpython/issues/143661
+	dataframe.loc[dataframe['attribute'] == 'str', 'type_ast_expr'] = cast(Any, pythonCode2ast_expr(string='builtins.str')) # <-- This is called "irony" because the parameter name is `string`, the parameter type is `str`, and I am using this function that I made a long time ago to fix the new `ast.Interpolation.str`. https://github.com/python/cpython/issues/143661
 	return dataframe
 
 def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -671,8 +687,7 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		The dataframe with a new column `Call_keyword`.
 
 	"""
-	columnNew: str = 'Call_keyword'
-	dataframe[columnNew] = 'No'
+	dataframe['Call_keyword'] = 'No'
 
 	selectorCall_keyword: pandas.Series[bool] = (dataframe['attributeKind'] == '_field') & (dataframe['move2keywordArguments'] != 'No') & (dataframe['move2keywordArguments'] != 'Unpack')
 
@@ -681,7 +696,7 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	def make_ast_keywordWith_defaultValue(dataframeTarget: pandas.Series) -> ast.keyword:
 		return Make.keyword(dataframeTarget['attribute'], dataframeTarget['defaultValue'])
 
-	dataframe.loc[selector_defaultValue, columnNew] = dataframe.loc[selector_defaultValue].apply(make_ast_keywordWith_defaultValue, axis='columns')
+	dataframe.loc[selector_defaultValue, 'Call_keyword'] = dataframe.loc[selector_defaultValue].apply(make_ast_keywordWith_defaultValue, axis='columns')
 
 	selectorNameValue: pandas.Series[bool] = selectorCall_keyword & (dataframe['move2keywordArguments'] != 'True')
 
@@ -691,7 +706,7 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			keywordValue = Make.Call(Make.Name('list'), [keywordValue])
 		return Make.keyword(dataframeTarget['attribute'], keywordValue)
 
-	dataframe.loc[selectorNameValue, columnNew] = dataframe.loc[selectorNameValue].apply(make_ast_keywordFrom_attributeRename, axis='columns')
+	dataframe.loc[selectorNameValue, 'Call_keyword'] = dataframe.loc[selectorNameValue].apply(make_ast_keywordFrom_attributeRename, axis='columns')
 	return dataframe
 
 # ------- Aggregate data: transformations create identical values in their group ------------
@@ -763,7 +778,7 @@ def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			dataframe.loc[selectorSubcategory, ['classAs_astAttribute', 'ClassDefIdentifier']]
 			.drop_duplicates(subset='ClassDefIdentifier')
 			.sort_values('ClassDefIdentifier', key=lambda x: x.str.lower())
-		)
+	)
 		return matchingRows['classAs_astAttribute'].tolist(), str(matchingRows['ClassDefIdentifier'].tolist())
 
 	selector_assign: pandas.Series[bool] = dataframe['attributeKind'] == '_field'
@@ -798,10 +813,9 @@ def _makeColumn_list4TypeAliasSubcategories(dataframe: pandas.DataFrame) -> pand
 		containing lists of possible variant names.
 
 	"""
-	selector_field: pandas.Series[bool] = (dataframe['attributeKind'] == '_field')
+	dataframe['list4TypeAliasSubcategories'] = 'No'
 
-	columnNew: str = 'list4TypeAliasSubcategories'
-	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype=object, name=columnNew)
+	selector_field: pandas.Series[bool] = (dataframe['attributeKind'] == '_field')
 
 	def compute_list4TypeAliasSubcategories(groupBy: pandas.DataFrame) -> list[ast.expr]:
 		"""Collect unique subcategory names for a group of related attributes.
@@ -919,10 +933,9 @@ def _makeColumnTypeAlias_hasDOTSubcategory(dataframe: pandas.DataFrame) -> panda
 		containing the generated identifiers.
 
 	"""
-	columnNew: str = 'TypeAlias_hasDOTSubcategory'
-	dataframe[columnNew] = pandas.Series(data='No', index=dataframe.index, dtype='object', name=columnNew)
+	dataframe['TypeAlias_hasDOTSubcategory'] = 'No'
 	selector_hasDOTIdentifier: pandas.Series[bool] = dataframe['TypeAlias_hasDOTIdentifier'] != 'No'
-	dataframe.loc[selector_hasDOTIdentifier, columnNew] = dataframe['TypeAlias_hasDOTIdentifier'] + '_' + dataframe['attributeType'].str.replace('|', 'Or').str.replace('[', '_').str.replace('[\\] ]', '', regex=True).str.replace('ast.', '')
+	dataframe.loc[selector_hasDOTIdentifier, 'TypeAlias_hasDOTSubcategory'] = dataframe['TypeAlias_hasDOTIdentifier'] + '_' + dataframe['attributeType'].str.replace('|', 'Or').str.replace('[', '_').str.replace('[\\] ]', '', regex=True).str.replace('ast.', '')
 	return dataframe
 
 def _makeColumnsVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list[str], columnNameTarget: str) -> pandas.DataFrame:
@@ -962,23 +975,23 @@ def _makeColumnsVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list
 
 # ------- Generalized functions ----------------------------------------
 
-def dictionary2UpdateDataframe(dictionary: Mapping[MaskTuple, column__value], dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	"""Apply a mask-to-assignment dictionary to update dataframe cells in place.
+def dictionaryToUpdateDataframe(dictionary: Mapping[SelectorSpecification, column__value], dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	"""Apply a selector-to-assignment dictionary to update dataframe cells in place.
 
 	(AI generated docstring)
 
-	This function is the executor of the mask-based dataframe update system. It
-	iterates over each key-value pair in the dictionary, converts the key (a mask
-	tuple) to a boolean row selector, and assigns the value from `column__value`
+	This function is the executor of the selector-based dataframe update system. It
+	iterates over each key-value pair in the dictionary, converts the key (a selector
+	specification) to a boolean row selector, and assigns the value from `column__value`
 	to the appropriate column for those rows.
 
 	The function modifies existing cells but does not create new rows or columns.
 
 	Parameters
 	----------
-	dictionary : Mapping[MaskTuple, column__value]
-		Mapping from mask tuples to assignment tuples. Each mask tuple selects
-		rows by matching column values. Each `column__value` specifies the target
+	dictionary : Mapping[SelectorSpecification, column__value]
+		Mapping from selector specifications to assignment tuples. Each selector
+		specification selects rows by matching column values. Each `column__value` specifies the target
 		column and the value to assign.
 	dataframe : pandas.DataFrame
 		Dataframe to update. Modified in place and also returned.
@@ -990,21 +1003,21 @@ def dictionary2UpdateDataframe(dictionary: Mapping[MaskTuple, column__value], da
 
 	See Also
 	--------
-	`getMaskByColumnValue` : Converts a mask tuple to a boolean `pandas.Series`.
+	`getSelectorFromSpecification` : Converts a selector specification to a boolean `pandas.Series`.
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-		the complete mask-based dataframe update system.
+		the complete selector-based dataframe update system.
 
 	"""
-	for columnValueMask, assign in dictionary.items():
-		dataframe.loc[getMaskByColumnValue(dataframe, columnValueMask), assign.column] = assign.value
+	for specifiedColumnsAndValues, assign in dictionary.items():
+		dataframe.loc[getSelectorFromSpecification(dataframe, specifiedColumnsAndValues), assign.column] = assign.value
 	return dataframe
 
-def getMaskByColumnValue(dataframe: pandas.DataFrame, columnValue: MaskTuple) -> pandas.Series:
-	"""Convert a mask tuple to a boolean row selector for a dataframe.
+def getSelectorFromSpecification(dataframe: pandas.DataFrame, specifiedColumnsAndValues: SelectorSpecification) -> pandas.Series:
+	"""Convert a selector specification to a boolean row selector for a dataframe.
 
 	(AI generated docstring)
 
-	This function translates the declarative mask tuple into an executable boolean
+	This function translates the declarative selector specification into an executable boolean
 	`pandas.Series`. Each field in the tuple becomes an equality test against the
 	corresponding dataframe column. All tests are combined with logical AND, so a
 	row is selected only if *all* field values match.
@@ -1012,24 +1025,24 @@ def getMaskByColumnValue(dataframe: pandas.DataFrame, columnValue: MaskTuple) ->
 	Parameters
 	----------
 	dataframe : pandas.DataFrame
-		Dataframe to build the mask for.
-	columnValue : MaskTuple
+		Dataframe to build the selector for.
+	specifiedColumnsAndValues : SelectorSpecification
 		A `NamedTuple` whose field names are column names and whose field values
 		are the values to match.
 
 	Returns
 	-------
-	mask : pandas.Series
+	selector : pandas.Series
 		Boolean series with `True` for rows matching all conditions.
 
 	See Also
 	--------
-	`dictionary2UpdateDataframe` : Applies the mask to perform assignments.
+	`dictionaryToUpdateDataframe` : Applies the selector to perform assignments.
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-		the complete mask-based dataframe update system.
+		the complete selector-based dataframe update system.
 
 	"""
-	return pandas.concat([*[dataframe[column] == value for column, value in columnValue._asdict().items()]], axis=1).all(axis=1)
+	return pandas.concat([*[dataframe[column] == value for column, value in specifiedColumnsAndValues._asdict().items()]], axis=1).all(axis=1)
 
 # ======= The Function ======================================================
 
@@ -1041,16 +1054,16 @@ def updateDataframe() -> None:
 	This is the main entry point for the "Data Center". It executes the full
 	assembly line to manufacture the primary dataframe used by `astToolFactory`.
 
-	The process involves:
-	1.  **Instantiation**: Creating the base dataframe from allowed versions.
-	2.  **Extraction**: Collect data from authoritative sources about class definitions and attributes.
-	3.  **Refinement**: Applying manual overrides (renames, defaults) via declarative masks.
-	4.  **Computation**: calculating derived columns (types, args, keywords).
-	5.  **Aggregation**: Grouping data into lists for template use.
-	6.  **Persistence**: Saving the result to a pickle file.
+	The process involves these stages.
+	1. **Instantiation** creates the base dataframe from allowed versions.
+	2. **Extraction** collects authoritative data about class definitions and attributes.
+	3. **Refinement** applies selector-based overrides (renames, defaults, and type fixes).
+	4. **Computation** calculates derived columns (types, `ast.arg`, and `ast.keyword`).
+	5. **Aggregation** groups per-class values into lists for template use.
+	6. **Persistence** saves the result to a pickle file.
 
-	The function modifies data in place and relies heavily on the `_dataframeUpdate`
-	module's helper functions and `_dataframeUpdateAnnex`'s configuration dictionaries.
+	The function modifies data in place and relies heavily on this module's stages and
+	`_dataframeUpdateAnnex` configuration dictionaries.
 
 	"""
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
@@ -1076,15 +1089,15 @@ def updateDataframe() -> None:
 	dataframe = _getDataFromPythonFiles(dataframe)
 
 	dataframe['attributeRename'] = pandas.Series(data=dataframe['attribute'], index=dataframe.index, dtype=str, name='attributeRename', copy=True)
-	dataframe = dictionary2UpdateDataframe(attributeRename__, dataframe)
+	dataframe = dictionaryToUpdateDataframe(attributeRename__, dataframe)
 
 	dataframe['move2keywordArguments'] = pandas.Series(data='False', index=dataframe.index, dtype=str, name='move2keywordArguments')
-	dataframe = dictionary2UpdateDataframe(move2keywordArguments__, dataframe)
+	dataframe = dictionaryToUpdateDataframe(move2keywordArguments__, dataframe)
 
-	dataframe = dictionary2UpdateDataframe(attributeType__ClassDefIdentifier_attribute, dataframe)
+	dataframe = dictionaryToUpdateDataframe(attributeType__ClassDefIdentifier_attribute, dataframe)
 
 	dataframe['defaultValue'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='defaultValue')
-	dataframe = dictionary2UpdateDataframe(defaultValue__, dataframe)
+	dataframe = dictionaryToUpdateDataframe(defaultValue__, dataframe)
 
 	dataframe = _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe)
 

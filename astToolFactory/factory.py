@@ -12,12 +12,14 @@ from astToolFactory.factoryAnnex import (
 from astToolkit import IfThis, Make, NodeChanger, Then
 from astToolkit.containers import LedgerOfImports
 from astToolkit.transformationTools import unjoinBinOP
-from collections.abc import Sequence
 from hunterMakesPy import writePython
 from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT
 from pathlib import PurePosixPath
-from typing import Any, cast, TypedDict
+from typing import Any, cast, TYPE_CHECKING, TypedDict
 import ast
+
+if TYPE_CHECKING:
+	from collections.abc import Sequence
 
 class GuardIfThen(TypedDict):
 	"""Guard for Python versions."""

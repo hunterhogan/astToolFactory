@@ -3,7 +3,7 @@ name = "astToolFactory"
 version = "0.0.1"
 description = ""
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.14"
 license = { 'text' = "CC-BY-NC-4.0" }
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 keywords = []
@@ -15,14 +15,13 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.12",
-  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
 ]
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
 dependencies = [
   "astToolkit==0.9.1",
+  "cytoolz-stubs",
   "hunterMakesPy>=0.3.0",
   "pandas",
   "pyarrow",
@@ -67,3 +66,6 @@ packages = { find = {  } }
 [tool.updateCitation]
 filenameCitationDOTcff = "CITATION.cff"
 pathFilenameCitationSSOT = "citations/CITATION.cff"
+
+[tool.uv.sources]
+cytoolz-stubs = { git = "https://github.com/OutSquareCapital/cytoolz-stubs.git" }
