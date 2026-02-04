@@ -10,13 +10,13 @@ from hunterMakesPy import PackageSettings
 from pathlib import Path
 import dataclasses
 
-# ======= HARDCODED values. TODO: eliminate ======================
+#======== HARDCODED values. TODO: eliminate ======================
 # https://github.com/hunterhogan/astToolFactory/issues/2
 versionMinorTypeshed_astMinimumSupportedHARDCODED: int = 10
 pathRelativeRoot_typeshedHARDCODED: Path = Path('typings/stdlib')
 pathRootPackageToManufactureHARDCODED: Path = Path('/apps')
 
-# ======= Settings for the package ===============================
+#======== Settings for the package ===============================
 
 identifierPackagePACKAGING = "astToolFactory"
 settingsPackage = PackageSettings(identifierPackageFALLBACK=identifierPackagePACKAGING)
@@ -35,9 +35,9 @@ pathPackage : Path
 
 """
 
-# ======= Settings for manufacturing ===============================
+#======== Settings for manufacturing ===============================
 
-# ------- define `ManufacturedPackageSettings` as a subclass of `PackageSettings` --------
+#-------- define `ManufacturedPackageSettings` as a subclass of `PackageSettings` --------
 
 # NOTE Reminder: `PackageSettings` has default values, so all fields in this subclass must have defaults.
 @dataclasses.dataclass(slots=True)
@@ -52,7 +52,7 @@ class ManufacturedPackageSettings(PackageSettings):
 	versionMinor_astMinimumSupported: int = noMinimum
 	versionMinorMaximum: int = 9001
 
-# ------- Settings for manufacturing `astToolkit` --------
+#-------- Settings for manufacturing `astToolkit` --------
 
 pathRootPackageToManufacture: Path = pathRootPackageToManufactureHARDCODED
 
@@ -74,7 +74,7 @@ settings_astToolkit = ManufacturedPackageSettings(
 	versionMinorMaximum=14,
 )
 
-# ------- Abstracted settings identifier to use in the package --------
+#-------- Abstracted settings identifier to use in the package --------
 
 """NOTE 1) An abstract, predictable identifier for the "factory".
 2) Infrastructure for more than one `ManufacturedPackageSettings` instance.

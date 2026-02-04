@@ -1,11 +1,11 @@
 """Semiotics."""
 
-# ======= Replacements for ambiguous values =======
+#======== Replacements for ambiguous values =======
 
 inclusive: int = 1
 noMinimum: int = -1
 
-# ======= Centralized dictionaries =======
+#======== Centralized dictionaries =======
 
 dictionary_astSuperClasses: dict[str, str] = {
 	'AST': '木',

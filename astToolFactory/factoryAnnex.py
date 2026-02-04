@@ -6,7 +6,7 @@ from astToolFactory.documentation import docstrings
 from astToolkit import Make
 import ast
 
-# ======= `Be` =======================================================================
+#======== `Be` =======================================================================
 FunctionDefBe_at: ast.stmt = Make.FunctionDef('at'
 	, Make.arguments(list_arg=[Make.arg('index', annotation=Make.Name('int')), Make.arg('predicate', annotation=Make.Subscript(Make.Name('Callable')
 				, Make.Tuple([Make.List([Make.Name('Any')]), Make.Subscript(Make.Name('TypeIs'), Make.Name('木'))])))])
@@ -19,7 +19,7 @@ FunctionDefBe_at: ast.stmt = Make.FunctionDef('at'
 	, returns=Make.Subscript(Make.Name('Callable')
 		, Make.Tuple([Make.List([Make.Subscript(Make.Name('Sequence'), Make.Attribute(Make.Name('ast'), 'AST'))]), Make.Subscript(Make.Name('TypeIs'), Make.Name('木'))])))
 
-# ======= `Grab` =====================================================================
+#======== `Grab` =====================================================================
 FunctionDefGrab_andDoAllOf: ast.stmt = Make.FunctionDef('andDoAllOf'
 	, Make.arguments(list_arg=[Make.arg('listOfActions', Make.Subscript(Make.Name('Sequence'), Make.Subscript(Make.Name('Callable'), Make.Tuple([Make.List([Make.Name('Any')]), Make.Name('Any')]))))])
 	, body=[Make.FunctionDef('workhorse'
@@ -52,7 +52,7 @@ FunctionDefGrab_index: ast.stmt = Make.FunctionDef('index'
 		, returns=Make.Subscript(Make.Name('Callable')
 			, Make.Tuple([Make.List([Make.Subscript(Make.Name('Sequence'), Make.Name('个'))]), Make.Subscript(Make.Name('list'), Make.Name('个'))])))
 
-# ======= `Make` =====================================================================
+#======== `Make` =====================================================================
 def makeFunctionDef_join(identifierContainer: str, identifierCallee: str, docstring: ast.Expr) -> ast.stmt:
 	"""Make the `ast.FunctionDef` `.join` `@classmethod` for the `Make` classes that correspond to the `ast.boolop` and `ast.operator` subclasses.
 
@@ -191,7 +191,7 @@ listOverloads_keyword: list[ast.stmt] = [
 		, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))]
 del ClassDefIdentifier
 
-# ======= `theSSOT` =====================================================================
+#======== `theSSOT` =====================================================================
 astModule_theSSOT = Make.Module([
 	Make.ImportFrom('hunterMakesPy', list_alias=[Make.alias('PackageSettings')])
 	, Make.Assign([Make.Name('identifierPackage', Make.Store())], value=Make.Constant('astToolkit'))
@@ -199,7 +199,7 @@ astModule_theSSOT = Make.Module([
 		, value=Make.Call(Make.Name('PackageSettings')
 			, list_keyword=[ast.keyword('identifierPackageFALLBACK', Make.Name('identifierPackage'))]))])
 
-# ======= `TypeAlias` =====================================================================
+#======== `TypeAlias` =====================================================================
 listHandmade_astTypes: list[ast.stmt] = [
 	# If I were to automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include `bytes` or `range`.
 	# And, I would change the identifier to `ast_ConstantValue`.

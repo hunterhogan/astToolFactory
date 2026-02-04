@@ -43,11 +43,11 @@ import numpy
 import pandas
 import typeshed_client
 
-# ======= HARDCODED values. TODO: eliminate ======================
+#======== HARDCODED values. TODO: eliminate ======================
 
 _attributeTypeVarHARDCODED: str = '_EndPositionT'
 
-# ======= ast Functions ==========================================
+#======== ast Functions ==========================================
 
 @cache
 def _get_astModule_astStub() -> ast.Module:
@@ -169,9 +169,9 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 		dictionary_Attributes[_attribute] = dictionary_Attributes[_attribute].replace(_attributeTypeVar, _attributeTypeVar_default)
 	return dictionary_Attributes
 
-# ======= pandas functions =========================================
+#======== pandas functions =========================================
 
-# ------- TODO implement this fake function --------------------------------
+#-------- TODO implement this fake function --------------------------------
 
 def _getDataFromInterpreter(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	"""Populate the dataframe with data from the running Python interpreter.
@@ -202,7 +202,7 @@ def _getDataFromInterpreter(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	# 'base',
 	return dataframe
 
-# ------- Extract/collect data from outside sources --------------------------------
+#-------- Extract/collect data from outside sources --------------------------------
 
 def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	"""Populate the dataframe with AST structure extracted from the `ast.pyi` stub and from low-level ASDL files.
@@ -425,7 +425,7 @@ def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	return dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last').reset_index(drop=True)
 
-# ------- Refine and compute data: transformations create distinct values per row --------------------------------
+#-------- Refine and compute data: transformations create distinct values per row --------------------------------
 
 def _fixMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	"""Implement the sentinel pattern for mutable default values.
@@ -709,7 +709,7 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dataframe.loc[selectorNameValue, 'Call_keyword'] = dataframe.loc[selectorNameValue].apply(make_ast_keywordFrom_attributeRename, axis='columns')
 	return dataframe
 
-# ------- Aggregate data: transformations create identical values in their group ------------
+#-------- Aggregate data: transformations create identical values in their group ------------
 
 def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	"""Pre-compute the constituent AST elements for every TypeAlias variant.
@@ -973,7 +973,7 @@ def _makeColumnsVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list
 	)
 	return dataframe
 
-# ------- Generalized functions ----------------------------------------
+#-------- Generalized functions ----------------------------------------
 
 def dictionaryToUpdateDataframe(dictionary: Mapping[SelectorSpecification, column__value], dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	"""Apply a selector-to-assignment dictionary to update dataframe cells in place.
@@ -1044,7 +1044,7 @@ def getSelectorFromSpecification(dataframe: pandas.DataFrame, specifiedColumnsAn
 	"""
 	return pandas.concat([*[dataframe[column] == value for column, value in specifiedColumnsAndValues._asdict().items()]], axis=1).all(axis=1)
 
-# ======= The Function ======================================================
+#======== The Function ======================================================
 
 def updateDataframe() -> None:
 	"""Orchestrate the creation and population of the AST dataframe.
