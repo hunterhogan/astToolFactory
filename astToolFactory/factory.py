@@ -12,8 +12,7 @@ from astToolFactory.factoryAnnex import (
 from astToolkit import IfThis, Make, NodeChanger, Then
 from astToolkit.containers import LedgerOfImports
 from astToolkit.transformationTools import unjoinBinOP
-from hunterMakesPy import writePython
-from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT
+from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT, writePython
 from pathlib import PurePosixPath
 from typing import Any, cast, TYPE_CHECKING, TypedDict
 import ast
@@ -283,6 +282,9 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
+		type_params: list[ast.type_param] | None = None
+# DEVELOPMENT Make.TypeVar, name = type_astSuperClasses?, bound = type_astSuperClasses_ast_expr?. But, only for some functions. Maybe crossref with dictionary_astSuperClasses.
+
 		ast_stmt = Make.FunctionDef(attribute + "Attribute"
 			, Make.arguments(list_arg=[Make.arg("action", annotation=Make.BitOr.join([Make.Subscript(Make.Name("Callable"), Make.Tuple([Make.List([ast_expr]), ast_expr])) for ast_expr in list_ast_expr]))])
 			, body=[docstrings[settingsManufacturing.identifiers[identifierToolClass]][attribute]
@@ -295,7 +297,8 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 				, returns=astNameTypeOfNode)
 				, Make.Return(Make.Name("workhorse"))]
 			, decorator_list=[astName_staticmethod]
-			, returns=Make.Subscript(Make.Name("Callable"), Make.Tuple([Make.List([astNameTypeOfNode]), astNameTypeOfNode])))
+			, returns=Make.Subscript(Make.Name("Callable"), Make.Tuple([Make.List([astNameTypeOfNode]), astNameTypeOfNode]))
+			, type_params=type_params)
 
 		if guardVersion:
 			_makeNestedGuardVersions()

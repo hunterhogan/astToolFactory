@@ -58,7 +58,7 @@ def getDataframe(*indices: str, **keywordArguments: Any) -> pandas.DataFrame:
 	versionMinorMaximum: int | None = keywordArguments.get("versionMinorMaximum") or settingsManufacturing.versionMinorMaximum
 	modifyVersionMinorMinimum: bool = keywordArguments.get("modifyVersionMinorMinimum") or True
 
-	dataframe: pandas.DataFrame = pandas.read_pickle(pathFilename)  # noqa: S301
+	dataframe: pandas.DataFrame = pandas.read_pickle(pathFilename)  # noqa: S301  # ty:ignore[invalid-assignment]
 
 	if not includeDeprecated:
 		dataframe = dataframe[~dataframe["deprecated"]]

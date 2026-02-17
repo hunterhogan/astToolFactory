@@ -4,5 +4,33 @@
 			"path": ".."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"cSpell.customDictionaries": {
+			"custom": true, // Enable the `custom` dictionary
+			"internal-terms": false, // Disable the `internal-terms` dictionary
+			"project-words": {
+				"addWords": true,
+				"description": "Words used in this workspace.",
+				"name": "project-words",
+				"path": "${workspaceFolder}/.vscode/code-spell-dictionary-workspace.txt"
+			},
+			"user-words": {
+				"addWords": true,
+				"description": "Words used by this user profile.",
+				"name": "user-words",
+				"path": "${env:APPDATA}/Code Spell Checker/code-spell-dictionary-user.txt"
+			}
+		},
+	},
+	"extensions": {
+		"recommendations": [
+			"streetsidesoftware.code-spell-checker",
+			"ms-toolsai.datawrangler",
+			"editorconfig.editorconfig",
+			"ms-python.isort",
+			"ms-toolsai.jupyter",
+			"tombi-toml.tombi",
+			"astral-sh.ty"
+		]
+	}
 }

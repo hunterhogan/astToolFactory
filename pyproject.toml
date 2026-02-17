@@ -4,7 +4,7 @@ version = "0.0.1"
 description = ""
 readme = "README.md"
 requires-python = ">=3.14"
-license = { 'text' = "CC-BY-NC-4.0" }
+license = "CC-BY-NC-4.0"
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 keywords = []
 classifiers = [
@@ -32,11 +32,10 @@ optional-dependencies = { testing = [
   "pytest-cov",
   "pytest-xdist",
   "pytest",
-  "setuptools-scm",
 ] }
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools", "setuptools-scm"]
 build-backend = "setuptools.build_meta"
 
 [tool.coverage]
