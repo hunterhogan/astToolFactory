@@ -20,7 +20,8 @@ from ast import (
 	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, Interpolation,
 	keyword, match_case, Name, operator, pattern, stmt, Subscript, TemplateStr, type_param, TypeIgnore, unaryop, withitem)
 from astToolFactory import (
-	Column__ClassDefIdentifier_attribute, column__value, noMinimum, SelectorSpecification, settingsManufacturing)
+	Column__ClassDefIdentifier_attribute, column__value, noMinimum, SelectorSpecification, settingsManufacturing,
+	settingsPackage)
 from astToolFactory.cpython import getDictionary_match_args
 from astToolFactory.datacenter._dataframeUpdateAnnex import (
 	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, defaultValue__,
@@ -36,12 +37,15 @@ from hunterMakesPy import raiseIfNone
 from more_itertools import loops
 from numpy.typing import ArrayLike
 from operator import getitem
-from typing import Any, cast
+from typing import Any, cast, TYPE_CHECKING
 import ast
 import builtins
 import numpy
 import pandas
 import typeshed_client
+
+if TYPE_CHECKING:
+	from pathlib import Path
 
 #======== HARDCODED values. TODO: eliminate ======================
 
@@ -154,7 +158,7 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 				).captureLastMatch(_get_astModule_astStub())
 			)
 			, 0
-		)
+		)  # ty:ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2799
 
 	_attributeTypeVar_default: str = ast.unparse(ast_keyword.value)
 
@@ -171,30 +175,20 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 
 #======== pandas functions =========================================
 
-#-------- TODO implement this fake function --------------------------------
+# TODO implement this fake function --------------------------------
 
 def _getDataFromInterpreter(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	"""Populate the dataframe with data from the running Python interpreter.
+	pathFilename: Path = settingsPackage.pathPackage / 'datacenter' / 'probeInterpreter.csv'
+	dataframe = dataframe.astype({
+		'ClassDefIdentifier': 'string',
+		'versionMajorPythonInterpreter': 'int64',
+		'versionMinorPythonInterpreter': 'int64',
+		'versionMicroPythonInterpreter': 'int64',
+		'base': 'string',
+	})
 
-	(AI generated docstring)
-
-	Currently a placeholder. This function is intended to extract baseline
-	information (like available classes) directly from the executing interpreter.
-
-	Parameters
-	----------
-	dataframe : pandas.DataFrame
-		The initial dataframe.
-
-	Returns
-	-------
-	dataframe : pandas.DataFrame
-		The dataframe, potentially augmented with interpreter-derived data.
-
-	"""
+	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
 	# TODO Columns to create using the Python Interpreter,
-	# from version 3.settingsManufacturing.versionMinor_astMinimumSupported
-	# to version 3.settingsManufacturing.versionMinorMaximum, inclusive.
 	# 'ClassDefIdentifier',
 	# 'versionMajorPythonInterpreter',
 	# 'versionMinorPythonInterpreter',
@@ -1074,17 +1068,6 @@ def updateDataframe() -> None:
 
 	# TODO Get data using the Python Interpreter.
 	dataframe = _getDataFromInterpreter(dataframe)
-
-	# Set dtypes for existing columns
-	dataframe = dataframe.astype({
-		'ClassDefIdentifier': 'string',
-		'versionMajorPythonInterpreter': 'int64',
-		'versionMinorPythonInterpreter': 'int64',
-		'versionMicroPythonInterpreter': 'int64',
-		'base': 'string',
-	})
-
-	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
 
 	dataframe = _getDataFromPythonFiles(dataframe)
 

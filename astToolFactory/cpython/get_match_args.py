@@ -1,20 +1,22 @@
 """Extract `__match_args__` from Python.asdl across multiple Python versions."""
 
 from astToolFactory import inclusive, settingsManufacturing, settingsPackage
-from astToolkit import identifierDotAttribute
-from collections.abc import Callable, Sequence
-from hunterMakesPy import importLogicalPath2Identifier
+from hunterMakesPy.filesystemToolkit import importPathFilename2Identifier
 from pathlib import Path
 from pprint import pprint
-from typing import Any, Literal, Protocol
+from typing import Any, Literal, Protocol, TYPE_CHECKING
 import sys
 
-# Configuration
-filename_asdlData: str = 'Python.asdl'
-formatRelativePathVersionMinor: str = '_py3{versionMinor}'
+if TYPE_CHECKING:
+	from astToolkit import identifierDotAttribute
+	from collections.abc import Callable, Sequence
+	from pathlib import Path
+
+#======== Configuration ========
 rangeVersionMinor: range = range(settingsManufacturing.versionMinor_astMinimumSupported, settingsManufacturing.versionMinorMaximum + inclusive)
 relativePathCpython: str = 'cpython'
-
+filename_asdlData: str = 'Python.asdl'
+filename_asdlDOTpy: identifierDotAttribute = 'asdl.py'
 
 class _asdlTypeDefinitionProtocol(Protocol):
 	name: str
@@ -30,7 +32,7 @@ class asdlModuleProtocol(Protocol):
 
 	"""
 
-	def parse(self, pathFilename: str) -> 'asdlParsedProtocol':
+	def parse(self, pathFilename: str) -> asdlParsedProtocol:
 		"""Parse an ASDL file and return the parsed structure.
 
 		(AI generated docstring)
@@ -60,15 +62,9 @@ class asdlParsedProtocol(Protocol):
 
 	dfns: Sequence[_asdlTypeDefinitionProtocol]
 
-def getPathFilename_asdl(versionMinor: int) -> Path:
-	"""Create physical path filename for Python.asdl file."""
-	relativePathVersionMinor: str = formatRelativePathVersionMinor.format(versionMinor=versionMinor)
-	return settingsPackage.pathPackage / relativePathCpython / relativePathVersionMinor / filename_asdlData
-
-def getLogicalPath_asdl(versionMinor: int) -> identifierDotAttribute:
-	"""Create logical path for ASDL module import."""
-	relativePathVersionMinor: str = formatRelativePathVersionMinor.format(versionMinor=versionMinor)
-	return f'{settingsPackage.identifierPackage}.{relativePathCpython}.{relativePathVersionMinor}.asdl'
+def getPath_asdl(versionMinor: int) -> Path:
+	"""Create physical path for Python.asdl file."""
+	return settingsPackage.pathPackage / relativePathCpython / f'3.{versionMinor}'
 
 def extract_match_argsForVersion(versionMinor: int) -> dict[str, tuple[str, ...]]:
 	"""Extract `__match_args__` tuples for a specific Python version.
@@ -90,8 +86,9 @@ def extract_match_argsForVersion(versionMinor: int) -> dict[str, tuple[str, ...]
 		Mapping from AST `class` names to their `__match_args__` tuples.
 
 	"""
-	asdl_parse: Callable[[str], asdlParsedProtocol] = importLogicalPath2Identifier(getLogicalPath_asdl(versionMinor), 'parse')
-	asdlModule: asdlParsedProtocol = asdl_parse(str(getPathFilename_asdl(versionMinor)))
+	path_asdl: Path = getPath_asdl(versionMinor)
+	asdl_parse: Callable[[str], asdlParsedProtocol] = importPathFilename2Identifier(path_asdl / filename_asdlDOTpy, 'parse')
+	asdlModule: asdlParsedProtocol = asdl_parse(str(path_asdl / filename_asdlData))
 
 	dictionaryMatchArguments: dict[str, tuple[str, ...]] = {}
 	dictionaryMatchArguments["AST"] = ()

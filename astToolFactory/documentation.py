@@ -38,7 +38,7 @@ dictionary_astClasses: dict[str, astClassData] = {}
 
 for astClass in [
 	aClass
-	for aClass in [ast.AST, *chain(*(aSubclass.__subclasses__() for aSubclass in [ast.AST, ast.Constant, *ast.AST.__subclasses__()]))]
+	for aClass in [ast.AST, *chain(*(aSubclass.__subclasses__() for aSubclass in [ast.AST, *ast.AST.__subclasses__()]))]
 	if issubclass(aClass, ast.AST)
 ]:
 	identifierClass: str = str(astClass.__name__)

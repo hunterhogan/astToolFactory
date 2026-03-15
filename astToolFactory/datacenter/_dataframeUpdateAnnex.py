@@ -124,7 +124,7 @@ _columns: list[str] = [
 
 	# Put this here? I think it needs the information from `move2keywordArguments`.
 	# columns ought to be computed per group
-    # NOTE TODO FIXME Why did I write "ought to be"? I think I knew this was not automated, but that I didn't document it in a way/place I can currently find.
+    # TODO NOTE FIXME Why did I write "ought to be"? I think I knew this was not automated, but that I didn't document it in a way/place I can currently find.
 	'kwarg_annotationIdentifier',
 
 
