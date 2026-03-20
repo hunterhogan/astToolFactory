@@ -6,8 +6,7 @@ NOTE Use special indentation in this file.
         indent one or two levels as appropriate.
 """
 from astToolFactory import settingsManufacturing
-from astToolFactory.documentation import (
-	aDocument, dictionary_astClasses, diminutive2etymology, Docstring, docstrings, make1docstring)
+from astToolFactory.documentation import aDocument, dictionary_astClasses, diminutive2etymology, Docstring, docstrings, make1docstring
 from astToolkit import Make
 
 def formatSubclassesOxford(subclassList: list[str]) -> str:
