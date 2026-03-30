@@ -1,0 +1,18 @@
+abstract: >-
+  astToolFactory is a metaprogramming framework that manufactures astToolkit—a
+  comprehensive, type-safe Python Abstract Syntax Tree (AST) manipulation
+  library—by deriving the complete API surface from authoritative language
+  specifications rather than hand-authoring it. The generation pipeline ingests
+  CPython's Abstract Syntax Description Language (ASDL) grammar files and
+  __match_args__ tuples across Python versions 3.10–3.14, cross-references the
+  official typeshed ast.pyi type stubs for accurate annotations, and accumulates
+  the combined analysis in a pandas DataFrame. From this normalized
+  representation, the factory programmatically constructs—using astToolkit
+  itself as the code-generation substrate in a meta-circular fashion—
+  type-narrowing predicate classes (TypeIs), attribute-access utilities,
+  node-construction factories, and version-guarded type alias modules. This
+  systematic methodology guarantees completeness (every AST node type is
+  covered), consistency (identical conventions across all generated components),
+  and reproducibility (the manufactured library is fully reconstructible from
+  CPython and typeshed sources alone), enabling astToolkit to track Python
+  language evolution automatically as those canonical sources are updated.
