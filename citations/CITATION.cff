@@ -16,3 +16,4 @@ abstract: >-
   and reproducibility (the manufactured library is fully reconstructible from
   CPython and typeshed sources alone), enabling astToolkit to track Python
   language evolution automatically as those canonical sources are updated.
+cff-version: 1.2.0
