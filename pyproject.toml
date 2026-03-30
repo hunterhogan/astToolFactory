@@ -65,3 +65,4 @@ packages = { find = {} }
 [tool.updateCitation]
 filenameCitationDOTcff = "CITATION.cff"
 pathFilenameCitationSSOT = "citations/CITATION.cff"
+Z0Z_addPyPIrelease = false
