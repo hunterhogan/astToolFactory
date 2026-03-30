@@ -29,7 +29,6 @@ identifiers:
 license: CC-BY-NC-4.0
 message: Cite this software with the metadata in this file.
 repository: https://github.com/hunterhogan/astToolFactory.git
-repository-artifact: https://pypi.org/project/asttoolfactory/0.0.1/
 repository-code: 
   https://github.com/hunterhogan/astToolFactory/releases/tag/0.0.1
 title: astToolFactory
