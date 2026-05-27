@@ -1,4 +1,7 @@
-from itertools import chain  # noqa: D100
+# ruff: noqa: D100
+from __future__ import annotations
+
+from itertools import chain
 from pathlib import Path
 import ast
 import csv

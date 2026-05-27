@@ -38,7 +38,7 @@ def check_asdl() -> None:
 		GitHubActionPushFiles(githubClient.get_repo(os.environ['GITHUB_REPOSITORY']), listPathRelativeFilenamesWritten, listPathRelativeFilenamesDeleted)
 
 def checkBranch(repositoryCpython: Repository, pathRelative_asdl: Path) -> tuple[list[PurePosixPath], Iterable[PurePosixPath]]:
-	listFilenames: frozenset[str] = frozenset(map(attrgetter('name'), filter(methodcaller('is_file'), pathRelative_asdl.iterdir()))) # pyright: ignore[reportUnknownArgumentType]
+	listFilenames: frozenset[str] = frozenset(map(attrgetter('name'), filter(methodcaller('is_file'), pathRelative_asdl.iterdir())))  # pyright: ignore[reportUnknownArgumentType]
 
 	listPathRelativeFilenamesWritten: list[PurePosixPath] = []
 	listPathRelativeFilenamesDeleted: Iterable[PurePosixPath] = []

@@ -7,6 +7,8 @@ NOTE Use special indentation in this file.
     2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So,
         indent one or two levels as appropriate.
 """
+from __future__ import annotations
+
 from astToolFactory import settingsManufacturing
 from astToolFactory.datacenter import getElementsDocstringGrab, getElementsGrab
 from astToolFactory.documentation import aDocument, diminutive2etymology, Docstring, docstrings, make1docstring

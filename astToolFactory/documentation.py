@@ -1,12 +1,14 @@
 """A warehouse for docstrings added to manufactured ast tools."""
+from __future__ import annotations
+
 from astToolFactory._warehouse.diminutive2etymology import diminutive2etymology as diminutive2etymology
 from astToolFactory._warehouse.map2PythonDelimiters import map2PythonDelimiters as map2PythonDelimiters
 from astToolFactory._warehouse.map2PythonKeywords import map2PythonKeywords as map2PythonKeywords
 from astToolFactory._warehouse.map2PythonOperators import map2PythonOperators as map2PythonOperators
-from astToolkit import identifierDotAttribute, Make
+from astToolkit import Make
 from collections import defaultdict
 from dataclasses import dataclass
-from hunterMakesPy import raiseIfNone
+from hunterMakesPy import identifierDotAttribute, raiseIfNone
 from itertools import chain
 from typing import TypedDict
 import ast
@@ -108,14 +110,13 @@ class Docstring:
 		)
 
 def make1docstring(data: Docstring, ImaIndent: str = ' ' * 4, firstIndent: int = 0) -> str:
-	"""Make a docstring from a Docstring dataclass."""
-# TODO under-indented.
+	"""Make a docstring from a Docstring dataclass."""  # noqa: DOC201
 	indentTo: str = ImaIndent * firstIndent
 	paragraph = textwrap.TextWrapper(width=120, initial_indent=indentTo, subsequent_indent=indentTo
 		, expand_tabs=True, tabsize=4, replace_whitespace=True, break_long_words=False, drop_whitespace=True)
 	paragraphFormatted = textwrap.TextWrapper(width=160, initial_indent=indentTo, subsequent_indent=indentTo
 		, expand_tabs=True, tabsize=4, replace_whitespace=False, break_long_words=False, drop_whitespace=True)
-	paragraphParameter = textwrap.TextWrapper(width=120, initial_indent=indentTo+ImaIndent, subsequent_indent=indentTo+ImaIndent
+	paragraphParameter = textwrap.TextWrapper(width=120, initial_indent=indentTo + ImaIndent, subsequent_indent=indentTo + ImaIndent
 		, expand_tabs=True, tabsize=4, replace_whitespace=False, break_long_words=False, drop_whitespace=True)
 	docstring: str = f"{data.summary.description}"
 	if data.summary.AIgenerated:

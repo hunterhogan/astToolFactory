@@ -1,19 +1,21 @@
 """Module for manufacturing and writing ast tools and modules."""
+from __future__ import annotations
+
 from astToolFactory import (
 	astASTastAttribute, astAttribute_builtins_str, astName_overload, astName_staticmethod, keywordKeywordArguments4Call,
 	ManufacturedPackageSettings, settingsManufacturing)
-from astToolFactory.datacenter import (
-	getElementsBe, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias)
+from astToolFactory.datacenter import getElementsBe, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
-	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop,
-	FunctionDef_join_operator, FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf,
-	FunctionDefGrab_index, FunctionDefMake_Attribute, list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
+	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
+	FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index, FunctionDefMake_Attribute,
+	list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import IfThis, Make, NodeChanger, Then
 from astToolkit.containers import LedgerOfImports
 from astToolkit.transformationTools import unjoinBinOP
 from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT, writePython
 from pathlib import PurePosixPath
+from textwrap import indent
 from typing import Any, cast, TYPE_CHECKING, TypedDict
 import ast
 
@@ -84,11 +86,6 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 		The logical identifier of the `ast` types module.
 	**keywordArguments : Any
 		Override `ManufacturedPackageSettings`.
-
-	Returns
-	-------
-	None
-
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
 	list4ModuleBody: list[ast.stmt] = []
@@ -163,7 +160,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("TypeIs")]),
 		Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")]),
-		Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("木")]),
+		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("木")]),
 		Make.Import("ast"),
 		Make.Import("sys"),
 	]
@@ -179,11 +176,6 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 		Name of the tool class to generate.
 	**keywordArguments : Any
 		Override `ManufacturedPackageSettings`.
-
-	Returns
-	-------
-	None
-
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
 	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
@@ -238,18 +230,19 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 			list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("*")])
+		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("*")])
 		, Make.ImportFrom("collections.abc", [Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("overload")])
 		, Make.Import("ast")
-		, Make.Import("builtins") # https://github.com/python/cpython/issues/143661
+		, Make.Import("builtins")  # https://github.com/python/cpython/issues/143661
 		, Make.Import("sys")
 		, Make.If(
-			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
-				, [Make.GtE()]
+			Make.Compare(
+				Make.Attribute(Make.Name("sys"), "version_info")
+				, [Make.GtE()]  # TODO Change to `<`.
 				, [Make.Tuple([Make.Constant(3), Make.Constant(14)])]
 			)
-			, body=[Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTstr")])]
+			, body=[Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("hasDOTstr")])]
 		)
 	]
 
@@ -264,11 +257,6 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		Name of the tool class to generate.
 	**keywordArguments : Any
 		Override `ManufacturedPackageSettings`.
-
-	Returns
-	-------
-	None
-
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
 	list4ClassDefBody: list[ast.stmt] = [
@@ -277,7 +265,7 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, FunctionDefGrab_index
 		]
 
-	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(# noqa: B007
+	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(  # noqa: B007
 		identifierToolClass, **keywordArguments
 	):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
@@ -285,9 +273,10 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		type_params: list[ast.type_param] | None = None
 # DEVELOPMENT Make.TypeVar, name = type_astSuperClasses?, bound = type_astSuperClasses_ast_expr?. But, only for some functions. Maybe crossref with dictionary_astSuperClasses.
 
+		denting: str = '    ' * bool(guardVersion)
 		ast_stmt = Make.FunctionDef(attribute + "Attribute"
 			, Make.arguments(list_arg=[Make.arg("action", annotation=Make.BitOr.join([Make.Subscript(Make.Name("Callable"), Make.Tuple([Make.List([ast_expr]), ast_expr])) for ast_expr in list_ast_expr]))])
-			, body=[docstrings[settingsManufacturing.identifiers[identifierToolClass]][attribute]
+			, body=[Make.Expr(Make.Constant((indent(docstrings[settingsManufacturing.identifiers[identifierToolClass]][attribute].value.value, denting) + denting)[len(denting):None]))  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
 				, Make.FunctionDef("workhorse"
 				, Make.arguments(list_arg=[Make.arg("node", annotation=astNameTypeOfNode)])
 				, body=[Make.Expr(Make.Call(Make.Name("setattr"), listParameters=[Make.Name("node"), Make.Constant(f"{attribute}")
@@ -306,17 +295,17 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 			list4ClassDefBody.append(ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("*")])
+		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("*")])
 		, Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("cast")])
 		, Make.Import("ast")
 		, Make.Import("sys")
 		, Make.If(
 			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
-				, [Make.GtE()]
+				, [Make.GtE()]  # TODO Change to `<`.
 				, [Make.Tuple([Make.Constant(3), Make.Constant(14)])]
 			)
-			, body=[Make.ImportFrom(settingsManufacturing.identifierPackage, [Make.alias("hasDOTstr")])]
+			, body=[Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("hasDOTstr")])]
 		)
 	]
 
@@ -331,21 +320,16 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 		Name of the tool class to generate.
 	**keywordArguments : Any
 		Override `ManufacturedPackageSettings`.
-
-	Returns
-	-------
-	None
-
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
 	ledgerOfImports: LedgerOfImports = LedgerOfImports(Make.Module([
 		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any")])
 		, Make.Import("ast")
-		, Make.Import("builtins")])) # https://github.com/python/cpython/issues/143661
-	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "ConstantValueType")
-	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "identifierDotAttribute")
-	ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, "ast_attributes")
+		, Make.Import("builtins")]))  # https://github.com/python/cpython/issues/143661
+	ledgerOfImports.addImportFrom_asStr(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", "ConstantValueType")
+	ledgerOfImports.addImportFrom_asStr(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", "ast_attributes")
+	ledgerOfImports.addImportFrom_asStr('hunterMakesPy', "identifierDotAttribute")
 
 	list4ClassDefBody: list[ast.stmt] = [
 		docstrings[identifierToolClass][identifierToolClass]
@@ -376,7 +360,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 		if kwarg_annotationIdentifier != "No":
 			listCall_keyword.append(keywordKeywordArguments4Call)
-			ledgerOfImports.addImportFrom_asStr(settingsManufacturing.identifierPackage, kwarg_annotationIdentifier)
+			ledgerOfImports.addImportFrom_asStr(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", kwarg_annotationIdentifier)
 			ledgerOfImports.addImportFrom_asStr("typing", 'Unpack')
 			kwarg: ast.arg | None = Make.arg(settingsManufacturing.keywordArgumentsIdentifier
 				, annotation=Make.Subscript(Make.Name("Unpack"), slice=Make.Name(kwarg_annotationIdentifier)))
@@ -392,7 +376,8 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 			listFunctionDef_args: list[ast.arg] = list_argMake_Import
 			body = FunctionDef_bodyMake_Import
 		else:
-			body = [docstrings[identifierToolClass][ClassDefIdentifier]
+			denting: str = '    ' * bool(guardVersion)
+			body = [Make.Expr(Make.Constant((indent(docstrings[settingsManufacturing.identifiers[identifierToolClass]][ClassDefIdentifier].value.value, denting) + denting)[len(denting):None]))  # ty:ignore[unresolved-attribute] # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType, reportAttributeAccessIssue]
 				, Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 
 		ast_stmt = Make.FunctionDef(ClassDefIdentifier
@@ -417,11 +402,6 @@ def write_theSSOT(identifierModule: str) -> None:
 	----------
 	identifierModule : str
 		The logical identifier of the SSOT module.
-
-	Returns
-	-------
-	None
-
 	"""
 	writeModule(astModule_theSSOT, identifierModule)
 
@@ -434,11 +414,6 @@ def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 		The AST module to write.
 	identifierModule : str
 		The stem for the module file.
-
-	Returns
-	-------
-	None
-
 	"""
 	ast.fix_missing_locations(astModule)
 	pythonSource: str = ast.unparse(astModule)
@@ -469,7 +444,7 @@ def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 		pythonSource = pythonSource.replace("# type: ignore", "# noqa: ")
 	pathFilenameModule: PurePosixPath = PurePosixPath(settingsManufacturing.pathPackage, identifierModule + settingsManufacturing.fileExtension)
 	settings: dict[str, dict[str, list[str] | bool]] = {'autoflake': settings_autoflakeDEFAULT}
-	cast(list[str], settings['autoflake']['additional_imports']).append(settingsManufacturing.identifierPackage)
+	cast("list[str]", settings['autoflake']['additional_imports']).append(settingsManufacturing.identifierPackage)
 	writePython(pythonSource, pathFilenameModule)
 
 def writeClass(identifierClass: str, list4ClassDefBody: list[ast.stmt], list4ModuleBody: list[ast.stmt], identifierModulePrefix: str | None = '_tool') -> None:
@@ -485,11 +460,6 @@ def writeClass(identifierClass: str, list4ClassDefBody: list[ast.stmt], list4Mod
 			Statements for the module body.
 	moduleIdentifierPrefix : str | None = '_tool'
 			Prefix for the module identifier.
-
-	Returns
-	-------
-	None
-
 	"""
 	identifierModule: str = (identifierModulePrefix or "") + identifierClass
 	return writeModule(
@@ -504,11 +474,6 @@ def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None
 	----------
 	settingsManufacturing : ManufacturedPackageSettings
 			Settings `object` containing identifiers for tool generation.
-
-	Returns
-	-------
-	None
-
 	"""
 	makeToolBe(settingsManufacturing.identifiers['Be'])
 	makeToolDOT(settingsManufacturing.identifiers['DOT'])

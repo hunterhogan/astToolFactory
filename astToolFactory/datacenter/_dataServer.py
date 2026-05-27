@@ -4,9 +4,10 @@ This module provides a set of functions to interact with the data source, allowi
 
 """
 
+from __future__ import annotations
+
 from astToolFactory import noMinimum, settingsManufacturing
 from typing import Any, cast
-import ast
 import numpy
 import pandas
 import typing_extensions
@@ -15,6 +16,7 @@ if typing_extensions.TYPE_CHECKING:
 	from collections.abc import Sequence
 	from numpy.typing import NDArray
 	from pathlib import Path
+	import ast
 
 """Generalized flow for get* functions:
 listColumnsHARDCODED
@@ -35,12 +37,12 @@ def _makeColumn_guardVersion(dataframe: pandas.DataFrame, byColumn: str) -> pand
 		from the total number of versions in the group.
 	- Or if the only member of a group has a python version greater than `pythonMinimumVersionMinor`.
 
-	"""
+	"""  # noqa: DOC201
 	dataframe["guardVersion"] = numpy.where(
 		((versionsTotal := (seriesGroupByVersion := dataframe.groupby(byColumn)["versionMinorMinimum"]).transform("nunique")) == 1)
-			& (seriesGroupByVersion.transform("max") <= settingsManufacturing.pythonMinimumVersionMinor) # pyright: ignore[reportArgumentType]
-		, False # noqa: FBT003
-		, numpy.maximum(1, versionsTotal - seriesGroupByVersion.rank(method="first", ascending=False).astype(int) + 1) # pyright: ignore[reportUnknownArgumentType]
+			& (seriesGroupByVersion.transform("max") <= settingsManufacturing.pythonMinimumVersionMinor)  # pyright: ignore[reportArgumentType]
+		, False  # noqa: FBT003
+		, numpy.maximum(1, versionsTotal - seriesGroupByVersion.rank(method="first", ascending=False).astype(int) + 1)  # pyright: ignore[reportUnknownArgumentType]
 	)
 	return dataframe
 
@@ -142,7 +144,7 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 
 	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
 		if bool(dataframeTarget["overloadDefinition"]):
-			return [cast(ast.expr, dataframeTarget["type_ast_expr"])]
+			return [cast("ast.expr", dataframeTarget["type_ast_expr"])]
 		matchingRows: pandas.DataFrame = (
 			dataframe.loc[
 				(dataframe["attribute"] == dataframeTarget["attribute"])
@@ -166,7 +168,7 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 	return dataframe.to_records(index=False).tolist()
 
 def getElementsDocstringGrab(identifierToolClass: str, **keywordArguments: Any) -> dict[str, dict[Any, Any]]:  # noqa: ARG001
-	"""Get docstring elements for Grab."""
+	"""Get docstring elements for Grab."""  # noqa: DOC201
 	return {}
 
 def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:  # noqa: ARG001

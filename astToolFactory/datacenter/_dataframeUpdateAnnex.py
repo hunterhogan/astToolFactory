@@ -89,6 +89,8 @@ See Also
 `astToolFactory.datacenter._dataframeUpdate.getSelectorFromSpecification` : Builds boolean selectors.
 
 """
+from __future__ import annotations
+
 from astToolFactory import (
 	Column__attribute, Column__attributeKind, Column__attributeType_attribute, Column__ClassDefIdentifier_attribute,
 	Column__ClassDefIdentifier_versionMinorPythonInterpreter, column__value)
@@ -120,7 +122,7 @@ _columns: list[str] = [
 	# Purely a human choice
 	'attributeRename',
 	'move2keywordArguments',
-	'defaultValue', # (for now)
+	'defaultValue',  # (for now)
 
 	# Put this here? I think it needs the information from `move2keywordArguments`.
 	# columns ought to be computed per group
@@ -130,11 +132,11 @@ _columns: list[str] = [
 
 	# columns computed from sources per row, with exceptions
 	'classAs_astAttribute',
-	'list2Sequence', # column computed from other columns and a dictionary per row
+	'list2Sequence',  # column computed from other columns and a dictionary per row
 	'type_ast_expr',
-	'type_astSuperClasses', # column computed from other columns and a dictionary per row
+	'type_astSuperClasses',  # column computed from other columns and a dictionary per row
 	'ast_arg',
-	'type_astSuperClasses_ast_expr', # column computed from other columns and a dictionary per row
+	'type_astSuperClasses_ast_expr',  # column computed from other columns and a dictionary per row
 	'TypeAlias_hasDOTIdentifier',
 	'TypeAlias_hasDOTSubcategory',
 
@@ -147,11 +149,11 @@ _columns: list[str] = [
 	'versionMinorMinimumClass',
 	'versionMinorMinimum_match_args',
 	'versionMinorMinimumAttribute',
-	'Call_keyword', # column computed from sources per row
+	'Call_keyword',  # column computed from sources per row
 	'listFunctionDef_args',
 	'listDefaults',
 	'listCall_keyword',
-	'listTupleAttributes', # column computed from other columns and a dictionary per row
+	'listTupleAttributes',  # column computed from other columns and a dictionary per row
 
 
 ]
@@ -197,7 +199,7 @@ full system description.
 
 attributeType__ClassDefIdentifier_attribute: dict[Column__ClassDefIdentifier_attribute, column__value] = {
 	# HUNTER-from-the-past! Why is this commented out? An error or a style choice?
-	# Column__ClassDefIdentifier_attribute('alias', 'name'): column__value('attributeType', 'identifierDotAttribute'),  # noqa: ERA001
+	# Column__ClassDefIdentifier_attribute('alias', 'name'): column__value('attributeType', 'identifierDotAttribute'),
 	Column__ClassDefIdentifier_attribute('Constant', 'value'): column__value('attributeType', 'ConstantValueType'),
 }
 """Selector-to-assignment dictionary for overriding the `attributeType` column.

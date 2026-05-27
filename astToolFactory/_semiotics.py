@@ -2,6 +2,8 @@
 
 #======== Replacements for ambiguous values =======
 
+from __future__ import annotations
+
 inclusive: int = 1
 noMinimum: int = -1
 
@@ -35,5 +37,5 @@ dictionaryIdentifiers: dict[str, str] = {
 	'Make': 'Make',
 	'operatorJoinMethod': '_operatorJoinMethod',
 	'SSOT': '_theSSOT',
-	'types': '_astTypes',
+	'types': 'theTypes',
 }

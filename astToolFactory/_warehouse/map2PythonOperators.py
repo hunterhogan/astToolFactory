@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 map2PythonOperators: dict[str, str] = {
 'Add': '+',
 'alias': '',

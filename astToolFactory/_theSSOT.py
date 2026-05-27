@@ -4,6 +4,8 @@ Secondary: settings for manufacturing.
 Tertiary: hardcoded values until I implement a dynamic solution.
 """
 
+from __future__ import annotations
+
 from astToolFactory import dictionary_astSuperClasses, dictionaryIdentifiers, noMinimum
 from copy import deepcopy
 from hunterMakesPy import PackageSettings
@@ -112,4 +114,3 @@ pathPackage : Path
     The root path of the package being manufactured.
 
 """
-

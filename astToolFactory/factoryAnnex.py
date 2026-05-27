@@ -1,7 +1,9 @@
 """Large blocks of 'pre-fabricated' static code added to manufactured AST tools."""
+from __future__ import annotations
+
 from astToolFactory import (
-	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, astSubscriptUnpack_ast_attributes,
-	dataTypeVariables, keywordKeywordArguments4Call, settingsManufacturing)
+	astASTastAttribute, astName_classmethod, astName_overload, astName_staticmethod, astSubscriptUnpack_ast_attributes, dataTypeVariables,
+	keywordKeywordArguments4Call, settingsManufacturing)
 from astToolFactory.documentation import docstrings
 from astToolkit import Make
 import ast
@@ -130,7 +132,7 @@ FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturin
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
-ClassDefIdentifier: str = 'Attribute' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
+ClassDefIdentifier: str = 'Attribute'  # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
 FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 	, Make.arguments(list_arg=[Make.arg('value', annotation=Make.Attribute(Make.Name('ast'), 'expr'))]
 		, vararg=Make.arg('attribute', annotation=Make.Name('str'))
@@ -160,8 +162,8 @@ FunctionDefMake_Attribute: ast.stmt = Make.FunctionDef(ClassDefIdentifier
 	, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))
 del ClassDefIdentifier
 
-ClassDefIdentifier: str = 'Import' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
-list_argMake_Import: list[ast.arg]=[Make.arg('dotModule', annotation=Make.Name('identifierDotAttribute'))
+ClassDefIdentifier: str = 'Import'  # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
+list_argMake_Import: list[ast.arg] = [Make.arg('dotModule', annotation=Make.Name('identifierDotAttribute'))
 		, Make.arg('asName', annotation=Make.BitOr().join([Make.Name('str'), Make.Constant(None)]))]
 FunctionDef_bodyMake_Import: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers['Make']][ClassDefIdentifier]
 	, Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
@@ -169,7 +171,7 @@ FunctionDef_bodyMake_Import: list[ast.stmt] = [docstrings[settingsManufacturing.
 			, listParameters=[Make.Name('dotModule'), Make.Name('asName')])])), keywordKeywordArguments4Call]))]
 del ClassDefIdentifier
 
-ClassDefIdentifier: str = 'keyword' # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
+ClassDefIdentifier: str = 'keyword'  # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
 listOverloads_keyword: list[ast.stmt] = [
 	Make.FunctionDef(ClassDefIdentifier
 		, Make.arguments(list_arg=[Make.arg('Buffalo_buffalo_Buffalo_buffalo_buffalo_buffalo_Buffalo_buffalo'
@@ -201,7 +203,7 @@ astModule_theSSOT = Make.Module([
 
 #======== `TypeAlias` =====================================================================
 listHandmade_astTypes: list[ast.stmt] = [
-	# If I were to automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include `bytes` or `range`.
+	# If I were to automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include or `range`.
 	# And, I would change the identifier to `ast_ConstantValue`.
 	Make.TypeAlias(Make.Name('ConstantValueType', Make.Store()), type_params=[]
 		, value=Make.BitOr().join(Make.Name(identifier)
@@ -238,10 +240,7 @@ for identifierTypeVariable, data in typeVariables.items():
 		list_keyword.append(Make.keyword('default_value', value=data['default_value']))
 
 	# Create the TypeVar assignment
-	listHandmade_astTypes.append(Make.Assign([Make.Name(identifierTypeVariable, Make.Store())] , value=Make.Call(Make.Name('typing_TypeVar')
-		, listParameters=listParameters
-		, list_keyword=list_keyword)))
-	listHandmade_astTypes.append(docstrings[settingsManufacturing.identifiers['types']][identifierTypeVariable])
+	listHandmade_astTypes.extend((Make.Assign([Make.Name(identifierTypeVariable, Make.Store())], value=Make.Call(Make.Name('typing_TypeVar'), listParameters=listParameters, list_keyword=list_keyword)), docstrings[settingsManufacturing.identifiers['types']][identifierTypeVariable]))
 
 listHandmade_astTypes.extend([
 # ruff: noqa: FBT003

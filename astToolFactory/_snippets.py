@@ -1,15 +1,19 @@
+from __future__ import annotations
+
 from astToolFactory import settingsManufacturing
 from astToolkit import Make
-from typing import cast
-import ast
+from typing import cast, TYPE_CHECKING
+
+if TYPE_CHECKING:
+    import ast
 
 astASTastAttribute: ast.expr = Make.Attribute(Make.Name('ast'), 'AST')
 astAttribute_builtins_str: ast.expr = Make.Attribute(Make.Name('builtins'), 'str')
 astName_classmethod: ast.expr = Make.Name('classmethod')
 astName_overload: ast.expr = Make.Name('overload')
 astName_staticmethod: ast.expr = Make.Name('staticmethod')
-astName_typing_TypeAlias: ast.expr = cast(ast.expr, Make.Name('typing_TypeAlias'))
-astName_typing_TypeVar: ast.expr = cast(ast.expr, Make.Name('typing_TypeVar'))
+astName_typing_TypeAlias: ast.expr = cast('ast.expr', Make.Name('typing_TypeAlias'))
+astName_typing_TypeVar: ast.expr = cast('ast.expr', Make.Name('typing_TypeVar'))
 astSubscriptUnpack_ast_attributes: ast.expr = Make.Subscript(Make.Name('Unpack'), slice=Make.Name('ast_attributes'))
 
 # The `format` method continues to disappoint me.

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 diminutive2etymology: dict[str, str] = {
 	'Add': '',
 	'alias': '',

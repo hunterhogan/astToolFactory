@@ -1,5 +1,7 @@
 """Extract `__match_args__` from Python.asdl across multiple Python versions."""
 
+from __future__ import annotations
+
 from astToolFactory import inclusive, settingsManufacturing, settingsPackage
 from hunterMakesPy.filesystemToolkit import importPathFilename2Identifier
 from pathlib import Path
@@ -63,7 +65,7 @@ class asdlParsedProtocol(Protocol):
 	dfns: Sequence[_asdlTypeDefinitionProtocol]
 
 def getPath_asdl(versionMinor: int) -> Path:
-	"""Create physical path for Python.asdl file."""
+	"""Create physical path for Python.asdl file."""  # noqa: DOC201
 	return settingsPackage.pathPackage / relativePathCpython / f'3.{versionMinor}'
 
 def extract_match_argsForVersion(versionMinor: int) -> dict[str, tuple[str, ...]]:
@@ -140,14 +142,14 @@ def extract_match_args() -> dict[int, dict[str, tuple[str, ...]]]:
 	return dictionaryByVersion
 
 def getDictionary_match_args() -> dict[tuple[str, int, Literal[False]], tuple[str, ...]]:
-	"""Create dictionary structured as ClassDefIdentifier -> versionMinorPythonInterpreter -> match_args."""
+	"""Create dictionary structured as ClassDefIdentifier -> versionMinorPythonInterpreter -> match_args."""  # noqa: DOC201
 	dictionaryByVersion: dict[int, dict[str, tuple[str, ...]]] = extract_match_args()
 
 	match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated: dict[tuple[str, int, Literal[False]], tuple[str, ...]] = {}
 
 	for versionMinor, dictionaryClass_match_args in dictionaryByVersion.items():
 		for ClassDefIdentifier, match_args in dictionaryClass_match_args.items():
-			match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated[(ClassDefIdentifier, versionMinor, False)] = match_args
+			match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated[ClassDefIdentifier, versionMinor, False] = match_args
 
 	return match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated
 

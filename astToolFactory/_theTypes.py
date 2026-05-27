@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from typing import Any, NamedTuple, NotRequired, TYPE_CHECKING, TypedDict, TypeVar
 
 if TYPE_CHECKING:
@@ -213,4 +215,3 @@ class dataTypeVariables(TypedDict):
 	bound: NotRequired[ast.expr]
 	tuple_keyword: NotRequired[list[tuple[str, bool]]]
 	default_value: NotRequired[ast.expr]
-

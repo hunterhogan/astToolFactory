@@ -3,6 +3,8 @@ Universal pytest module for any Python project.
 Drop this file into your project's tests/ directory and run with: pytest test_basic.py
 """
 
+from __future__ import annotations
+
 from pathlib import Path
 from typing import Any
 import ast
@@ -24,17 +26,15 @@ class ProjectAnalyzer:
         pyproject_path = self.root / "pyproject.toml"
         if pyproject_path.exists():
             try:
-                with open(pyproject_path, "rb") as f:
+                with Path(pyproject_path).open("rb") as f:
                     pyproject_data = tomllib.load(f)
 
                 if "tool" in pyproject_data and "setuptools" in pyproject_data["tool"]:
                     setuptools_config = pyproject_data["tool"]["setuptools"]
-                    if "packages" in setuptools_config:
-                        if "find" in setuptools_config["packages"]:
-                            find_config = setuptools_config["packages"]["find"]
-                            if "where" in find_config:
-                                for where in find_config["where"]:
-                                    paths.add(self.root / where)
+                    if "packages" in setuptools_config and "find" in setuptools_config["packages"]:
+                        find_config = setuptools_config["packages"]["find"]
+                        if "where" in find_config:
+                            paths.update(self.root / where for where in find_config["where"])
 
                 if "project" in pyproject_data:
                     project_name = pyproject_data["project"].get("name")
@@ -52,25 +52,22 @@ class ProjectAnalyzer:
         setup_py_path = self.root / "setup.py"
         if setup_py_path.exists():
             try:
-                with open(setup_py_path, "r", encoding="utf-8") as f:
-                    content = f.read()
+                content = Path(setup_py_path).read_text(encoding="utf-8")
                 tree = ast.parse(content)
                 for node in ast.walk(tree):
-                    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
-                        if node.func.id == "setup":
-                            for keyword in node.keywords:
-                                if keyword.arg == "package_dir":
-                                    if isinstance(keyword.value, ast.Dict):
-                                        for _key_node, value_node in zip(keyword.value.keys, keyword.value.values):
-                                            if isinstance(value_node, ast.Constant) and isinstance(value_node.value, str):
-                                                paths.add(self.root / value_node.value)
-                                elif keyword.arg == "packages":
-                                    if isinstance(keyword.value, ast.List):
-                                        for pkg_node in keyword.value.elts:
-                                            if isinstance(pkg_node, ast.Constant) and isinstance(pkg_node.value, str):
-                                                pkg_path = self.root / pkg_node.value.replace(".", "/")
-                                                if pkg_path.is_dir():
-                                                    paths.add(pkg_path)
+                    if isinstance(node, ast.Call) and isinstance(node.func, ast.Name) and node.func.id == "setup":
+                        for keyword in node.keywords:
+                            if keyword.arg == "package_dir":
+                                if isinstance(keyword.value, ast.Dict):
+                                    for _key_node, value_node in zip(keyword.value.keys, keyword.value.values):
+                                        if isinstance(value_node, ast.Constant) and isinstance(value_node.value, str):
+                                            paths.add(self.root / value_node.value)
+                            elif keyword.arg == "packages" and isinstance(keyword.value, ast.List):
+                                for pkg_node in keyword.value.elts:
+                                    if isinstance(pkg_node, ast.Constant) and isinstance(pkg_node.value, str):
+                                        pkg_path = self.root / pkg_node.value.replace(".", "/")
+                                        if pkg_path.is_dir():
+                                            paths.add(pkg_path)
             except Exception:
                 pass
 
@@ -116,8 +113,7 @@ class ProjectAnalyzer:
         ]
 
         for pattern in common_ignored:
-            for path in self.root.rglob(pattern):
-                ignored.add(path)
+            ignored.update(self.root.rglob(pattern))
 
         return ignored
 
@@ -136,8 +132,7 @@ class ProjectAnalyzer:
 
     def analyze_file(self, file_path: Path) -> dict[str, Any]:
         try:
-            with open(file_path, "r", encoding="utf-8") as f:
-                content = f.read()
+            content = Path(file_path).read_text(encoding="utf-8")
             return {"path": file_path, "size": len(content), "lines": len(content.splitlines()), "syntax_valid": True}
         except SyntaxError:
             return {"path": file_path, "syntax_valid": False, "error": "Syntax error in file"}
@@ -171,7 +166,7 @@ class TestBasicStructure:
         pyproject = analyzer.root / "pyproject.toml"
         if pyproject.exists():
             try:
-                with open(pyproject, "rb") as f:
+                with Path(pyproject).open("rb") as f:
                     data = tomllib.load(f)
                 version_specified = "project" in data and "requires-python" in data["project"]
             except Exception:
@@ -180,8 +175,7 @@ class TestBasicStructure:
             setup = analyzer.root / "setup.py"
             if setup.exists():
                 try:
-                    with open(setup, "r", encoding="utf-8") as f:
-                        content = f.read()
+                    content = Path(setup).read_text(encoding="utf-8")
                     version_specified = "python_requires" in content
                 except Exception:
                     pass
