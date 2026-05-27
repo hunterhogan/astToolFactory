@@ -53,6 +53,7 @@ laravel
 Laravel
 lemen
 lockfiles
+ment
 mented
 mtimes
 namespacing
