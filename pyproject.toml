@@ -32,7 +32,7 @@ optional-dependencies = { testing = [
   "PyGithub",
   "pytest-cov",
   "pytest-xdist",
-  "pytest",
+  "pytest"
 ] }
 
 [build-system]
@@ -40,18 +40,10 @@ requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
 [tool.coverage]
-report = { exclude_lines = [
-  "if TYPE_CHECKING:",
-  "if __name__ == \"__main__\":",
-], ignore_errors = false }
-run = { branch = true, concurrency = [
-  "multiprocessing",
-], data_file = "tests/coverage/.coverage", omit = [
-  "tests/*",
-], parallel = true, source = [
-  ".",
-] }
-xml = { output = "tests/coverage/coverage.xml" }
+report = { exclude_lines = ["if TYPE_CHECKING:", "if __name__ == \"__main__\":"], ignore_errors = false }
+run = { branch = true, concurrency = ["multiprocessing"], data_file = "tests/coverage/.coverage", omit = [
+  "tests/*"
+], parallel = true, source = ["."] }
 
 [tool.pytest]
 addopts = ["--color=auto"]
@@ -65,4 +57,4 @@ packages = { find = {} }
 [tool.updateCitation]
 filenameCitationDOTcff = "CITATION.cff"
 pathFilenameCitationSSOT = "citations/CITATION.cff"
-Z0Z_addPyPIrelease = false
+addPyPIrelease = false
