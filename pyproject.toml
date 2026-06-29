@@ -3,7 +3,7 @@ name = "astToolFactory"
 version = "0.0.1"
 description = ""
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 license = "CC-BY-NC-4.0"
 authors = [{ name = "Hunter Hogan", email = "HunterHogan@pm.me" }]
 keywords = []
@@ -14,26 +14,23 @@ classifiers = [
   "Natural Language :: English",
   "Operating System :: OS Independent",
   "Programming Language :: Python",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.13",
   "Programming Language :: Python :: 3.14",
   "Typing :: Typed",
 ]
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
 dependencies = [
   "astToolkit==0.11.3",
-  "hunterMakesPy>=0.4.3",
+  "hunterMakesPy>=0.7.1",
   "pandas<3.0.0",
   "pyarrow",
   "tomli",
   "typeshed_client",
 ]
-optional-dependencies = { testing = [
-  "PyGithub",
+optional-dependencies = { development = [
+  "pyarrow-stubs",
   "pytest-cov",
-  "pytest-xdist",
-  "pytest"
-] }
+  "PyGithub"
+], testing = ["pytest-xdist", "pytest"] }
 
 [build-system]
 requires = ["setuptools"]
@@ -46,7 +43,7 @@ run = { branch = true, concurrency = ["multiprocessing"], data_file = "tests/cov
 ], parallel = true, source = ["."] }
 
 [tool.pytest]
-addopts = ["--color=auto"]
+addopts = ["--color=yes"]
 log_auto_indent = "On"
 testpaths = ["tests"]
 

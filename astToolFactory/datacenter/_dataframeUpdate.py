@@ -3,16 +3,16 @@
 (AI generated docstring)
 
 This module is the executor for manufacturing the authoritative AST dataframe used by
-`astToolFactory`. The public entry point `updateDataframe` builds a base dataframe from
-source material, applies selector-based policy decisions from
-`astToolFactory.datacenter._dataframeUpdateAnnex`, computes derived columns required for
-code generation, aggregates per-class lists, and persists the final dataframe.
+`astToolFactory`. The public entry point `updateDataframe` builds a base dataframe from source
+material, applies selector-based policy decisions from
+`astToolFactory.datacenter._dataframeUpdateAnnex`, computes derived columns required for code
+generation, aggregates per-class lists, and persists the final dataframe.
 
-Selector-based updates are expressed as mappings from a `SelectorSpecification` to a
-`column__value`. A selector specification is a `NamedTuple` whose field names are
-dataframe columns and whose values are the required cell values for a row to match.
-`getSelectorFromSpecification` turns that specification into a boolean row selector, and
-`dictionaryToUpdateDataframe` applies the resulting assignment.
+Selector-based updates are expressed as mappings from a `SelectorSpecification` to a `column__value`.
+A selector specification is a `NamedTuple` whose field names are dataframe columns and whose values
+are the required cell values for a row to match. `getSelectorFromSpecification` turns that
+specification into a boolean row selector, and `dictionaryToUpdateDataframe` applies the resulting
+assignment.
 
 """
 from __future__ import annotations
@@ -21,23 +21,20 @@ from __future__ import annotations
 from ast import (
 	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, Interpolation, keyword, match_case,
 	Name, operator, pattern, stmt, Subscript, TemplateStr, type_param, TypeIgnore, unaryop, withitem)
-from astToolFactory import (
-	Column__ClassDefIdentifier_attribute, column__value, noMinimum, SelectorSpecification, settingsManufacturing, settingsPackage)
+from astToolFactory import Column__ClassDefIdentifier_attribute, column__value, noMinimum, settingsManufacturing, settingsPackage
 from astToolFactory.cpython import getDictionary_match_args
 from astToolFactory.datacenter._dataframeUpdateAnnex import (
 	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, defaultValue__,
 	dictionary_defaultValue_ast_arg_Call_keyword_orElse, kwarg_annotationIdentifier__, move2keywordArguments__)
 from astToolFactory.datacenter._dataServer import _sortCaseInsensitive, getDataframe
 from astToolkit import (
-	ast_attributes, ast_attributes_int, ast_attributes_type_comment, Be, ConstantValueType as _ConstantValue, DOT, Grab, IfThis, Make,
-	NodeChanger, NodeTourist, parsePathFilename2astModule, Then)
+	Be, ConstantValueType as _ConstantValue, DOT, IfThis, Make, NodeChanger, NodeTourist, parsePathFilename2astModule, Then)
 from astToolkit.transformationTools import makeDictionaryClassDef, pythonCode2ast_expr
 from collections.abc import Mapping
 from functools import cache
 from hunterMakesPy import raiseIfNone
-from more_itertools import loops
 from operator import getitem
-from typing import Any, cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING
 import ast
 import builtins
 import numpy
@@ -45,8 +42,10 @@ import pandas
 import typeshed_client
 
 if TYPE_CHECKING:
+	from astToolFactory import SelectorSpecification
 	from numpy.typing import ArrayLike
 	from pathlib import Path
+	from typing import Any
 
 #======== HARDCODED values. TODO: eliminate ======================
 
@@ -159,7 +158,7 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 				).captureLastMatch(_get_astModule_astStub())
 			)
 			, 0
-		)  # ty:ignore[invalid-assignment] https://github.com/astral-sh/ty/issues/2799
+		)
 
 	_attributeTypeVar_default: str = ast.unparse(ast_keyword.value)  # noqa: RUF052
 
@@ -1037,7 +1036,7 @@ def getSelectorFromSpecification(dataframe: pandas.DataFrame, specifiedColumnsAn
 		the complete selector-based dataframe update system.
 
 	"""
-	return pandas.concat([*[dataframe[column] == value for column, value in specifiedColumnsAndValues._asdict().items()]], axis=1).all(axis=1)
+	return pandas.concat([*[dataframe[column] == value for column, value in specifiedColumnsAndValues._asdict().items()]], axis=1).all(axis=1)  # ty:ignore[invalid-return-type] https://github.com/astral-sh/ty/issues/2799
 
 #======== The Function ======================================================
 
