@@ -194,8 +194,9 @@ listOverloads_keyword: list[ast.stmt] = [
 del ClassDefIdentifier
 
 #======== `theSSOT` =====================================================================
-astModule_theSSOT = Make.Module([
-	Make.ImportFrom('hunterMakesPy', list_alias=[Make.alias('PackageSettings')])
+astModule_theSSOT: ast.Module = Make.Module([
+	Make.ImportFrom('__future__', list_alias=[Make.alias('annotations')])
+	, Make.ImportFrom('hunterMakesPy', list_alias=[Make.alias('PackageSettings')])
 	, Make.Assign([Make.Name('identifierPackage', Make.Store())], value=Make.Constant('astToolkit'))
 	, Make.Assign([Make.Name('packageSettings', Make.Store())]
 		, value=Make.Call(Make.Name('PackageSettings')
@@ -243,24 +244,23 @@ for identifierTypeVariable, data in typeVariables.items():
 	listHandmade_astTypes.extend((Make.Assign([Make.Name(identifierTypeVariable, Make.Store())], value=Make.Call(Make.Name('typing_TypeVar'), listParameters=listParameters, list_keyword=list_keyword)), docstrings[settingsManufacturing.identifiers['types']][identifierTypeVariable]))
 
 listHandmade_astTypes.extend([
-# ruff: noqa: FBT003
 	# TODO, a non-trivial automatic transformation from ast.pyi `TypedDict._Attributes` and `TypeVar._EndPositionT` to the following
-	Make.ClassDef('_attributes', bases=[Make.Name('TypedDict')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
+	Make.ClassDef('_attributes', bases=[Make.Name('TypedDict')], list_keyword=[Make.keyword('total', value=Make.Constant(value=False))]
 		, body=[Make.AnnAssign(Make.Name('lineno', Make.Store()), annotation=Make.Name('int'))
 			, Make.AnnAssign(Make.Name('col_offset', Make.Store()), annotation=Make.Name('int'))
 		]
 	),
-	Make.ClassDef('ast_attributes', bases=[Make.Name('_attributes')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
+	Make.ClassDef('ast_attributes', bases=[Make.Name('_attributes')], list_keyword=[Make.keyword('total', value=Make.Constant(value=False))]
 		, body=[Make.AnnAssign(Make.Name('end_lineno', Make.Store()), annotation=Make.BitOr().join([Make.Name('int'), Make.Constant(None)]))
 			, Make.AnnAssign(Make.Name('end_col_offset', Make.Store()), annotation=Make.BitOr().join([Make.Name('int'), Make.Constant(None)]))
 		]
 	),
-	Make.ClassDef('ast_attributes_int', bases=[Make.Name('_attributes')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
+	Make.ClassDef('ast_attributes_int', bases=[Make.Name('_attributes')], list_keyword=[Make.keyword('total', value=Make.Constant(value=False))]
 		, body=[Make.AnnAssign(Make.Name('end_lineno', Make.Store()), annotation=Make.Name('int'))
 			, Make.AnnAssign(Make.Name('end_col_offset', Make.Store()), annotation=Make.Name('int'))
 		]
 	),
-	Make.ClassDef('ast_attributes_type_comment', bases=[Make.Name('ast_attributes')], list_keyword=[Make.keyword('total', value=Make.Constant(False))]
+	Make.ClassDef('ast_attributes_type_comment', bases=[Make.Name('ast_attributes')], list_keyword=[Make.keyword('total', value=Make.Constant(value=False))]
 		, body=[Make.AnnAssign(Make.Name('type_comment', Make.Store()), annotation=Make.BitOr().join([Make.Name('str'), Make.Constant(None)]))]
 	),
 ])

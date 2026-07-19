@@ -4,6 +4,7 @@ from __future__ import annotations
 from astToolFactory import (
 	astASTastAttribute, astAttribute_builtins_str, astName_overload, astName_staticmethod, keywordKeywordArguments4Call,
 	ManufacturedPackageSettings, settingsManufacturing)
+from astToolFactory._theTypes import GuardIfThen
 from astToolFactory.datacenter import getElementsBe, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
@@ -16,17 +17,12 @@ from astToolkit.transformationTools import unjoinBinOP
 from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT, writePython
 from pathlib import PurePosixPath
 from textwrap import indent
-from typing import Any, cast, TYPE_CHECKING, TypedDict
+from typing import cast, TYPE_CHECKING
 import ast
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
-
-class GuardIfThen(TypedDict):
-	"""Guard for Python versions."""
-
-	test: ast.expr
-	body: list[ast.stmt]
+	from typing import Any
 
 # NOTE These are Global identifiers used by multiple functions to simplify using the `_makeGuardVersion` function.
 # If the separate functions converge enough, I can combine them into one function and remove this suboptimal system.
@@ -49,7 +45,7 @@ Then, I could pass the dataclass around more easily.
 
 def _makeNestedGuardVersions() -> None:
 	"""Construct version guard."""
-	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0602, PLW0603
+	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-variable-not-assigned, global-statement]
 	orElse: ast.stmt | None = None
 	if versionMinorMinimum >= settingsManufacturing.pythonMinimumVersionMinor:
 		test: ast.Compare = Make.Compare(
@@ -57,7 +53,7 @@ def _makeNestedGuardVersions() -> None:
 			ops=[Make.GtE()],
 			comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])],
 		)
-		assert ast_stmt is not None, "Programming by brinkmanship!"  # noqa: S101
+		assert ast_stmt is not None, "Programming by brinkmanship!"  # ruff:ignore[assert]
 		body: list[ast.stmt] = [ast_stmt]
 		dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
 	else:
@@ -68,7 +64,7 @@ def _makeNestedGuardVersions() -> None:
 	else:
 		for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
 			orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
-		assert orElse is not None, "Programming by brinkmanship!"  # noqa: S101
+		assert orElse is not None, "Programming by brinkmanship!"  # ruff:ignore[assert]
 		ast_stmt = orElse
 		dictionaryGuardVersion.clear()
 
@@ -87,7 +83,7 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 	**keywordArguments : Any
 		Override `ManufacturedPackageSettings`.
 	"""
-	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
+	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
 	list4ModuleBody: list[ast.stmt] = []
 	ledgerOfImports: LedgerOfImports = LedgerOfImports(Make.Module([
 		Make.ImportFrom("types", [Make.alias("EllipsisType")])
@@ -95,7 +91,7 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 		, Make.Import("ast")
 		, Make.Import("sys")]))
 
-	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias(**keywordArguments):  # noqa: B007
+	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias(**keywordArguments):  # ruff:ignore[unused-loop-control-variable]
 		ast_stmt = Make.TypeAlias(Make.Name(identifierTypeAlias, Make.Store()), type_params=[], value=Make.BitOr.join(list4TypeAlias_value))
 
 		if guardVersion:
@@ -177,10 +173,10 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	**keywordArguments : Any
 		Override `ManufacturedPackageSettings`.
 	"""
-	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
+	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
 	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
 
-	for identifierTypeOfNode, overloadDefinition, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass, **keywordArguments):  # noqa: B007
+	for identifierTypeOfNode, overloadDefinition, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass, **keywordArguments):  # ruff:ignore[unused-loop-control-variable]
 		decorator_list: list[ast.expr] = [astName_staticmethod]
 
 # python/cpython#143661
@@ -258,14 +254,14 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	**keywordArguments : Any
 		Override `ManufacturedPackageSettings`.
 	"""
-	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
+	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
 	list4ClassDefBody: list[ast.stmt] = [
 		docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
 		, FunctionDefGrab_andDoAllOf
 		, FunctionDefGrab_index
 		]
 
-	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(  # noqa: B007
+	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(  # ruff:ignore[unused-loop-control-variable]
 		identifierToolClass, **keywordArguments
 	):
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
@@ -321,7 +317,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 	**keywordArguments : Any
 		Override `ManufacturedPackageSettings`.
 	"""
-	global ast_stmt, guardVersion, versionMinorMinimum  # noqa: PLW0603
+	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
 	ledgerOfImports: LedgerOfImports = LedgerOfImports(Make.Module([
 		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any")])
@@ -337,7 +333,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, FunctionDef_operatorJoinMethod]
 
 	for (ClassDefIdentifier, listFunctionDef_args, kwarg_annotationIdentifier, defaults, classAs_astAttribute, overloadDefinition,
-		listCall_keyword, guardVersion, versionMinorMinimum) in getElementsMake(identifierToolClass, **keywordArguments):  # noqa: B007
+		listCall_keyword, guardVersion, versionMinorMinimum) in getElementsMake(identifierToolClass, **keywordArguments):  # ruff:ignore[unused-loop-control-variable]
 		# Bypass the manufacture of the tool by using a prefabricated tool from the annex.
 		if ClassDefIdentifier in [subclass.__name__ for subclass in ast.boolop.__subclasses__()]:
 			list4ClassDefBody.append(
@@ -452,13 +448,13 @@ def writeClass(identifierClass: str, list4ClassDefBody: list[ast.stmt], list4Mod
 
 	Parameters
 	----------
-	classIdentifier : str
+	identifierClass : str
 			Name of the class to write.
 	list4ClassDefBody : list[ast.stmt]
 			Statements for the class body.
 	list4ModuleBody : list[ast.stmt]
 			Statements for the module body.
-	moduleIdentifierPrefix : str | None = '_tool'
+	identifierModulePrefix : str | None = '_tool'
 			Prefix for the module identifier.
 	"""
 	identifierModule: str = (identifierModulePrefix or "") + identifierClass

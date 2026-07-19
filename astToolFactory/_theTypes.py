@@ -1,41 +1,12 @@
 from __future__ import annotations
 
-from typing import Any, NamedTuple, NotRequired, TYPE_CHECKING, TypedDict, TypeVar
+from typing import NamedTuple, TYPE_CHECKING, TypedDict, TypeVar
 
 if TYPE_CHECKING:
+	from typing import Any, NotRequired
 	import ast
 
-class column__value(NamedTuple):
-	"""Assignment tuple representing exactly one `column = value` operation.
-
-	(AI generated docstring)
-
-	This tuple is the "right-hand side" of the selector-based dataframe update system.
-	When paired with a selector specification (such as `Column__attribute`) in a dictionary,
-	it specifies which column to update and what value to assign to the selected
-	rows.
-
-	The identifier `column__value` decodes per the naming convention to
-	"column = value", reflecting its role as an assignment specification.
-
-	Attributes
-	----------
-	column : str
-		Name of the dataframe column to update.
-	value : Any
-		Value to assign to the selected rows in that column.
-
-	See Also
-	--------
-	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-		the complete selector-based dataframe update system.
-
-	"""
-
-	column: str
-	value: Any
-
-"""NOTE How to construct an identifier:
+"""# NOTE How to construct an identifier:
 	Use the actual column names, case sensitive.
 	Convert punctuation to underscores:
 		`_` -> `,`
@@ -49,11 +20,11 @@ class Column__attribute(NamedTuple):
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the selector-based dataframe update system. The field
-	name `attribute` corresponds to the dataframe column name, and the field value
-	specifies which rows to select.
+	Used as a dictionary key in the selector-based dataframe update system. The field name `attribute`
+	corresponds to the dataframe column name, and the field value specifies which rows to select.
 
-	The identifier `Column__attribute` decodes to "Column = attribute". It selects by the `attribute` column.
+	The identifier `Column__attribute` decodes to "Column = attribute". It selects by the `attribute`
+	column.
 
 	Attributes
 	----------
@@ -64,7 +35,6 @@ class Column__attribute(NamedTuple):
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
 		the complete selector-based dataframe update system.
-
 	"""
 
 	attribute: str
@@ -74,9 +44,9 @@ class Column__attributeKind(NamedTuple):
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the selector-based dataframe update system. The field
-	name `attributeKind` corresponds to the dataframe column name, and the field
-	value specifies which rows to select.
+	Used as a dictionary key in the selector-based dataframe update system. The field name
+	`attributeKind` corresponds to the dataframe column name, and the field value specifies which rows
+	to select.
 
 	The identifier `Column__attributeKind` decodes to "Column = attributeKind".
 
@@ -89,7 +59,6 @@ class Column__attributeKind(NamedTuple):
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
 		the complete selector-based dataframe update system.
-
 	"""
 
 	attributeKind: str
@@ -99,10 +68,11 @@ class Column__attributeType_attribute(NamedTuple):
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the selector-based dataframe update system. Both
-	conditions must match for a row to be selected (logical AND).
+	Used as a dictionary key in the selector-based dataframe update system. Both conditions must match
+	for a row to be selected (logical AND).
 
-	The identifier `Column__attributeType_attribute` decodes to "Column = attributeType, attribute". It selects by both columns.
+	The identifier `Column__attributeType_attribute` decodes to "Column = attributeType, attribute".
+	It selects by both columns.
 
 	Attributes
 	----------
@@ -115,7 +85,6 @@ class Column__attributeType_attribute(NamedTuple):
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
 		the complete selector-based dataframe update system.
-
 	"""
 
 	attributeType: str
@@ -126,13 +95,12 @@ class Column__ClassDefIdentifier_attribute(NamedTuple):
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the selector-based dataframe update system. Both
-	conditions must match for a row to be selected (logical AND). This is the most
-	specific selector specification. It selects rows for a particular attribute of a particular
-	AST class.
+	Used as a dictionary key in the selector-based dataframe update system. Both conditions must match
+	for a row to be selected (logical AND). This is the most specific selector specification. It
+	selects rows for a particular attribute of a particular AST class.
 
-	The identifier `Column__ClassDefIdentifier_attribute` decodes to
-	"Column = ClassDefIdentifier, attribute".
+	The identifier `Column__ClassDefIdentifier_attribute` decodes to "Column = ClassDefIdentifier,
+	attribute".
 
 	Attributes
 	----------
@@ -145,7 +113,6 @@ class Column__ClassDefIdentifier_attribute(NamedTuple):
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
 		the complete selector-based dataframe update system.
-
 	"""
 
 	ClassDefIdentifier: str
@@ -156,13 +123,12 @@ class Column__ClassDefIdentifier_versionMinorPythonInterpreter(NamedTuple):
 
 	(AI generated docstring)
 
-	Used as a dictionary key in the selector-based dataframe update system. Both
-	conditions must match for a row to be selected (logical AND). This is the most
-	specific selector specification, selecting rows for a particular attribute of a particular
-	AST class.
+	Used as a dictionary key in the selector-based dataframe update system. Both conditions must match
+	for a row to be selected (logical AND). This is the most specific selector specification,
+	selecting rows for a particular attribute of a particular AST class.
 
-	The identifier `Column__ClassDefIdentifier_versionMinorPythonInterpreter` decodes to
-	"Column = ClassDefIdentifier, versionMinorPythonInterpreter".
+	The identifier `Column__ClassDefIdentifier_versionMinorPythonInterpreter` decodes to "Column =
+	ClassDefIdentifier, versionMinorPythonInterpreter".
 
 	Attributes
 	----------
@@ -175,25 +141,38 @@ class Column__ClassDefIdentifier_versionMinorPythonInterpreter(NamedTuple):
 	--------
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
 		the complete selector-based dataframe update system.
-
 	"""
 
 	ClassDefIdentifier: str
 	versionMinorPythonInterpreter: int
 
-SelectorSpecification = TypeVar('SelectorSpecification', bound=NamedTuple, covariant=True)
-"""Type variable representing any selector specification in the dataframe update system.
+class column__value(NamedTuple):
+	"""Assignment tuple representing exactly one `column = value` operation.
 
-Bound to `NamedTuple` so that `getSelectorFromSpecification` can iterate over the tuple's
-field names and values via `._asdict()`. Covariant because selector specifications are used
-only as dictionary keys (read-only position).
+	(AI generated docstring)
 
-See Also
---------
-`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
-	the complete selector-based dataframe update system.
+	This tuple is the "right-hand side" of the selector-based dataframe update system. When paired
+	with a selector specification (such as `Column__attribute`) in a dictionary, it specifies which
+	column to update and what value to assign to the selected rows.
 
-"""
+	The identifier `column__value` decodes per the naming convention to "column = value", reflecting
+	its role as an assignment specification.
+
+	Attributes
+	----------
+	column : str
+		Name of the dataframe column to update.
+	value : Any
+		Value to assign to the selected rows in that column.
+
+	See Also
+	--------
+	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
+		the complete selector-based dataframe update system.
+	"""
+
+	column: str
+	value: Any
 
 class dataTypeVariables(TypedDict):
 	"""Data to manufacture a `TypeVar`.
@@ -208,10 +187,28 @@ class dataTypeVariables(TypedDict):
 		Keyword arguments as tuples of parameter name and boolean value.
 	default_value : NotRequired[ast.expr]
 		Default value expression for the type variable.
-
 	"""
 
-	constraints: NotRequired[list[ast.expr]]
 	bound: NotRequired[ast.expr]
-	tuple_keyword: NotRequired[list[tuple[str, bool]]]
+	constraints: NotRequired[list[ast.expr]]
 	default_value: NotRequired[ast.expr]
+	tuple_keyword: NotRequired[list[tuple[str, bool]]]
+
+class GuardIfThen(TypedDict):
+	"""Guard for Python versions."""
+
+	test: ast.expr
+	body: list[ast.stmt]
+
+SelectorSpecification = TypeVar('SelectorSpecification', bound=NamedTuple, covariant=True)
+"""Type variable representing any selector specification in the dataframe update system.
+
+Bound to `NamedTuple` so that `getSelectorFromSpecification` can iterate over the tuple's field names
+and values via `._asdict()`. Covariant because selector specifications are used only as dictionary
+keys (read-only position).
+
+See Also
+--------
+`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
+	the complete selector-based dataframe update system.
+"""
