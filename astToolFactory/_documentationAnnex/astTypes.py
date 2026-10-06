@@ -12,7 +12,7 @@ from astToolFactory.documentation import aDocument, dictionary_astClasses, dimin
 from astToolkit import Make
 
 def formatSubclassesOxford(subclassList: list[str]) -> str:
-	"""Format a list of subclass names as an Oxford comma series."""  # noqa: DOC201
+	"""Format a list of subclass names as an Oxford comma series."""  # ruff: ignore[docstring-missing-returns]
 	if not subclassList:
 		return ''
 	if len(subclassList) == 1:

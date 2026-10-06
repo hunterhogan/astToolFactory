@@ -1,9 +1,7 @@
-# ruff: noqa: D100, D103
+# ruff: file-ignore[undocumented-public-module, undocumented-public-function]
 from __future__ import annotations
 
 from github import Auth, Github
-from github.Commit import Commit
-from github.ContentFile import ContentFile
 from github.InputGitTreeElement import InputGitTreeElement
 from operator import attrgetter, methodcaller
 from pathlib import Path, PurePosixPath

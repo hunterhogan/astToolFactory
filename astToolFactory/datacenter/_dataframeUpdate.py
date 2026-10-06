@@ -17,7 +17,8 @@ assignment.
 """
 from __future__ import annotations
 
-# pyright: reportUnusedImport=false
+#=SIN= ast classes evaluated during runtime.
+#pyright: reportUnusedImport=false
 from ast import (
 	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, Interpolation, keyword, match_case,
 	Name, operator, pattern, stmt, Subscript, TemplateStr, type_param, TypeIgnore, unaryop, withitem)
@@ -27,14 +28,14 @@ from astToolFactory.datacenter._dataframeUpdateAnnex import (
 	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, defaultValue__,
 	dictionary_defaultValue_ast_arg_Call_keyword_orElse, kwarg_annotationIdentifier__, move2keywordArguments__)
 from astToolFactory.datacenter._dataServer import _sortCaseInsensitive, getDataframe
-from astToolkit import (
-	Be, ConstantValueType as _ConstantValue, DOT, IfThis, Make, NodeChanger, NodeTourist, parsePathFilename2astModule, Then)
-from astToolkit.transformationTools import makeDictionaryClassDef, pythonCode2ast_expr
+from astToolkit import Be, ConstantValueType as _ConstantValue, DOT, IfThis, Make, NodeChanger, NodeTourist, Then
+from astToolkit.changeDef import makeDictionaryClassDef
+from astToolkit.filesystem import parsePathFilename2astModule
+from astToolkit.transformationTools import pythonCode2ast_expr
 from collections.abc import Mapping
 from functools import cache
 from hunterMakesPy import raiseIfNone
-from operator import getitem
-from typing import cast, TYPE_CHECKING
+from typing import cast, TYPE_CHECKING, TypeIs
 import ast
 import builtins
 import numpy
@@ -43,6 +44,7 @@ import typeshed_client
 
 if TYPE_CHECKING:
 	from astToolFactory import SelectorSpecification
+	from collections.abc import Callable
 	from numpy.typing import ArrayLike
 	from pathlib import Path
 	from typing import Any
@@ -149,18 +151,15 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 
 	namespace: str = 'typing_extensions'
 	identifier: str = 'TypeVar'
-	ast_keyword: ast.keyword = getitem(raiseIfNone(NodeTourist(
-					findThis=IfThis.isAllOf(
-						Be.Call.funcIs(IfThis.isAttributeNamespaceIdentifier(namespace, identifier))
-						, Be.Call.keywordsIs(Be.at(0, IfThis.is_keywordIdentifier('default')))
-					)
-					, doThat=Then.extractIt(DOT.keywords)
-				).captureLastMatch(_get_astModule_astStub())
-			)
-			, 0
-		)
+	ast_keyword: ast.keyword = raiseIfNone(NodeTourist[ast.Call, ast.keyword | None](
+		findThis=Be.Call.funcIs(IfThis.isAttributeNamespaceIdentifier(namespace, identifier))
+		, doThat=NodeTourist[ast.keyword, ast.keyword](
+			findThis=IfThis.is_keywordIdentifier('default')
+			, doThat=cast('Callable[[ast.keyword], ast.keyword]', Then.extractIt)
+		).captureLastMatch
+	).captureLastMatch(_get_astModule_astStub()))
 
-	_attributeTypeVar_default: str = ast.unparse(ast_keyword.value)  # noqa: RUF052
+	_attributeTypeVar_default: str = ast.unparse(ast_keyword.value)  # ruff: ignore[used-dummy-variable]
 
 	NodeTourist[ast.AnnAssign, Mapping[str, str]](findThis=Be.AnnAssign.targetIs(Be.Name)
 		, doThat=Then.updateKeyValueIn(key=lambda node: cast('ast.Name', node.target).id
@@ -168,8 +167,8 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 			, dictionary=dictionary_Attributes)
 	).visit(astClassDef)
 
-	for _attribute in dictionary_Attributes:  # noqa: RUF052
-		_attributeTypeVar: str = _attributeTypeVarHARDCODED  # noqa: RUF052
+	for _attribute in dictionary_Attributes:  # ruff: ignore[used-dummy-variable]
+		_attributeTypeVar: str = _attributeTypeVarHARDCODED  # ruff: ignore[used-dummy-variable]
 		dictionary_Attributes[_attribute] = dictionary_Attributes[_attribute].replace(_attributeTypeVar, _attributeTypeVar_default)
 	return dictionary_Attributes
 
@@ -178,14 +177,16 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 # TODO implement this fake function --------------------------------
 
 def _getDataFromInterpreter(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	pathFilename: Path = settingsPackage.pathPackage / 'datacenter' / 'probeInterpreter.csv'  # pyright: ignore[reportUnusedVariable] # noqa: F841
-	dataframe = dataframe.astype({
+	pathFilename: Path = settingsPackage.pathPackage / 'datacenter' / 'probeInterpreter.csv'
+	dictionaryColumnTypeInterpreter: dict[str, str] = {
 		'ClassDefIdentifier': 'string',
 		'versionMajorPythonInterpreter': 'int64',
 		'versionMinorPythonInterpreter': 'int64',
 		'versionMicroPythonInterpreter': 'int64',
 		'base': 'string',
-	})
+	}
+	dataframe = pandas.read_csv(
+		pathFilename, header=None, names=list(dictionaryColumnTypeInterpreter), dtype=dictionaryColumnTypeInterpreter)
 
 	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
 	# TODO Columns to create using the Python Interpreter,
@@ -267,13 +268,13 @@ def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 		"""
 		the_Attributes: dict[str, str] = {}
-		_attribute_ast_expr: ast.expr | None = NodeTourist(  # noqa: RUF052
+		_attribute_ast_expr: ast.expr | None = NodeTourist[ast.Subscript, ast.Name](  # ruff: ignore[used-dummy-variable]
 			findThis=Be.Subscript.valueIs(IfThis.isNameIdentifier('Unpack'))
 			, doThat=Then.extractIt(DOT.slice)
 		).captureLastMatch(dictionaryClassDef[ClassDefIdentifier])
 
 		if _attribute_ast_expr:
-			_EndPositionT: ast.expr | None = NodeTourist(findThis=Be.Subscript, doThat=Then.extractIt(DOT.slice)).captureLastMatch(_attribute_ast_expr)  # noqa: RUF052
+			_EndPositionT: ast.expr | None = NodeTourist[ast.Subscript, ast.expr](findThis=Be.Subscript, doThat=Then.extractIt(DOT.slice)).captureLastMatch(_attribute_ast_expr)  # ruff: ignore[used-dummy-variable]
 			if _EndPositionT:
 				the_Attributes = dict.fromkeys(dictionary_Attributes, ast.unparse(_EndPositionT))
 			else:
@@ -360,10 +361,14 @@ def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 				The string representation of the type annotation for the field.
 
 			"""
-			dddataframeee['attributeType'] = ast.unparse(NodeChanger[ast.Name, ast.expr](
-				findThis=lambda node: Be.Name(node) and isinstance(eval(node.id), type) and issubclass(eval(node.id), ast.AST)  # noqa: S307
-				, doThat=lambda node: Make.Attribute(Make.Name('ast'), eval(node.id).__name__)  # noqa: S307
-				).visit(raiseIfNone(NodeTourist[ast.AnnAssign, ast.expr](
+			def findThis(node: ast.AST) -> TypeIs[Name]:
+				# ruff: ignore[suspicious-eval-usage]
+				return Be.Name(node) and isinstance(eval(node.id), type) and issubclass(eval(node.id), ast.AST)
+
+			def doThat(node: ast.AST) -> Attribute:
+				# ruff: ignore[suspicious-eval-usage]
+				return Make.Attribute(Make.Name('ast'), eval(node.id).__name__)  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue] # ty: ignore[unresolved-attribute]
+			dddataframeee['attributeType'] = ast.unparse(NodeChanger[ast.Name, ast.expr](findThis, doThat).visit(raiseIfNone(NodeTourist[ast.AnnAssign, ast.expr](
 					findThis=Be.AnnAssign.targetIs(IfThis.isNameIdentifier(cast('str', dddataframeee['attribute'])))
 					, doThat=Then.extractIt(DOT.annotation)
 					).captureLastMatch(dictionaryClassDef[cast('str', dddataframeee['ClassDefIdentifier'])]))))
@@ -470,13 +475,13 @@ def _fixMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			message = f"Your current system assumes attribute '{attributePROXY['attribute']}' is not a keyword argument, but this function got {attributePROXY}."
 			raise ValueError(message)
 
-		dataframe.loc[selector, 'defaultValue'] = Make.Constant(None)  # pyright: ignore[reportArgumentType, reportCallIssue]
+		dataframe.loc[selector, 'defaultValue'] = Make.Constant(None)  # pyright: ignore[reportArgumentType, reportCallIssue]  # ty: ignore[invalid-assignment]
 		attributeType: str = cast('str', attributePROXY['attributeType']) + ' | None'
 		if attributePROXY['list2Sequence'] is True:
 			attributeType = attributeType.replace('list', 'Sequence')
-		dataframe.loc[selector, 'ast_arg'] = Make.arg(cast('str', attributePROXY['attributeRename']), annotation=pythonCode2ast_expr(attributeType))  # pyright: ignore[reportArgumentType, reportCallIssue]
+		dataframe.loc[selector, 'ast_arg'] = Make.arg(cast('str', attributePROXY['attributeRename']), annotation=pythonCode2ast_expr(attributeType))  # pyright: ignore[reportArgumentType, reportCallIssue]  # ty: ignore[invalid-assignment]
 		attributePROXY['orElse'] = orElse
-		dataframe.loc[selector, 'Call_keyword'] = _make_keywordOrList(attributePROXY)  # pyright: ignore[reportArgumentType, reportCallIssue]
+		dataframe.loc[selector, 'Call_keyword'] = _make_keywordOrList(attributePROXY)  # pyright: ignore[reportArgumentType, reportCallIssue]  # ty: ignore[invalid-assignment]
 	return dataframe
 
 def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -521,7 +526,7 @@ def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	def make_ast_arg(row: pandas.Series) -> ast.arg:
 		return Make.arg(row['attributeRename'], annotation=cast('ast.expr', row['type_ast_expr']))
 
-	dataframe.loc[selectorAttributeArguments, 'ast_arg'] = dataframe[selectorAttributeArguments].apply(make_ast_arg, axis='columns')
+	dataframe.loc[selectorAttributeArguments, 'ast_arg'] = dataframe[selectorAttributeArguments].apply(make_ast_arg, axis='columns')  # ty: ignore[no-matching-overload]
 	return dataframe
 
 def _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -563,10 +568,9 @@ def _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe: pandas.DataFrame)
 	I've imported ast_attributes, ast_attributes_int, ast_attributes_type_comment from astToolkit. If I were to change the
 	dictionaries or add new dictionaries, there will be a temporary Catch-22: the new dictionaries will not be in the existing
 	version of astToolkit, so this function will not be able to match them.
-	"""  # noqa: DOC201
-	dataframe = dictionaryToUpdateDataframe(kwarg_annotationIdentifier__, dataframe)
-	dataframe['kwarg_annotationIdentifier'] = dataframe['kwarg_annotationIdentifier'].fillna('No')
-	return dataframe
+	"""  # ruff: ignore[docstring-missing-returns]
+	dataframe['kwarg_annotationIdentifier'] = 'No'
+	return dictionaryToUpdateDataframe(kwarg_annotationIdentifier__, dataframe)
 
 def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	"""Identify attributes that require `list` to `Sequence` covariance transformation.
@@ -690,7 +694,7 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	def make_ast_keywordWith_defaultValue(dataframeTarget: pandas.Series) -> ast.keyword:
 		return Make.keyword(dataframeTarget['attribute'], dataframeTarget['defaultValue'])
 
-	dataframe.loc[selector_defaultValue, 'Call_keyword'] = dataframe.loc[selector_defaultValue].apply(make_ast_keywordWith_defaultValue, axis='columns')
+	dataframe.loc[selector_defaultValue, 'Call_keyword'] = dataframe.loc[selector_defaultValue].apply(make_ast_keywordWith_defaultValue, axis='columns')  # ty: ignore[no-matching-overload]
 
 	selectorNameValue: pandas.Series[bool] = selectorCall_keyword & (dataframe['move2keywordArguments'] != 'True')
 
@@ -700,7 +704,7 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			keywordValue = Make.Call(Make.Name('list'), [keywordValue])
 		return Make.keyword(dataframeTarget['attribute'], keywordValue)
 
-	dataframe.loc[selectorNameValue, 'Call_keyword'] = dataframe.loc[selectorNameValue].apply(make_ast_keywordFrom_attributeRename, axis='columns')
+	dataframe.loc[selectorNameValue, 'Call_keyword'] = dataframe.loc[selectorNameValue].apply(make_ast_keywordFrom_attributeRename, axis='columns')  # ty: ignore[no-matching-overload]
 	return dataframe
 
 #-------- Aggregate data: transformations create identical values in their group ------------
@@ -734,6 +738,7 @@ def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		groupings).
 
 	"""
+	dataframe = _makeColumnsVersionMinimum(dataframe, ['ClassDefIdentifier', 'attribute'], 'versionMinorMinimumAttribute')
 	dataframe['list4TypeAlias_value'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
 	dataframe['hashable_list4TypeAlias_value'] = pandas.Series(data='No', index=dataframe.index, dtype=str)
 
@@ -742,11 +747,10 @@ def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 		(AI generated docstring)
 
-		This helper function finds all rows belonging to the same TypeAlias
-		subcategory that are valid for the current row's version context (less
-		than or equal to `versionMinorMinimumAttribute`). It effectively
-		reconstructs the `Union[...]` of types that exists at that specific
-		point in the version history.
+		Finds all rows belonging to the same TypeAlias subcategory that are valid for the current
+		row's version context (less than or equal to `versionMinorMinimumAttribute`). It effectively
+		reconstructs the `Union[...]` of types that exists at that specific point in the version
+		history.
 
 		Parameters
 		----------
@@ -756,8 +760,8 @@ def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		Returns
 		-------
 		elementList : tuple[list[ast.expr], str]
-			A tuple containing the list of AST expressions for the types and a
-			hashable string representation of the identifiers.
+			A tuple containing the list of AST expressions for the types and a hashable string
+			representation of the identifiers.
 
 		"""
 		selectorSubcategory: pandas.Series[bool] = (
@@ -871,13 +875,18 @@ def _makeColumnsFourLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		The dataframe updated with columns containing aggregated lists.
 
 	"""
+	dataframe['listTupleAttributes'] = 'No'
+	dataframe['listFunctionDef_args'] = 'No'
+	dataframe['listDefaults'] = 'No'
+	dataframe['listCall_keyword'] = 'No'
+
 	dictionaryTupleAttributes: dict[tuple[str, int], list[tuple[str, ast.expr]]] = {}
 	dictionaryFunctionDef_args: dict[tuple[str, int], list[ast.arg]] = {}
 	dictionaryDefaults: dict[tuple[str, int], list[ast.expr]] = {}
 	dictionaryCall_keyword: dict[tuple[str, int], list[ast.keyword]] = {}
 
-	for (ClassDefIdentifier, versionMinorMinimum_match_args), dataframeGroupBy in dataframe.groupby(['ClassDefIdentifier', 'versionMinorMinimum_match_args']):  # ty:ignore[not-iterable]
-		groupKey: tuple[str, int] = (ClassDefIdentifier, versionMinorMinimum_match_args)  # pyright: ignore[reportAssignmentType]
+	for (ClassDefIdentifier, versionMinorMinimum_match_args), dataframeGroupBy in dataframe.groupby(['ClassDefIdentifier', 'versionMinorMinimum_match_args']):
+		groupKey: tuple[str, int] = (ClassDefIdentifier, versionMinorMinimum_match_args)  # pyright: ignore[reportAssignmentType]  # ty: ignore[invalid-assignment]
 		match_argsCategoricalSort: tuple[str, ...] = dataframeGroupBy['match_args'].iloc[0]
 		dataframeGroupBy['attribute'] = pandas.Categorical(dataframeGroupBy['attribute'], categories=match_argsCategoricalSort, ordered=True)
 		dataframeGroupBy: pandas.DataFrame = dataframeGroupBy.sort_values(['attribute', 'versionMinorMinimum_match_args'], ascending=[True, False])
@@ -1036,7 +1045,7 @@ def getSelectorFromSpecification(dataframe: pandas.DataFrame, specifiedColumnsAn
 		the complete selector-based dataframe update system.
 
 	"""
-	return pandas.concat([*[dataframe[column] == value for column, value in specifiedColumnsAndValues._asdict().items()]], axis=1).all(axis=1)  # ty:ignore[invalid-return-type] https://github.com/astral-sh/ty/issues/2799
+	return pandas.concat([*[dataframe[column] == value for column, value in specifiedColumnsAndValues._asdict().items()]], axis=1).all(axis=1)
 
 #======== The Function ======================================================
 
@@ -1064,7 +1073,7 @@ def updateDataframe() -> None:
 
 	# TODO think of a clever, simple way to optionally apply this instead of toggling comments.
 	# columns: reorder; drop columns, but they might be recreated later in the flow.
-	# dataframe = dataframe[_columns]  # noqa: ERA001
+	# dataframe = dataframe[_columns]  # ruff: ignore[commented-out-code]
 
 	# TODO Get data using the Python Interpreter.
 	dataframe = _getDataFromInterpreter(dataframe)
@@ -1095,7 +1104,6 @@ def updateDataframe() -> None:
 	dataframe = _makeColumn_list4TypeAlias(dataframe)
 	dataframe = _makeColumn_list4TypeAliasSubcategories(dataframe)
 	dataframe = _makeColumnsVersionMinimum(dataframe, ['ClassDefIdentifier', 'match_args'], 'versionMinorMinimum_match_args')
-	dataframe = _makeColumnsVersionMinimum(dataframe, ['ClassDefIdentifier', 'attribute'], 'versionMinorMinimumAttribute')
 	dataframe = _makeColumnsVersionMinimum(dataframe, ['ClassDefIdentifier'], 'versionMinorMinimumClass')
 	dataframe = _makeColumnCall_keyword(dataframe)
 	dataframe = _fixMutable_defaultValue(dataframe)

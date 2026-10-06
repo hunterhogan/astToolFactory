@@ -14,8 +14,7 @@ import dataclasses
 
 #======== HARDCODED values. TODO: eliminate ======================
 # https://github.com/hunterhogan/astToolFactory/issues/2
-versionMinorTypeshed_astMinimumSupportedHARDCODED: int = 10
-pathRelativeRoot_typeshedHARDCODED: Path = Path('typings/stdlib')
+versionMinorTypeshed_astMinimumSupportedHARDCODED: int = 11
 pathRootPackageToManufactureHARDCODED: Path = Path('/apps')
 
 #======== Settings for the package ===============================
@@ -49,7 +48,7 @@ class ManufacturedPackageSettings(PackageSettings):
 	includeDeprecated: bool = False
 	keywordArgumentsIdentifier: str = 'keywordArguments'
 	pathFilenameDataframeAST: Path = dataclasses.field(default=settingsPackage.pathPackage / 'dataframeAST.pkl')
-	pathRoot_typeshed: Path = Path(settingsPackage.pathPackage, '..', 'typings', 'stdlib')
+	pathRoot_typeshed: Path = Path('/clones', 'typeshed', 'stdlib')
 	pythonMinimumVersionMinor: int = noMinimum
 	versionMinor_astMinimumSupported: int = noMinimum
 	versionMinorMaximum: int = 9001
@@ -61,7 +60,7 @@ pathRootPackageToManufacture: Path = pathRootPackageToManufactureHARDCODED
 PackageToManufactureIdentifier: str = 'astToolkit'
 pathFilenameDataframeAST: Path = settingsPackage.pathPackage / 'datacenter' / '_dataframeAST.pkl'
 pathPackageToManufacture: Path = Path(pathRootPackageToManufacture, PackageToManufactureIdentifier, PackageToManufactureIdentifier).resolve()
-pathRoot_typeshed: Path = Path(settingsPackage.pathPackage, '..', pathRelativeRoot_typeshedHARDCODED).resolve()
+pathRoot_typeshed: Path = Path('/clones', 'typeshed', 'stdlib')
 versionMinorTypeshed_astMinimumSupported: int = versionMinorTypeshed_astMinimumSupportedHARDCODED
 
 settings_astToolkit = ManufacturedPackageSettings(

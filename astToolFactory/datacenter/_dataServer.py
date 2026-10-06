@@ -37,11 +37,11 @@ def _makeColumn_guardVersion(dataframe: pandas.DataFrame, byColumn: str) -> pand
 		from the total number of versions in the group.
 	- Or if the only member of a group has a python version greater than `pythonMinimumVersionMinor`.
 
-	"""  # noqa: DOC201
+	"""  # ruff: ignore[docstring-missing-returns]
 	dataframe["guardVersion"] = numpy.where(
 		((versionsTotal := (seriesGroupByVersion := dataframe.groupby(byColumn)["versionMinorMinimum"]).transform("nunique")) == 1)
 			& (seriesGroupByVersion.transform("max") <= settingsManufacturing.pythonMinimumVersionMinor)  # pyright: ignore[reportArgumentType]
-		, False  # noqa: FBT003
+		, False  # ruff: ignore[boolean-positional-value-in-call]
 		, numpy.maximum(1, versionsTotal - seriesGroupByVersion.rank(method="first", ascending=False).astype(int) + 1)  # pyright: ignore[reportUnknownArgumentType]
 	)
 	return dataframe
@@ -60,7 +60,7 @@ def getDataframe(*indices: str, **keywordArguments: Any) -> pandas.DataFrame:
 	versionMinorMaximum: int | None = keywordArguments.get("versionMinorMaximum") or settingsManufacturing.versionMinorMaximum
 	modifyVersionMinorMinimum: bool = keywordArguments.get("modifyVersionMinorMinimum") or True
 
-	dataframe: pandas.DataFrame = pandas.read_pickle(pathFilename)  # noqa: S301  # ty:ignore[invalid-assignment]
+	dataframe: pandas.DataFrame = pandas.read_pickle(pathFilename)  # ruff: ignore[suspicious-pickle-usage]  # ty:ignore[invalid-assignment]
 
 	if not includeDeprecated:
 		dataframe = dataframe[~dataframe["deprecated"]]
@@ -79,7 +79,7 @@ def getDataframe(*indices: str, **keywordArguments: Any) -> pandas.DataFrame:
 
 	return dataframe
 
-def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, int, ast.expr, list[tuple[str, ast.expr]]]]:  # noqa: ARG001
+def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, int, ast.expr, list[tuple[str, ast.expr]]]]:  # ruff: ignore[unused-function-argument]
 	listColumnsHARDCODED: list[str] = ["ClassDefIdentifier", "versionMinorMinimumClass", "classAs_astAttribute", "listTupleAttributes"]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
@@ -94,7 +94,7 @@ def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tup
 
 	return dataframe.to_records(index=False).tolist()
 
-def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str, list[ast.expr], int, int]]:  # noqa: ARG001
+def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str, list[ast.expr], int, int]]:  # ruff: ignore[unused-function-argument]
 	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimumAttribute", "type_ast_expr", "attributeType", "TypeAlias_hasDOTIdentifier"]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
@@ -167,11 +167,11 @@ def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tu
 	dataframe = dataframe[elementsTarget]
 	return dataframe.to_records(index=False).tolist()
 
-def getElementsDocstringGrab(identifierToolClass: str, **keywordArguments: Any) -> dict[str, dict[Any, Any]]:  # noqa: ARG001
-	"""Get docstring elements for Grab."""  # noqa: DOC201
+def getElementsDocstringGrab(identifierToolClass: str, **keywordArguments: Any) -> dict[str, dict[Any, Any]]:  # ruff: ignore[unused-function-argument]
+	"""Get docstring elements for Grab."""  # ruff: ignore[docstring-missing-returns]
 	return {}
 
-def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:  # noqa: ARG001
+def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:  # ruff: ignore[unused-function-argument]
 	listColumnsHARDCODED: list[str] = ["attribute", "type_astSuperClasses", "versionMinorMinimumAttribute", "TypeAlias_hasDOTIdentifier", "type_astSuperClasses_ast_expr"]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
@@ -215,7 +215,7 @@ def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[t
 
 	return dataframe.to_records(index=False).tolist()
 
-def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.arg], str, list[ast.expr], ast.expr, bool, list[ast.keyword], int, int]]:  # noqa: ARG001
+def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.arg], str, list[ast.expr], ast.expr, bool, list[ast.keyword], int, int]]:  # ruff: ignore[unused-function-argument]
 	listColumnsHARDCODED: list[str] = ["ClassDefIdentifier", "versionMinorMinimumClass", "versionMinorMinimum_match_args", "listFunctionDef_args", "kwarg_annotationIdentifier", "listDefaults", "classAs_astAttribute", "listCall_keyword"]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED

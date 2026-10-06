@@ -4,7 +4,6 @@ from __future__ import annotations
 
 from astToolFactory import inclusive, settingsManufacturing, settingsPackage
 from hunterMakesPy.filesystemToolkit import importPathFilename2Identifier
-from pathlib import Path
 from pprint import pprint
 from typing import Any, Literal, Protocol, TYPE_CHECKING
 import sys
@@ -65,7 +64,7 @@ class asdlParsedProtocol(Protocol):
 	dfns: Sequence[_asdlTypeDefinitionProtocol]
 
 def getPath_asdl(versionMinor: int) -> Path:
-	"""Create physical path for Python.asdl file."""  # noqa: DOC201
+	"""Create physical path for Python.asdl file."""  # ruff: ignore[docstring-missing-returns]
 	return settingsPackage.pathPackage / relativePathCpython / f'3.{versionMinor}'
 
 def extract_match_argsForVersion(versionMinor: int) -> dict[str, tuple[str, ...]]:
@@ -142,7 +141,7 @@ def extract_match_args() -> dict[int, dict[str, tuple[str, ...]]]:
 	return dictionaryByVersion
 
 def getDictionary_match_args() -> dict[tuple[str, int, Literal[False]], tuple[str, ...]]:
-	"""Create dictionary structured as ClassDefIdentifier -> versionMinorPythonInterpreter -> match_args."""  # noqa: DOC201
+	"""Create dictionary structured as ClassDefIdentifier -> versionMinorPythonInterpreter -> match_args."""  # ruff: ignore[docstring-missing-returns]
 	dictionaryByVersion: dict[int, dict[str, tuple[str, ...]]] = extract_match_args()
 
 	match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated: dict[tuple[str, int, Literal[False]], tuple[str, ...]] = {}
@@ -160,7 +159,7 @@ def main() -> None:
 
 	sys.stdout.write("# Unified AST class __match_args__ extracted from Python.asdl across versions\n")
 	sys.stdout.write("dictionaryMatchArguments_byClassByVersion = ")
-	pprint(dictionaryByClass, stream=sys.stdout, width=120, sort_dicts=True)  # noqa: T203
+	pprint(dictionaryByClass, stream=sys.stdout, width=120, sort_dicts=True)  # ruff: ignore[p-print]
 
 if __name__ == "__main__":
 	main()

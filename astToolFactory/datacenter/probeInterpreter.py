@@ -1,4 +1,4 @@
-# ruff: noqa: D100
+# ruff: file-ignore[undocumented-public-module]
 from __future__ import annotations
 
 from itertools import chain
@@ -17,7 +17,7 @@ for astClass in [
 	for aClass in [ast.AST, *chain(*(aSubclass.__subclasses__() for aSubclass in [ast.AST, *ast.AST.__subclasses__()]))]
 	if issubclass(aClass, ast.AST)
 ]:
-	listClassDefIdentifier_base.append((str(astClass.__name__), *sys.version_info[0:3], str(astClass.__base__.__name__)))  # pyright: ignore[reportOptionalMemberAccess] # ty:ignore[unresolved-attribute]  # noqa: PERF401
+	listClassDefIdentifier_base.append((str(astClass.__name__), *sys.version_info[0:3], str(astClass.__base__.__name__)))  # pyright: ignore[reportOptionalMemberAccess] # ty:ignore[unresolved-attribute]  # ruff: ignore[manual-list-comprehension]
 
 with pathFilename.open('w', encoding='utf-8', newline='') as streamWrite:
 	csv.writer(streamWrite).writerows(sorted(listClassDefIdentifier_base))

@@ -1,4 +1,3 @@
-# ruff: noqa
 # pyright: basic
 """A warehouse for docstrings added to manufactured ast tools.
 

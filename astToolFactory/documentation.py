@@ -110,7 +110,7 @@ class Docstring:
 		)
 
 def make1docstring(data: Docstring, ImaIndent: str = ' ' * 4, firstIndent: int = 0) -> str:
-	"""Make a docstring from a Docstring dataclass."""  # noqa: DOC201
+	"""Make a docstring from a Docstring dataclass."""  # ruff: ignore[docstring-missing-returns]
 	indentTo: str = ImaIndent * firstIndent
 	paragraph = textwrap.TextWrapper(width=120, initial_indent=indentTo, subsequent_indent=indentTo
 		, expand_tabs=True, tabsize=4, replace_whitespace=True, break_long_words=False, drop_whitespace=True)
@@ -148,10 +148,10 @@ def make1docstring(data: Docstring, ImaIndent: str = ' ' * 4, firstIndent: int =
 
 def getMoreDocstrings() -> None:
 	"""Missing docstring in public function."""
-	import astToolFactory._documentationAnnex.astTypes  # pyright: ignore[reportUnusedImport]  # noqa: PLC0415
-	import astToolFactory._documentationAnnex.Be  # pyright: ignore[reportUnusedImport]  # noqa: PLC0415
-	import astToolFactory._documentationAnnex.DOT  # pyright: ignore[reportUnusedImport]  # noqa: PLC0415
-	import astToolFactory._documentationAnnex.Grab  # pyright: ignore[reportUnusedImport]  # noqa: PLC0415
-	import astToolFactory._documentationAnnex.Make  # pyright: ignore[reportUnusedImport]  # noqa: PLC0415
+	import astToolFactory._documentationAnnex.astTypes  # pyright: ignore[reportUnusedImport]  # ruff: ignore[import-outside-top-level]
+	import astToolFactory._documentationAnnex.Be  # pyright: ignore[reportUnusedImport]  # ruff: ignore[import-outside-top-level]
+	import astToolFactory._documentationAnnex.DOT  # pyright: ignore[reportUnusedImport]  # ruff: ignore[import-outside-top-level]
+	import astToolFactory._documentationAnnex.Grab  # pyright: ignore[reportUnusedImport]  # ruff: ignore[import-outside-top-level]
+	import astToolFactory._documentationAnnex.Make  # pyright: ignore[reportUnusedImport]  # ruff: ignore[import-outside-top-level]
 
 getMoreDocstrings()

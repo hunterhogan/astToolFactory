@@ -101,61 +101,57 @@ if TYPE_CHECKING:
 	import ast
 
 _columns: list[str] = [
-	# All column names used in the package dataframe, grouped by data source and
-	# computation stage. This list serves as the single source of truth for column
-	# ordering and existence.
-	# read from sources
-	# Interpreter
+	# All persisted dataframe columns in their intended order, with one creator per
+	# column. Subsequent assignments refine existing values; no temporary columns.
+	# _getDataFromInterpreter: read class identifiers, versions, and bases from probeInterpreter.csv.
 	'ClassDefIdentifier',
 	'versionMajorPythonInterpreter',
 	'versionMinorPythonInterpreter',
 	'versionMicroPythonInterpreter',
 	'base',
 
-	# getDictionary_match_args and stdlib/ast.pyi
+	# _getDataFromPythonFiles: extract deprecation, fields, and attribute types from ASDL and stdlib/ast.pyi.
 	'deprecated',
 	'match_args',
 	'attribute',
 	'attributeKind',
 	'attributeType',
 
-	# Purely a human choice
+	# updateDataframe: initialize per-row values, then apply the corresponding selector dictionaries.
 	'attributeRename',
 	'move2keywordArguments',
-	'defaultValue',  # (for now)
+	'defaultValue',
 
-	# Put this here? I think it needs the information from `move2keywordArguments`.
-	# columns ought to be computed per group
-    # TODO NOTE FIXME Why did I write "ought to be"? I think I knew this was not automated, but that I didn't document it in a way/place I can currently find.
+	# _makeColumn_kwarg_annotationIdentifierHARDCODED: initialize 'No', then apply the hardcoded class/version dictionary.
 	'kwarg_annotationIdentifier',
 
+	# Per-row computations; each comment names the creator.
+	'classAs_astAttribute',  # updateDataframe: construct ast.ClassDefIdentifier expressions.
+	'list2Sequence',  # _makeColumn_list2Sequence: identify covariant list types using astSuperClasses.
+	'type_ast_expr',  # _makeColumn_type_ast_expr: parse attribute types after applying list2Sequence.
+	'type_astSuperClasses',  # updateDataframe: replace superclass names using astSuperClasses.
+	'ast_arg',  # _makeColumn_ast_arg: construct arguments from attributeRename and type_ast_expr.
+	'type_astSuperClasses_ast_expr',  # updateDataframe: parse type_astSuperClasses.
+	'TypeAlias_hasDOTIdentifier',  # updateDataframe: construct identifiers for _field rows.
+	'TypeAlias_hasDOTSubcategory',  # _makeColumnTypeAlias_hasDOTSubcategory: combine the alias identifier and attributeType.
 
-	# columns computed from sources per row, with exceptions
-	'classAs_astAttribute',
-	'list2Sequence',  # column computed from other columns and a dictionary per row
-	'type_ast_expr',
-	'type_astSuperClasses',  # column computed from other columns and a dictionary per row
-	'ast_arg',
-	'type_astSuperClasses_ast_expr',  # column computed from other columns and a dictionary per row
-	'TypeAlias_hasDOTIdentifier',
-	'TypeAlias_hasDOTSubcategory',
-
-	# columns computed from other columns and a dictionary per group
+	# _makeColumn_list4TypeAlias: cumulative type unions per subcategory and minimum attribute version.
 	'list4TypeAlias_value',
 	'hashable_list4TypeAlias_value',
+	# _makeColumn_list4TypeAliasSubcategories: collect non-deprecated subcategories per attribute.
 	'list4TypeAliasSubcategories',
 
-	# columns computed from sources per group
-	'versionMinorMinimumClass',
-	'versionMinorMinimum_match_args',
-	'versionMinorMinimumAttribute',
-	'Call_keyword',  # column computed from sources per row
+	# _makeColumnsVersionMinimum: compute grouped minima, replacing the baseline supported version with noMinimum.
+	'versionMinorMinimumClass',  # By ClassDefIdentifier; called from updateDataframe.
+	'versionMinorMinimum_match_args',  # By ClassDefIdentifier and match_args; called from updateDataframe.
+	'versionMinorMinimumAttribute',  # By ClassDefIdentifier and attribute; called inside _makeColumn_list4TypeAlias before use.
+	# _makeColumnCall_keyword: construct constructor keywords per row.
+	'Call_keyword',
+	# _makeColumnsFourLists: aggregate per ClassDefIdentifier and versionMinorMinimum_match_args, in match_args order.
 	'listFunctionDef_args',
 	'listDefaults',
 	'listCall_keyword',
-	'listTupleAttributes',  # column computed from other columns and a dictionary per row
-
-
+	'listTupleAttributes',
 ]
 
 """NOTE How to construct an identifier:

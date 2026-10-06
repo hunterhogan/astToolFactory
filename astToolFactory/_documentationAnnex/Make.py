@@ -18,7 +18,7 @@ listDocstring: list[Docstring] = []
 
 identifierToolClass: str = settingsManufacturing.identifiers['Make']
 
-listDocstring.append(Docstring(f"{identifierToolClass}.alias"  # noqa: FURB113
+listDocstring.append(Docstring(f"{identifierToolClass}.alias"  # ruff: ignore[repeated-append]
     , aDocument("Make an `ast.alias` object for a single name mapping in an import statement.")
     , aDocument(f"""The `ast.alias` object represents one name mapping in an `import` or `from ... import` statement. `dotModule` accepts the name being imported; the optional `asName` ({diminutive2etymology['asName']}) provides an alternative local identifier for the imported name.""")
     , {'dotModule': aDocument("The module, submodule, class, or function name to import. Dot notation is permitted for submodule paths. This parameter corresponds to `ast.alias.name`.", 'str')
@@ -1141,11 +1141,11 @@ listDocstring.append(Docstring(f"{identifierToolClass}.YieldFrom"
 ))
 
 for subclass in ast.boolop.__subclasses__():
-    listDocstring.append(Docstring(f"{identifierToolClass}.{subclass.__name__}"  # noqa: PERF401
+    listDocstring.append(Docstring(f"{identifierToolClass}.{subclass.__name__}"  # ruff: ignore[manual-list-comprehension]
         , aDocument(f"Identical to the `ast` ({diminutive2etymology['ast']}) class but with a method, `join()`, that 'joins' expressions using the `ast.BoolOp` ({diminutive2etymology['BoolOp']}) class.", AIgenerated=False)))
 
 for subclass in ast.operator.__subclasses__():
-    listDocstring.append(Docstring(f"{identifierToolClass}.{subclass.__name__}"  # noqa: PERF401
+    listDocstring.append(Docstring(f"{identifierToolClass}.{subclass.__name__}"  # ruff: ignore[manual-list-comprehension]
         , aDocument(f"Identical to the `ast` ({diminutive2etymology['ast']}) class but with a method, `join()`, that 'joins' expressions using the `ast.BinOp` ({diminutive2etymology['BinOp']}) class.", AIgenerated=False)))
 
 for data in listDocstring:

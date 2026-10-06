@@ -15,22 +15,19 @@ classifiers = [
   "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.14",
+  "Programming Language :: Python :: 3.15",
   "Typing :: Typed",
 ]
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
 dependencies = [
-  "astToolkit==0.11.8",
+  "astToolkit==0.11.9",
   "hunterMakesPy>=0.7.1",
   "pandas<3.0.0",
   "pyarrow",
   "tomli",
   "typeshed_client",
 ]
-optional-dependencies = { development = [
-  "pyarrow-stubs",
-  "pytest-cov",
-  "PyGithub"
-], testing = ["pytest-xdist", "pytest"] }
+optional-dependencies = { development = ["ipykernel", "pyarrow-stubs", "pytest-cov", "PyGithub"], testing = ["pytest-xdist", "pytest"] }
 
 [build-system]
 requires = ["setuptools"]
@@ -38,9 +35,7 @@ build-backend = "setuptools.build_meta"
 
 [tool.coverage]
 report = { exclude_lines = ["if TYPE_CHECKING:", "if __name__ == \"__main__\":"], ignore_errors = false }
-run = { branch = true, concurrency = ["multiprocessing"], data_file = "tests/coverage/.coverage", omit = [
-  "tests/*"
-], parallel = true, source = ["."] }
+run = { branch = true, concurrency = ["multiprocessing"], data_file = "tests/coverage/.coverage", omit = ["tests/*"], parallel = true, source = ["."] }
 
 [tool.pytest]
 addopts = ["--color=yes"]
