@@ -9,12 +9,11 @@ from typing import TYPE_CHECKING
 import os
 
 if TYPE_CHECKING:
-	from collections.abc import Iterable
 	from github.Commit import Commit
 	from github.ContentFile import ContentFile
 	from github.GitCommit import GitCommit
 	from github.GitRef import GitRef
-	from github.PaginatedList import PaginatedList
+	from github.GitTree import GitTree
 	from github.Repository import Repository
 
 def check_asdl() -> None:
@@ -35,46 +34,44 @@ def check_asdl() -> None:
 	if githubToken and 'GITHUB_REPOSITORY' in os.environ:
 		GitHubActionPushFiles(githubClient.get_repo(os.environ['GITHUB_REPOSITORY']), listPathRelativeFilenamesWritten, listPathRelativeFilenamesDeleted)
 
-def checkBranch(repositoryCpython: Repository, pathRelative_asdl: Path) -> tuple[list[PurePosixPath], Iterable[PurePosixPath]]:
+def checkBranch(repositoryCpython: Repository, pathRelative_asdl: Path) -> tuple[list[PurePosixPath], list[PurePosixPath]]:
+	pathRelative_asdl.mkdir(parents=True, exist_ok=True)
 	listFilenames: frozenset[str] = frozenset(map(attrgetter('name'), filter(methodcaller('is_file'), pathRelative_asdl.iterdir())))  # pyright: ignore[reportUnknownArgumentType]
 
 	listPathRelativeFilenamesWritten: list[PurePosixPath] = []
-	listPathRelativeFilenamesDeleted: Iterable[PurePosixPath] = []
+	listPathRelativeFilenamesDeleted: list[PurePosixPath] = []
+	setCommitSHA: set[str] = set()
 
-	for filename in listFilenames:
-		listPathRelativeFilenamesDeleted.append(PurePosixPath(pathRelative_asdl / filename))
-		paginatedList: PaginatedList[Commit] = repositoryCpython.get_commits(sha=pathRelative_asdl.name, path=f"Parser/{filename}")
-		if 0 < paginatedList.totalCount:
-			listCommit: list[Commit] = paginatedList.get_page(0)
-			if listCommit:
-				commit: Commit = listCommit[0]
-				if commit.sha not in listFilenames:
+	for filename in ('Python.asdl', 'asdl.py'):
+		commit: Commit = repositoryCpython.get_commits(sha=pathRelative_asdl.name, path=f"Parser/{filename}")[0]
+		if commit.sha not in listFilenames or filename not in listFilenames:
+			contents: list[ContentFile] | ContentFile = repositoryCpython.get_contents(f"Parser/{filename}", ref=commit.sha)
+			if isinstance(contents, list):
+				raise ValueError
+			pathFilename: Path = pathRelative_asdl / filename
+			pathFilename.write_bytes(contents.decoded_content)
+			listPathRelativeFilenamesWritten.append(PurePosixPath(pathFilename))
 
-					contents: list[ContentFile] | ContentFile = repositoryCpython.get_contents(f"Parser/{filename}", ref=pathRelative_asdl.name)
-					if isinstance(contents, list):
-						raise ValueError
-					pathFilename: Path = pathRelative_asdl / filename
-					pathFilename.write_bytes(contents.decoded_content)
-					listPathRelativeFilenamesWritten.append(PurePosixPath(pathFilename))
+		if commit.sha not in listFilenames and commit.sha not in setCommitSHA:
+			(pathRelative_asdl / commit.sha).touch()
+			listPathRelativeFilenamesWritten.append(PurePosixPath(pathRelative_asdl / commit.sha))
+		setCommitSHA.add(commit.sha)
 
-					(pathRelative_asdl / commit.sha).touch()
-					listPathRelativeFilenamesWritten.append(PurePosixPath(pathRelative_asdl / commit.sha))
-
-	if listPathRelativeFilenamesWritten:
-		listPathRelativeFilenamesDeleted = set(listPathRelativeFilenamesDeleted).difference(listPathRelativeFilenamesWritten)
-		for condemnedPathFilename in listPathRelativeFilenamesDeleted:
-			Path(condemnedPathFilename).unlink()
-	else:
-		listPathRelativeFilenamesDeleted = []
+	for condemnedPathFilename in pathRelative_asdl.glob('[0-9a-f]' * 40):
+		if condemnedPathFilename.name not in setCommitSHA:
+			condemnedPathFilename.unlink()
+			listPathRelativeFilenamesDeleted.append(PurePosixPath(condemnedPathFilename))
 
 	return listPathRelativeFilenamesWritten, listPathRelativeFilenamesDeleted
 
 def GitHubActionPushFiles(repository: Repository, listPathRelativeFilenamesWritten: list[PurePosixPath], listPathRelativeFilenamesDeleted: list[PurePosixPath], branchPullRequest: str = 'update-cpython-asdl') -> None:
+	if not listPathRelativeFilenamesWritten and not listPathRelativeFilenamesDeleted:
+		return
+
 	message: str = 'Update CPython ASDL files'
 	gitCommitParent: GitCommit = repository.get_git_commit(repository.get_branch(repository.default_branch).commit.sha)
-	repository.create_git_ref(ref=f"refs/heads/{branchPullRequest}", sha=gitCommitParent.sha)
 
-	gitCommitUpdated: GitCommit = repository.create_git_commit(message, repository.create_git_tree([
+	gitTreeUpdated: GitTree = repository.create_git_tree([
 			*(InputGitTreeElement(pathRelativeFilenameDeleted.as_posix(), mode='100644', type='blob', sha=None)
 				for pathRelativeFilenameDeleted in listPathRelativeFilenamesDeleted
 			),
@@ -82,10 +79,20 @@ def GitHubActionPushFiles(repository: Repository, listPathRelativeFilenamesWritt
 					, content=Path(pathRelativeFilenameWritten).read_text(encoding='utf-8'))
 				for pathRelativeFilenameWritten in listPathRelativeFilenamesWritten
 			),
-		], base_tree=gitCommitParent.tree), [gitCommitParent])
-	gitReferencePullRequest: GitRef = repository.get_git_ref(f'heads/{branchPullRequest}')
-	gitReferencePullRequest.edit(gitCommitUpdated.sha)
-	repository.create_pull(base=repository.default_branch, head=branchPullRequest, title=message)
+		], base_tree=gitCommitParent.tree)
+	gitReferencePullRequest: GitRef | None = None
+	if branchPullRequest in map(attrgetter('name'), repository.get_branches()):
+		gitReferencePullRequest = repository.get_git_ref(f'heads/{branchPullRequest}')
+
+	if gitReferencePullRequest is None or gitTreeUpdated.sha != repository.get_git_commit(gitReferencePullRequest.object.sha).tree.sha:
+		gitCommitUpdated: GitCommit = repository.create_git_commit(message, gitTreeUpdated, [gitCommitParent])
+		if gitReferencePullRequest is None:
+			repository.create_git_ref(ref=f"refs/heads/{branchPullRequest}", sha=gitCommitUpdated.sha)
+		else:
+			gitReferencePullRequest.edit(gitCommitUpdated.sha, force=True)
+
+	if repository.get_pulls(state='open', base=repository.default_branch, head=f'{repository.owner.login}:{branchPullRequest}').totalCount == 0:
+		repository.create_pull(base=repository.default_branch, head=branchPullRequest, title=message)
 
 if __name__ == '__main__':
 	check_asdl()

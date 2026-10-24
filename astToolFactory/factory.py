@@ -132,8 +132,8 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 				, body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
 				, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute))]
 
-			for attribute, _type_ast_expr in listTupleAttributes:
-				list4subClassDefBody.append(Make.FunctionDef(attribute + "Is"
+			for attribute, _type_ast_expr, versionMinorMinimumAttribute in listTupleAttributes:
+				ast_stmt = Make.FunctionDef(attribute + "Is"
 					, Make.arguments(list_arg=[Make.arg("attributeCondition", annotation=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([Make.Name('Any')]), Make.Name("bool")])))])
 					, body=[Make.FunctionDef("workhorse"
 							, Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)])
@@ -141,7 +141,10 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 							, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute))
 						, Make.Return(Make.Name("workhorse"))]
 					, decorator_list=[astName_staticmethod]
-					, returns=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([astASTastAttribute]), Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute)]))))
+					, returns=Make.Subscript(Make.Name("Callable"), slice=Make.Tuple([Make.List([astASTastAttribute]), Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute)])))
+				if versionMinorMinimumAttribute > settingsManufacturing.pythonMinimumVersionMinor:
+					ast_stmt = _makeSimpleGuardVersion([ast_stmt], versionMinorMinimumAttribute)
+				list4subClassDefBody.append(ast_stmt)
 
 			list_ast_stmt: list[ast.stmt] = [
 				Make.ClassDef(f"_{ClassDefIdentifier}", body=list4subClassDefBody)
@@ -175,8 +178,13 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
 	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
+	list4ModuleBody: list[ast.stmt] = []
 
-	for identifierTypeOfNode, overloadDefinition, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass, **keywordArguments):  # ruff:ignore[unused-loop-control-variable]
+	for identifierTypeOfNode, overloadDefinition, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass, **keywordArguments):
+		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
+			list4ModuleBody.append(_makeSimpleGuardVersion([
+				Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias(identifierTypeOfNode)])
+			], versionMinorMinimum))
 		decorator_list: list[ast.expr] = [astName_staticmethod]
 
 # python/cpython#143661
@@ -225,7 +233,7 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ClassDefBody.append(ast_stmt)
 
-	list4ModuleBody: list[ast.stmt] = [
+	list4ModuleBody[:0] = [
 		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("*")])
 		, Make.ImportFrom("collections.abc", [Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("overload")])
@@ -260,10 +268,15 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, FunctionDefGrab_andDoAllOf
 		, FunctionDefGrab_index
 		]
+	list4ModuleBody: list[ast.stmt] = []
 
-	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(  # ruff:ignore[unused-loop-control-variable]
+	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(
 		identifierToolClass, **keywordArguments
 	):
+		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
+			list4ModuleBody.append(_makeSimpleGuardVersion([
+				Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias(identifierTypeOfNode)])
+			], versionMinorMinimum))
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
 
 		type_params: list[ast.type_param] | None = None
@@ -290,7 +303,7 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ClassDefBody.append(ast_stmt)
 
-	list4ModuleBody: list[ast.stmt] = [
+	list4ModuleBody[:0] = [
 		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("*")])
 		, Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("cast")])
@@ -370,6 +383,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
 		elif ClassDefIdentifier == "Import":
 			listFunctionDef_args: list[ast.arg] = list_argMake_Import
+			defaults = [Make.Constant(None)]
 			body = FunctionDef_bodyMake_Import
 		else:
 			denting: str = '    ' * bool(guardVersion)

@@ -9,6 +9,10 @@ permissions:
   contents: write
   pull-requests: write
 
+concurrency:
+  group: sync-cpython-asdl
+  cancel-in-progress: false
+
 defaults:
   run:
     shell: bash
@@ -17,13 +21,25 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
+      - name: Check two-week interval
+        id: interval
+        run: |
+          anchor=$(date -u -d '2026-10-26' +%s)
+          today=$(date -u +%s)
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] || (( (today / 86400 - anchor / 86400) % 14 == 0 )); then
+            echo "due=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/checkout@v7
+        if: steps.interval.outputs.due == 'true'
 
       - uses: actions/setup-python@v7
+        if: steps.interval.outputs.due == 'true'
         with:
           python-version: '3.x'
 
       - name: Install and run sync_cpython_asdl
+        if: steps.interval.outputs.due == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
         run: |

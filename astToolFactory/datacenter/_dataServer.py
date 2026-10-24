@@ -58,9 +58,9 @@ def getDataframe(*indices: str, **keywordArguments: Any) -> pandas.DataFrame:
 	pathFilename: Path = keywordArguments.get("pathFilename") or settingsManufacturing.pathFilenameDataframeAST
 	includeDeprecated: bool = keywordArguments.get("includeDeprecated") or settingsManufacturing.includeDeprecated
 	versionMinorMaximum: int | None = keywordArguments.get("versionMinorMaximum") or settingsManufacturing.versionMinorMaximum
-	modifyVersionMinorMinimum: bool = keywordArguments.get("modifyVersionMinorMinimum") or True
+	modifyVersionMinorMinimum: bool = keywordArguments.get("modifyVersionMinorMinimum", True)
 
-	dataframe: pandas.DataFrame = pandas.read_pickle(pathFilename)  # ruff: ignore[suspicious-pickle-usage]  # ty:ignore[invalid-assignment]
+	dataframe: pandas.DataFrame = pandas.read_pickle(pathFilename)  # ruff: ignore[suspicious-pickle-usage]
 
 	if not includeDeprecated:
 		dataframe = dataframe[~dataframe["deprecated"]]
@@ -79,7 +79,7 @@ def getDataframe(*indices: str, **keywordArguments: Any) -> pandas.DataFrame:
 
 	return dataframe
 
-def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, int, ast.expr, list[tuple[str, ast.expr]]]]:  # ruff: ignore[unused-function-argument]
+def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, int, ast.expr, list[tuple[str, ast.expr, int]]]]:  # ruff: ignore[unused-function-argument]
 	listColumnsHARDCODED: list[str] = ["ClassDefIdentifier", "versionMinorMinimumClass", "classAs_astAttribute", "listTupleAttributes"]
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
@@ -289,7 +289,7 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 
 	index_versionMinorMinimum: int = 3
 
-	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments).query("attributeKind == '_field'")[listColumns]
+	dataframe: pandas.DataFrame = (getDataframe(**(keywordArguments | {"modifyVersionMinorMinimum": False})).query("attributeKind == '_field'")[listColumns]
 				.pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending)
 				.drop_duplicates(drop_duplicates, keep="last").reset_index(drop=True))
 	dataframe = dataframe.rename(columns={listColumns[index_versionMinorMinimum]: "versionMinorMinimum"})
@@ -297,7 +297,11 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 
 	elementsTarget: list[str] = ["identifierTypeAlias", "list4TypeAlias_value", "guardVersion", "versionMinorMinimum"]
 
-	dataframe = dataframe.drop_duplicates(subset=["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimum", "hashable_list4TypeAlias_value"])
+	dataframe = dataframe.sort_values("versionMinorMinimum", kind="stable")
+	if keywordArguments.get("modifyVersionMinorMinimum", True):
+		dataframe["versionMinorMinimum"] = dataframe["versionMinorMinimum"].where(
+			dataframe["versionMinorMinimum"] > settingsManufacturing.pythonMinimumVersionMinor, noMinimum)
+	dataframe = dataframe.drop_duplicates(subset=["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimum"], keep="last")
 
 	def addRows_hasDOTIdentifier4Subcategories(groupBy: pandas.DataFrame) -> pandas.DataFrame:
 		"""Inject summary rows when multiple TypeAlias subcategories coincide.
@@ -344,7 +348,7 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 
 		return pandas.concat([groupBy, rows_hasDOTIdentifier])
 
-	dataframe = dataframe.groupby("attribute")[dataframe.columns].apply(addRows_hasDOTIdentifier4Subcategories).reset_index(drop=True)
+	dataframe = dataframe.groupby("attribute")[list(dataframe.columns)].apply(addRows_hasDOTIdentifier4Subcategories).reset_index(drop=True)
 
 	dataframe["identifierTypeAlias"] = dataframe["TypeAlias_hasDOTIdentifier"].where(
 		dataframe.groupby("attribute")["TypeAlias_hasDOTSubcategory"].transform("nunique") == 1

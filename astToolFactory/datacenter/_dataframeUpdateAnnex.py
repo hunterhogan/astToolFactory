@@ -216,6 +216,7 @@ defaultValue__: dict[Column__attribute | Column__attributeType_attribute | Colum
 	Column__attribute('format_spec'): column__value('defaultValue', Make.Constant(None)),
 	Column__attribute('guard'): column__value('defaultValue', Make.Constant(None)),
 	Column__attribute('is_async'): column__value('defaultValue', Make.Constant(0)),
+	Column__attribute('is_lazy'): column__value('defaultValue', Make.Constant(None)),
 	Column__attribute('kind'): column__value('defaultValue', Make.Constant(None)),
 	Column__attribute('kwarg'): column__value('defaultValue', Make.Constant(None)),
 	Column__attribute('level'): column__value('defaultValue', Make.Constant(0)),

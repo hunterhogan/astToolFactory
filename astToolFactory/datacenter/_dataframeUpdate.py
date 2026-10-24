@@ -519,7 +519,7 @@ def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		the `type_ast_expr` used here.
 
 	"""
-	dataframe['ast_arg'] = 'No'
+	dataframe['ast_arg'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
 
 	selectorAttributeArguments: pandas.Series[bool] = dataframe['move2keywordArguments'] == 'False'
 
@@ -570,7 +570,11 @@ def _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe: pandas.DataFrame)
 	version of astToolkit, so this function will not be able to match them.
 	"""  # ruff: ignore[docstring-missing-returns]
 	dataframe['kwarg_annotationIdentifier'] = 'No'
-	return dictionaryToUpdateDataframe(kwarg_annotationIdentifier__, dataframe)
+	dataframe = dictionaryToUpdateDataframe(kwarg_annotationIdentifier__, dataframe)
+	dataframe['kwarg_annotationIdentifier'] = (
+		dataframe.sort_values('versionMinorPythonInterpreter', kind='stable')['kwarg_annotationIdentifier']
+		.replace('No', pandas.NA).groupby(dataframe['ClassDefIdentifier']).ffill().fillna('No'))
+	return dataframe
 
 def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	"""Identify attributes that require `list` to `Sequence` covariance transformation.
@@ -654,7 +658,7 @@ def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	`_makeColumn_ast_arg` : The **Usage Step** that consumes these AST expressions.
 
 	"""
-	dataframe['type_ast_expr'] = 'No'
+	dataframe['type_ast_expr'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
 	dataframe.loc[dataframe['list2Sequence'], 'type_ast_expr'] = dataframe['attributeType'].str.replace('list', 'Sequence').apply(cast('Any', pythonCode2ast_expr))
 	dataframe.loc[~dataframe['list2Sequence'], 'type_ast_expr'] = dataframe['attributeType'].apply(cast('Any', pythonCode2ast_expr))
 
@@ -685,7 +689,7 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		The dataframe with a new column `Call_keyword`.
 
 	"""
-	dataframe['Call_keyword'] = 'No'
+	dataframe['Call_keyword'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
 
 	selectorCall_keyword: pandas.Series[bool] = (dataframe['attributeKind'] == '_field') & (dataframe['move2keywordArguments'] != 'No') & (dataframe['move2keywordArguments'] != 'Unpack')
 
@@ -811,7 +815,7 @@ def _makeColumn_list4TypeAliasSubcategories(dataframe: pandas.DataFrame) -> pand
 		containing lists of possible variant names.
 
 	"""
-	dataframe['list4TypeAliasSubcategories'] = 'No'
+	dataframe['list4TypeAliasSubcategories'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
 
 	selector_field: pandas.Series[bool] = (dataframe['attributeKind'] == '_field')
 
@@ -859,7 +863,7 @@ def _makeColumnsFourLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	args).
 
 	It creates four columns:
-	- `listTupleAttributes`: List of (name, type) tuples for all fields.
+	- `listTupleAttributes`: List of (name, type, minimum minor version) tuples for all fields.
 	- `listFunctionDef_args`: List of `ast.arg` nodes for function signatures.
 	- `listDefaults`: List of default values for those arguments.
 	- `listCall_keyword`: List of `ast.keyword` nodes for constructor calls.
@@ -875,12 +879,12 @@ def _makeColumnsFourLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		The dataframe updated with columns containing aggregated lists.
 
 	"""
-	dataframe['listTupleAttributes'] = 'No'
-	dataframe['listFunctionDef_args'] = 'No'
-	dataframe['listDefaults'] = 'No'
-	dataframe['listCall_keyword'] = 'No'
+	dataframe['listTupleAttributes'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
+	dataframe['listFunctionDef_args'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
+	dataframe['listDefaults'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
+	dataframe['listCall_keyword'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
 
-	dictionaryTupleAttributes: dict[tuple[str, int], list[tuple[str, ast.expr]]] = {}
+	dictionaryTupleAttributes: dict[tuple[str, int], list[tuple[str, ast.expr, int]]] = {}
 	dictionaryFunctionDef_args: dict[tuple[str, int], list[ast.arg]] = {}
 	dictionaryDefaults: dict[tuple[str, int], list[ast.expr]] = {}
 	dictionaryCall_keyword: dict[tuple[str, int], list[ast.keyword]] = {}
@@ -888,12 +892,10 @@ def _makeColumnsFourLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	for (ClassDefIdentifier, versionMinorMinimum_match_args), dataframeGroupBy in dataframe.groupby(['ClassDefIdentifier', 'versionMinorMinimum_match_args']):
 		groupKey: tuple[str, int] = (ClassDefIdentifier, versionMinorMinimum_match_args)  # pyright: ignore[reportAssignmentType]  # ty: ignore[invalid-assignment]
 		match_argsCategoricalSort: tuple[str, ...] = dataframeGroupBy['match_args'].iloc[0]
+		dataframeGroupBy = dataframeGroupBy[dataframeGroupBy['attributeKind'] == '_field']
 		dataframeGroupBy['attribute'] = pandas.Categorical(dataframeGroupBy['attribute'], categories=match_argsCategoricalSort, ordered=True)
 		dataframeGroupBy: pandas.DataFrame = dataframeGroupBy.sort_values(['attribute', 'versionMinorMinimum_match_args'], ascending=[True, False])
-
-		dataframeGroupBy = dataframeGroupBy[dataframeGroupBy['attributeKind'] == '_field']
-
-		dictionaryTupleAttributes[groupKey] = (dataframeGroupBy.copy().drop_duplicates(subset='attribute')[['attribute', 'type_ast_expr']].apply(tuple, axis='columns').tolist())
+		dictionaryTupleAttributes[groupKey] = (dataframeGroupBy.copy().drop_duplicates(subset='attribute')[['attribute', 'type_ast_expr', 'versionMinorMinimumAttribute']].apply(tuple, axis='columns').tolist())
 
 		dictionaryFunctionDef_args[groupKey] = (dataframeGroupBy[dataframeGroupBy['move2keywordArguments'] == 'False']
 																.copy().drop_duplicates(subset='attribute')['ast_arg'].tolist())
@@ -1088,7 +1090,7 @@ def updateDataframe() -> None:
 
 	dataframe = dictionaryToUpdateDataframe(attributeType__ClassDefIdentifier_attribute, dataframe)
 
-	dataframe['defaultValue'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='defaultValue')
+	dataframe['defaultValue'] = pandas.Series(data='No', index=dataframe.index, dtype=object, name='defaultValue')
 	dataframe = dictionaryToUpdateDataframe(defaultValue__, dataframe)
 
 	dataframe = _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe)
