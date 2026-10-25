@@ -13,7 +13,8 @@ from astToolFactory._theTypes import (
 	Column__attributeType_attribute as Column__attributeType_attribute,
 	Column__ClassDefIdentifier_attribute as Column__ClassDefIdentifier_attribute,
 	Column__ClassDefIdentifier_versionMinorPythonInterpreter as Column__ClassDefIdentifier_versionMinorPythonInterpreter,
-	column__value as column__value, dataTypeVariables as dataTypeVariables, SelectorSpecification as SelectorSpecification)
+	column__value as column__value, dataTypeVariables as dataTypeVariables, GuardIfThen as GuardIfThen,
+	SelectorSpecification as SelectorSpecification)
 
 # isort: split
 from astToolFactory._theSSOT import (

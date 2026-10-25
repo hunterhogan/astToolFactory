@@ -20,7 +20,7 @@ The system has three components.
 	values are cell values. These tuples define which rows are selected. Examples.
    - `Column__attribute('ctx')` selects rows where the `attribute` column equals `'ctx'`.
    - `Column__ClassDefIdentifier_attribute('FunctionDef', 'args')` selects rows where
-     `ClassDefIdentifier` equals `'FunctionDef'` AND `attribute` equals `'args'`.
+	`ClassDefIdentifier` equals `'FunctionDef'` AND `attribute` equals `'args'`.
 
 2. **Assignment tuple** (`column__value` in `astToolFactory._theTypes`).
 	This is a `NamedTuple` holding exactly one assignment. The `.column` field names the
@@ -55,10 +55,10 @@ Usage Pattern
 -------------
 1. Define a dictionary with selector specifications as keys and `column__value` as values.
 
-    attributeRename__: dict[Column__attribute, column__value] = {
-        Column__attribute('ctx'): column__value('attributeRename', 'context'),
-        Column__attribute('func'): column__value('attributeRename', 'callee'),
-    }
+	attributeRename__: dict[Column__attribute, column__value] = {
+		Column__attribute('ctx'): column__value('attributeRename', 'context'),
+		Column__attribute('func'): column__value('attributeRename', 'callee'),
+	}
 
 2. Apply to a dataframe.
 
@@ -70,17 +70,17 @@ and `dataframe.loc[dataframe['attribute'] == 'func', 'attributeRename'] = 'calle
 Dictionaries in This Module
 ---------------------------
 `attributeRename__`
-    Maps attribute names to their renamed identifiers for code generation.
+	Maps attribute names to their renamed identifiers for code generation.
 `attributeType__ClassDefIdentifier_attribute`
-    Overrides attribute types for specific class-attribute pairs.
+	Overrides attribute types for specific class-attribute pairs.
 `defaultValue__`
-    Assigns default values (as `ast` nodes) to attributes.
+	Assigns default values (as `ast` nodes) to attributes.
 `dictionary_defaultValue_ast_arg_Call_keyword_orElse`
-    Maps attributes to their fallback expressions for keyword arguments.
+	Maps attributes to their fallback expressions for keyword arguments.
 `kwarg_annotationIdentifier__`
 	Assigns the `TypedDict` identifier used for keyword arguments in generated signatures.
 `move2keywordArguments__`
-    Flags attributes that should become keyword-only arguments.
+	Flags attributes that should become keyword-only arguments.
 
 See Also
 --------
@@ -92,8 +92,7 @@ See Also
 from __future__ import annotations
 
 from astToolFactory import (
-	Column__attribute, Column__attributeKind, Column__attributeType_attribute, Column__ClassDefIdentifier_attribute,
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter, column__value)
+	Column__attribute, Column__attributeKind, Column__attributeType_attribute, Column__ClassDefIdentifier_attribute, column__value)
 from astToolkit import Make
 from typing import TYPE_CHECKING
 
@@ -122,7 +121,7 @@ _columns: list[str] = [
 	'move2keywordArguments',
 	'defaultValue',
 
-	# _makeColumn_kwarg_annotationIdentifierHARDCODED: initialize 'No', then apply the hardcoded class/version dictionary.
+	# _makeColumn_kwarg_annotationIdentifier: match keyword argument signatures to the available TypedDict definitions.
 	'kwarg_annotationIdentifier',
 
 	# Per-row computations; each comment names the creator.
@@ -322,89 +321,3 @@ special handling.
 Applied via `dictionaryToUpdateDataframe`. See module docstring for the
 full system description.
 """
-
-kwarg_annotationIdentifier__: dict[Column__ClassDefIdentifier_versionMinorPythonInterpreter, column__value] = {
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('alias', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('AnnAssign', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('arg', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_type_comment'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Assert', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Assign', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_type_comment'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('AsyncFor', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_type_comment'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('AsyncFunctionDef', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_type_comment'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('AsyncWith', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_type_comment'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Attribute', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('AugAssign', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Await', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('BinOp', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('BoolOp', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Break', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Bytes', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Call', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('ClassDef', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Compare', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Constant', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Continue', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Delete', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Dict', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('DictComp', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Ellipsis', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('ExceptHandler', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('excepthandler', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('expr', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Expr', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('For', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_type_comment'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('FormattedValue', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('FunctionDef', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_type_comment'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('GeneratorExp', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Global', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('If', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('IfExp', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Import', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('ImportFrom', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Interpolation', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('JoinedStr', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('keyword', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Lambda', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('List', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('ListComp', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Match', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('MatchAs', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('MatchClass', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('MatchMapping', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('MatchOr', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('MatchSequence', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('MatchSingleton', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('MatchStar', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('MatchValue', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Name', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('NameConstant', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('NamedExpr', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Nonlocal', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Num', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('ParamSpec', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Pass', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('pattern', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Raise', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Return', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Set', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('SetComp', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Slice', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Starred', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('stmt', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Str', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Subscript', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('TemplateStr', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Try', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('TryStar', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Tuple', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('type_param', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('TypeAlias', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('TypeVar', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('TypeVarTuple', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_int'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('UnaryOp', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('While', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('With', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes_type_comment'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('Yield', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-	Column__ClassDefIdentifier_versionMinorPythonInterpreter('YieldFrom', 14): column__value('kwarg_annotationIdentifier', 'ast_attributes'),
-}
-"""I couldn't get `_makeColumn_kwarg_annotationIdentifier` to work, so I gave up and made this dictionary by hand."""

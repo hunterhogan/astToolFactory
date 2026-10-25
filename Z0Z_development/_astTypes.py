@@ -1,4 +1,7 @@
-import ast  # noqa: INP001
+# ruff: file-ignore[implicit-namespace-package]
+from __future__ import annotations
+
+import ast
 
 # For my reference, all ast classes by subclass:
 type Ima_ast_boolop = ast.boolop | ast.And | ast.Or
@@ -15,13 +18,13 @@ type Ima_ast_type_param = ast.type_param | ast.ParamSpec | ast.TypeVar | ast.Typ
 type Ima_ast_unaryop = ast.unaryop | ast.Invert | ast.Not | ast.UAdd | ast.USub
 type Ima_astAST = ast.AST | ast.alias | ast.arg | ast.arguments | ast.comprehension | ast.keyword | ast.match_case | ast.withitem
 
-# NOTE Prototype of an old idea to subclass composable methods so that typing information
+# Prototype of an old idea to subclass composable methods so that typing information
 # can extend beyond the top level of the ast node.
 # To cover all cases, quantity of necessary classes = sum of (for each class: for each attribute: attribute * number of valid types). If an attribute has type ast.expr, for example, then there are 27 valid types just for that attribute. There would be thousands of subclasses like ImaCallToName.
 # class ImaCallToName(ast.Call):
-# 	func: ast.Name
+# 	func: ast.Name  # ruff: ignore[commented-out-code]
 
-allIdentifiers=[
+allIdentifiers = [
 'Add',
 'alias',
 'And',

@@ -2,9 +2,8 @@
 from __future__ import annotations
 
 from astToolFactory import (
-	astASTastAttribute, astAttribute_builtins_str, astName_overload, astName_staticmethod, keywordKeywordArguments4Call,
+	astASTastAttribute, astAttribute_builtins_str, astName_overload, astName_staticmethod, GuardIfThen, keywordKeywordArguments4Call,
 	ManufacturedPackageSettings, settingsManufacturing)
-from astToolFactory._theTypes import GuardIfThen
 from astToolFactory.datacenter import getElementsBe, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (

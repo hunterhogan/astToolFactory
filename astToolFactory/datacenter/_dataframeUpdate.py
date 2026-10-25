@@ -19,6 +19,7 @@ from __future__ import annotations
 
 #=SIN= ast classes evaluated during runtime.
 #pyright: reportUnusedImport=false
+from annotationlib import Format, get_annotations
 from ast import (
 	alias, arg, arguments, Attribute, boolop, cmpop, comprehension, ExceptHandler, expr, expr_context, Interpolation, keyword, match_case,
 	Name, operator, pattern, stmt, Subscript, TemplateStr, type_param, TypeIgnore, unaryop, withitem)
@@ -26,9 +27,11 @@ from astToolFactory import Column__ClassDefIdentifier_attribute, column__value, 
 from astToolFactory.cpython import getDictionary_match_args
 from astToolFactory.datacenter._dataframeUpdateAnnex import (
 	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, defaultValue__,
-	dictionary_defaultValue_ast_arg_Call_keyword_orElse, kwarg_annotationIdentifier__, move2keywordArguments__)
+	dictionary_defaultValue_ast_arg_Call_keyword_orElse, move2keywordArguments__)
 from astToolFactory.datacenter._dataServer import _sortCaseInsensitive, getDataframe
-from astToolkit import Be, ConstantValueType as _ConstantValue, DOT, IfThis, Make, NodeChanger, NodeTourist, Then
+from astToolkit import (
+	ast_attributes, ast_attributes_int, ast_attributes_type_comment, Be, ConstantValueType as _ConstantValue, DOT, IfThis, Make, NodeChanger,
+	NodeTourist, Then)
 from astToolkit.changeDef import makeDictionaryClassDef
 from astToolkit.filesystem import parsePathFilename2astModule
 from astToolkit.transformationTools import pythonCode2ast_expr
@@ -44,10 +47,13 @@ import typeshed_client
 
 if TYPE_CHECKING:
 	from astToolFactory import SelectorSpecification
-	from collections.abc import Callable
-	from numpy.typing import ArrayLike
+	from collections.abc import Callable, Hashable
+	from numpy.typing import ArrayLike, NDArray
+	from pandas.api.typing import DataFrameGroupBy
 	from pathlib import Path
-	from typing import Any
+	from typing import Any, Literal
+
+# TODO `Make.Break`, `Make.Continue`, and `Make.Pass` are missing `**keywordArguments: Unpack[ast_attributes]`.
 
 #======== HARDCODED values. TODO: eliminate ======================
 
@@ -174,9 +180,7 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 
 #======== pandas functions =========================================
 
-# TODO implement this fake function --------------------------------
-
-def _getDataFromInterpreter(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _getDataFromInterpreter() -> pandas.DataFrame:
 	pathFilename: Path = settingsPackage.pathPackage / 'datacenter' / 'probeInterpreter.csv'
 	dictionaryColumnTypeInterpreter: dict[str, str] = {
 		'ClassDefIdentifier': 'string',
@@ -189,12 +193,6 @@ def _getDataFromInterpreter(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		pathFilename, header=None, names=list(dictionaryColumnTypeInterpreter), dtype=dictionaryColumnTypeInterpreter)
 
 	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
-	# TODO Columns to create using the Python Interpreter,
-	# 'ClassDefIdentifier',
-	# 'versionMajorPythonInterpreter',
-	# 'versionMinorPythonInterpreter',
-	# 'versionMicroPythonInterpreter',
-	# 'base',
 	return dataframe
 
 #-------- Extract/collect data from outside sources --------------------------------
@@ -529,51 +527,36 @@ def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	dataframe.loc[selectorAttributeArguments, 'ast_arg'] = dataframe[selectorAttributeArguments].apply(make_ast_arg, axis='columns')  # ty: ignore[no-matching-overload]
 	return dataframe
 
-def _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	"""TODO Implement a function to create/update `kwarg_annotationIdentifier`.
+def _getKwargIdentifier(attributeType: pandas.Series[str], groupBy: DataFrameGroupBy[tuple[Hashable, ...], Literal[True]]) -> str:
+	indices = groupBy.indices[attributeType.name]
+	selector: NDArray[numpy.bool_] = (
+		(groupBy.obj['attributeKind'].to_numpy()[indices] == '_attribute')
+		| (groupBy.obj['move2keywordArguments'].to_numpy()[indices] == 'Unpack')
+	)
+	annotations: frozenset[tuple[str, str]] = frozenset(zip(
+		groupBy.obj['attributeRename'].array[indices][selector]
+		, attributeType.array[selector]
+		, strict=True
+	))
+	if not annotations:
+		return 'No'
+	if annotations == frozenset(get_annotations(ast_attributes, format=Format.STRING).items()):
+		return 'ast_attributes'
+	if annotations == frozenset(get_annotations(ast_attributes_int, format=Format.STRING).items()):
+		return 'ast_attributes_int'
+	if annotations == frozenset(get_annotations(ast_attributes_type_comment, format=Format.STRING).items()):
+		return 'ast_attributes_type_comment'
+	message: str = (
+		f"I could not match keyword arguments for `{attributeType.name = }` to an available TypedDict. "
+		f"Update `_makeColumn_kwarg_annotationIdentifier` to support `{annotations = }`."
+	)
+	#=SIN= raise: This tells me I need to update the package.
+	raise NotImplementedError(message)
 
-	Possible values, all `str`:
-		ast_attributes_int
-		ast_attributes_type_comment
-		ast_attributes
-		No
-
-	The THREE TypedDict I use in method signatures: ast_attributes, ast_attributes_int, ast_attributes_type_comment
-	The ONLY hardcoded values allowed in the function: ast_attributes, ast_attributes_int, ast_attributes_type_comment. No
-	`lineno`. No `type_comment`. No `int`. No `str | None`.
-
-	Flow: IF THIS WERE NOT PANDAS. Don't make a 'temporary dictionary': do everything the smart way with idiomatic pandas. I don't
-		know how to think in the pandas paradigm, so I'm not good at designing flow for idiomatic pandas.
-	- Assign `No`, but re-assign if the ClassDefIdentifier qualifies.
-	- Per ClassDefIdentifier, versionMinor:
-		- make a temporary dictionary of the keyword arguments I am putting in a TypedDict
-			- the identifier of the parameter
-			- the annotation of the parameter
-		- if column attributeKind == '_attribute', then add columns 'attributeRename, attributeType' to the temporary dictionary
-		- if column move2keywordArguments == 'No' or 'False', do nothing special
-		- NOTE possibly not what you are expecting: if column move2keywordArguments == 'True', do nothing special: do NOT add
-			'attributeRename, attributeType' to the temporary dictionary because attributeRename will not be in the dictionary that gets Unpack
-		- if column move2keywordArguments == 'Unpack', then add columns 'attributeRename, attributeType' to the temporary dictionary
-
-		- So far, this ought to be smart, generic, extensible logic. If I decide I want `type_params` for only FunctionDef for only
-			version 12, for example, to be a keyword argument that is 'hidden' in the TypedDict, then I just need to change
-			move2keywordArguments == 'Unpack' for that line. It is easy and important to write the above code to work this way.
-
-		- Inspect the temporary dictionary; cases and actions:
-			- It is empty, don't do anything: `kwarg_annotationIdentifier` will remain 'No'.
-			- The key:value items match one of the three TypedDict above, assign the identifier of the TypedDict to `kwarg_annotationIdentifier`.
-			- else NotImplemented with a message telling future me which function needs to be updated with what functionality: the
-				missing functionality is that the temporary dictionary doesn't match the available options.
-
-	I've imported ast_attributes, ast_attributes_int, ast_attributes_type_comment from astToolkit. If I were to change the
-	dictionaries or add new dictionaries, there will be a temporary Catch-22: the new dictionaries will not be in the existing
-	version of astToolkit, so this function will not be able to match them.
-	"""  # ruff: ignore[docstring-missing-returns]
-	dataframe['kwarg_annotationIdentifier'] = 'No'
-	dataframe = dictionaryToUpdateDataframe(kwarg_annotationIdentifier__, dataframe)
-	dataframe['kwarg_annotationIdentifier'] = (
-		dataframe.sort_values('versionMinorPythonInterpreter', kind='stable')['kwarg_annotationIdentifier']
-		.replace('No', pandas.NA).groupby(dataframe['ClassDefIdentifier']).ffill().fillna('No'))
+def _makeColumn_kwarg_annotationIdentifier(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+	groupBy: DataFrameGroupBy[tuple[Hashable, ...], Literal[True]] = dataframe.groupby(
+		['ClassDefIdentifier', 'versionMinorPythonInterpreter'], sort=False)
+	dataframe['kwarg_annotationIdentifier'] = groupBy['attributeType'].transform(_getKwargIdentifier, groupBy=groupBy)
 	return dataframe
 
 def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
@@ -1073,12 +1056,11 @@ def updateDataframe() -> None:
 	"""
 	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
 
-	# TODO think of a clever, simple way to optionally apply this instead of toggling comments.
+	# Think of a clever, simple way to optionally apply this instead of toggling comments.
 	# columns: reorder; drop columns, but they might be recreated later in the flow.
 	# dataframe = dataframe[_columns]  # ruff: ignore[commented-out-code]
 
-	# TODO Get data using the Python Interpreter.
-	dataframe = _getDataFromInterpreter(dataframe)
+	dataframe = _getDataFromInterpreter()
 
 	dataframe = _getDataFromPythonFiles(dataframe)
 
@@ -1093,7 +1075,7 @@ def updateDataframe() -> None:
 	dataframe['defaultValue'] = pandas.Series(data='No', index=dataframe.index, dtype=object, name='defaultValue')
 	dataframe = dictionaryToUpdateDataframe(defaultValue__, dataframe)
 
-	dataframe = _makeColumn_kwarg_annotationIdentifierHARDCODED(dataframe)
+	dataframe = _makeColumn_kwarg_annotationIdentifier(dataframe)
 
 	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].astype(str).map(_make_astAttribute)
 	dataframe = _makeColumn_list2Sequence(dataframe)
