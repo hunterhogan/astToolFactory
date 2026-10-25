@@ -86,6 +86,7 @@ Uncategorized
 Unfactored
 unittests
 Unparser
+unpivot
 unsynchronized
 vercel
 Vite
