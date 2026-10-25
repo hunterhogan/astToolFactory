@@ -110,7 +110,7 @@ class Docstring:
 		)
 
 def make1docstring(data: Docstring, ImaIndent: str = ' ' * 4, firstIndent: int = 0) -> str:
-	"""Make a docstring from a Docstring dataclass."""  # ruff: ignore[docstring-missing-returns]
+	"""Make a docstring from a Docstring dataclass."""
 	indentTo: str = ImaIndent * firstIndent
 	paragraph = textwrap.TextWrapper(width=120, initial_indent=indentTo, subsequent_indent=indentTo
 		, expand_tabs=True, tabsize=4, replace_whitespace=True, break_long_words=False, drop_whitespace=True)

@@ -12,7 +12,8 @@ from astToolFactory.factoryAnnex import (
 	list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import IfThis, Make, NodeChanger, Then
 from astToolkit.containers import LedgerOfImports
-from astToolkit.transformationTools import unjoinBinOP
+from astToolkit.ohWow import unjoinBinOP
+from hunterMakesPy import raiseIfNone
 from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT, writePython
 from pathlib import PurePosixPath
 from textwrap import indent
@@ -52,8 +53,7 @@ def _makeNestedGuardVersions() -> None:
 			ops=[Make.GtE()],
 			comparators=[Make.Tuple([Make.Constant(3), Make.Constant(int(versionMinorMinimum))])],
 		)
-		assert ast_stmt is not None, "Programming by brinkmanship!"  # ruff:ignore[assert]
-		body: list[ast.stmt] = [ast_stmt]
+		body: list[ast.stmt] = [raiseIfNone(ast_stmt)]
 		dictionaryGuardVersion[versionMinorMinimum] = GuardIfThen(test=test, body=body)
 	else:
 		orElse = ast_stmt
@@ -63,8 +63,7 @@ def _makeNestedGuardVersions() -> None:
 	else:
 		for test_body in [dictionaryGuardVersion[version] for version in sorted(dictionaryGuardVersion)]:
 			orElse = Make.If(**test_body, orElse=[orElse] if orElse else [])
-		assert orElse is not None, "Programming by brinkmanship!"  # ruff:ignore[assert]
-		ast_stmt = orElse
+		ast_stmt = raiseIfNone(orElse)
 		dictionaryGuardVersion.clear()
 
 def _makeSimpleGuardVersion(list_ast_stmt: Sequence[ast.stmt], versionMinorMinimum: int) -> ast.stmt:

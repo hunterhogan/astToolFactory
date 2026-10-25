@@ -7,29 +7,15 @@ This module provides a set of functions to interact with the data source, allowi
 from __future__ import annotations
 
 from astToolFactory import noMinimum, settingsManufacturing
-from typing import Any, cast
-import numpy
-import pandas
-import typing_extensions
+from astToolFactory.datacenter._storage import gatherObjects, readDataframe
+from typing import Any, cast, TYPE_CHECKING
+import polars
 
-if typing_extensions.TYPE_CHECKING:
-	from collections.abc import Sequence
-	from numpy.typing import NDArray
+if TYPE_CHECKING:
 	from pathlib import Path
 	import ast
 
-"""Generalized flow for get* functions:
-listColumnsHARDCODED
-listColumns
-dataframe
-elementsTarget
-...
-_makeColumn_guardVersion
-dataframe = dataframe[elementsTarget]
-return dataframe.to_records(index=False).tolist()
-"""
-
-def _makeColumn_guardVersion(dataframe: pandas.DataFrame, byColumn: str) -> pandas.DataFrame:
+def _makeColumn_guardVersion(dataframe: polars.LazyFrame, byColumn: str) -> polars.LazyFrame:
 	"""No summary.
 
 	Column 'guardVersion' = False unless:
@@ -37,212 +23,196 @@ def _makeColumn_guardVersion(dataframe: pandas.DataFrame, byColumn: str) -> pand
 		from the total number of versions in the group.
 	- Or if the only member of a group has a python version greater than `pythonMinimumVersionMinor`.
 
-	"""  # ruff: ignore[docstring-missing-returns]
-	dataframe["guardVersion"] = numpy.where(
-		((versionsTotal := (seriesGroupByVersion := dataframe.groupby(byColumn)["versionMinorMinimum"]).transform("nunique")) == 1)
-			& (seriesGroupByVersion.transform("max") <= settingsManufacturing.pythonMinimumVersionMinor)  # pyright: ignore[reportArgumentType]
-		, False  # ruff: ignore[boolean-positional-value-in-call]
-		, numpy.maximum(1, versionsTotal - seriesGroupByVersion.rank(method="first", ascending=False).astype(int) + 1)  # pyright: ignore[reportUnknownArgumentType]
+	"""
+	versionsTotal: polars.Expr = polars.col('versionMinorMinimum').n_unique().over(byColumn)
+	return dataframe.with_columns(
+		polars.when(
+			(versionsTotal == 1)
+			& (polars.col('versionMinorMinimum').max().over(byColumn) <= settingsManufacturing.pythonMinimumVersionMinor)
+		)
+		.then(0)
+		.otherwise(
+			(versionsTotal.cast(polars.Int64)
+				- polars.col('versionMinorMinimum').rank('ordinal', descending=True).over(byColumn).cast(polars.Int64)
+				+ 1).clip(lower_bound=1)
+		)
+		.alias('guardVersion')
 	)
-	return dataframe
 
-def _sortCaseInsensitive(dataframe: pandas.DataFrame, sortBy: Sequence[str], *, caseInsensitive: bool | Sequence[bool] = True, ascending: bool | Sequence[bool] = True) -> pandas.DataFrame:
-	dataframeCopy: pandas.DataFrame = dataframe.copy()
-	maskCaseInsensitive = pandas.Series(caseInsensitive, index=list(sortBy), dtype=numpy.bool)
-	dataframeCopy[maskCaseInsensitive[maskCaseInsensitive].index] = dataframe[maskCaseInsensitive[maskCaseInsensitive].index].map(str.lower)
+def getDataframe(*indices: str, **keywordArguments: Any) -> polars.DataFrame:
+	pathFilename: Path = keywordArguments.get('pathFilename') or settingsManufacturing.pathFilenameDataframeAST
+	includeDeprecated: bool = keywordArguments.get('includeDeprecated') or settingsManufacturing.includeDeprecated
+	versionMinorMaximum: int | None = keywordArguments.get('versionMinorMaximum') or settingsManufacturing.versionMinorMaximum
+	modifyVersionMinorMinimum: bool = keywordArguments.get('modifyVersionMinorMinimum', True)
 
-	indicesSorted = dataframeCopy.sort_values(by=sortBy, ascending=ascending).index
-	return dataframe.loc[indicesSorted]
-
-def getDataframe(*indices: str, **keywordArguments: Any) -> pandas.DataFrame:
-	pathFilename: Path = keywordArguments.get("pathFilename") or settingsManufacturing.pathFilenameDataframeAST
-	includeDeprecated: bool = keywordArguments.get("includeDeprecated") or settingsManufacturing.includeDeprecated
-	versionMinorMaximum: int | None = keywordArguments.get("versionMinorMaximum") or settingsManufacturing.versionMinorMaximum
-	modifyVersionMinorMinimum: bool = keywordArguments.get("modifyVersionMinorMinimum", True)
-
-	dataframe: pandas.DataFrame = pandas.read_pickle(pathFilename)  # ruff: ignore[suspicious-pickle-usage]
-
+	dataframe: polars.LazyFrame = readDataframe(pathFilename).lazy()
 	if not includeDeprecated:
-		dataframe = dataframe[~dataframe["deprecated"]]
-
+		dataframe = dataframe.filter(~polars.col('deprecated'))
 	if versionMinorMaximum is not None:
-		dataframe = dataframe[dataframe["versionMinorPythonInterpreter"] <= versionMinorMaximum]
-
+		dataframe = dataframe.filter(polars.col('versionMinorPythonInterpreter') <= versionMinorMaximum)
 	if modifyVersionMinorMinimum:
-		columnsVersion: list[str] = ["versionMinorMinimumAttribute", "versionMinorMinimumClass", "versionMinorMinimum_match_args"]
-		dataframe[columnsVersion] = dataframe[columnsVersion].where(
-			dataframe[columnsVersion] > settingsManufacturing.pythonMinimumVersionMinor
-			, noMinimum
+		columnsVersion: list[str] = ['versionMinorMinimumAttribute', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args']
+		dataframe = dataframe.with_columns(
+			polars.when(polars.col(columnsVersion) > settingsManufacturing.pythonMinimumVersionMinor)
+			.then(polars.col(columnsVersion)).otherwise(noMinimum)
 		)
 	if indices:
-		dataframe = dataframe.set_index(list(indices))
+		dataframe = dataframe.select(*indices, polars.all().exclude(indices))
+	return dataframe.collect()
 
-	return dataframe
-
-def getElementsBe(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, int, ast.expr, list[tuple[str, ast.expr, int]]]]:  # ruff: ignore[unused-function-argument]
-	listColumnsHARDCODED: list[str] = ["ClassDefIdentifier", "versionMinorMinimumClass", "classAs_astAttribute", "listTupleAttributes"]
+def _getTableBe(**keywordArguments: Any) -> polars.DataFrame:
+	listColumnsHARDCODED: list[str] = ['ClassDefIdentifier', 'versionMinorMinimumClass', 'classAs_astAttribute', 'listTupleAttributes']
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
+	return (getDataframe(**keywordArguments).lazy()
+		.select(listColumns)
+		.unique(subset=listColumns[:2], keep='first', maintain_order=True)
+		.sort(polars.col(listColumns[0]).str.to_lowercase(), listColumns[1], descending=[False, True], maintain_order=True)
+		.collect())
 
-	sortBy: list[str] = listColumns[0:2]
-	caseInsensitive: list[bool] = [True, False]
-	ascending: list[bool] = caseInsensitive.copy()
-	drop_duplicates: list[str] = sortBy.copy()
+def getElementsBe(_identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, int, ast.expr, list[tuple[str, ast.expr, int]]]]:
+	return cast('list[tuple[str, int, ast.expr, list[tuple[str, ast.expr, int]]]]', _getTableBe(**keywordArguments).rows())
 
-	dataframe: pandas.DataFrame = getDataframe(**keywordArguments)[listColumns].drop_duplicates(drop_duplicates).pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending).reset_index(drop=True)
-	del listColumns
-
-	return dataframe.to_records(index=False).tolist()
-
-def getElementsDOT(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str, list[ast.expr], int, int]]:  # ruff: ignore[unused-function-argument]
-	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimumAttribute", "type_ast_expr", "attributeType", "TypeAlias_hasDOTIdentifier"]
+def _getTableDOT(**keywordArguments: Any) -> polars.DataFrame:
+	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'attributeType', 'TypeAlias_hasDOTIdentifier']
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
-
-	sortBy: list[str] = listColumns[0:3]
-	caseInsensitive: list[bool] = [True, True, False]
-	ascending: list[bool] = caseInsensitive.copy()
-	drop_duplicates: list[str] = listColumns[0:2]
-
-	index_type_ast_expr: int = 3
-	index_versionMinorMinimum: int = 2
-
-	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)
-			.query("attributeKind == '_field'")
-			.pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending)[listColumns]
-			.drop_duplicates(drop_duplicates, keep="last")
-			.reset_index(drop=True))
-
-	dataframe = dataframe.rename(columns={
-			listColumns[index_type_ast_expr]: "type_ast_expr"
-			, listColumns[index_versionMinorMinimum]: "versionMinorMinimum"})
-
-	del listColumns
-
-	elementsTarget: list[str] = ["identifierTypeOfNode", "overloadDefinition", "attribute", "list_ast_expr", "guardVersion", "versionMinorMinimum"]
-
-	dataframe["overloadDefinition"] = dataframe.groupby("attribute").transform("size") > 1
-	dataframe = pandas.concat([
-		dataframe
-		, (dataframe[dataframe["overloadDefinition"]]
-			.groupby("attribute")["versionMinorMinimum"]
-			.unique()
-			.explode()
-			.reset_index()
-			.merge(dataframe[["attribute", "TypeAlias_hasDOTIdentifier"]].drop_duplicates("attribute"), on="attribute", how="left")
-			.assign(
-				overloadDefinition=False,
-				TypeAlias_hasDOTSubcategory="No",
-				type_ast_expr="No",
-				attributeType="No",
-			)[dataframe.columns]
+	dataframe: polars.DataFrame = (getDataframe(**keywordArguments).lazy()
+		.filter(polars.col('attributeKind') == '_field')
+		.select(listColumns)
+		.sort(listColumns[2], descending=True, maintain_order=True)
+		.sort(polars.col(listColumns[:2]).str.to_lowercase(), maintain_order=True)
+		.unique(subset=listColumns[:2], keep='last', maintain_order=True)
+		.rename({listColumns[2]: 'versionMinorMinimum'})
+		.collect())
+	definitions: polars.LazyFrame = (dataframe.lazy().with_row_index('次Source')
+		.with_columns((polars.len().over('attribute') > 1).alias('overloadDefinition'))
+		.with_columns(polars.when('overloadDefinition')
+			.then(polars.lit([False, True])).otherwise(polars.lit([False])).alias('summary'))
+		.explode('summary')
+		.with_columns((polars.col('overloadDefinition') & ~polars.col('summary')).alias('overloadDefinition'))
+		.with_columns(polars.when('overloadDefinition')
+			.then('TypeAlias_hasDOTSubcategory').otherwise('TypeAlias_hasDOTIdentifier').alias('identifierTypeOfNode'))
+		.sort('attribute', 'summary', maintain_order=True)
+		.unique(subset=['identifierTypeOfNode', 'versionMinorMinimum'], keep='first', maintain_order=True)
+		.with_row_index('次Definition'))
+	values: polars.LazyFrame = dataframe.lazy().with_row_index('次Member').select(
+		'attribute', '次Member', 'attributeType', polars.col('versionMinorMinimum').alias('versionMinorCandidate')
+	)
+	groups: polars.LazyFrame = (definitions.select('次Definition', '次Source', 'attribute', 'overloadDefinition', 'versionMinorMinimum')
+		.join(values, on='attribute', how='inner', maintain_order='left_right')
+		.filter(
+			(polars.col('overloadDefinition') & (polars.col('次Source') == polars.col('次Member')))
+			| (~polars.col('overloadDefinition') & (polars.col('versionMinorCandidate') <= polars.col('versionMinorMinimum')))
 		)
-	], ignore_index=True).sort_values("attribute", kind="stable")
+		.unique(subset=['次Definition', 'attributeType'], keep='first', maintain_order=True)
+		.sort('次Definition', polars.col('attributeType').str.to_lowercase(), maintain_order=True)
+		.group_by('次Definition', maintain_order=True).agg(polars.col('次Member').alias('boxOf次Member')))
+	dataframeDefinitions: polars.DataFrame = (definitions.join(groups, on='次Definition', how='left', maintain_order='left')
+		.pipe(_makeColumn_guardVersion, 'identifierTypeOfNode')
+		.select('identifierTypeOfNode', 'overloadDefinition', 'attribute', 'boxOf次Member', 'guardVersion', 'versionMinorMinimum')
+		.collect())
+	return dataframeDefinitions.replace_column(
+		dataframeDefinitions.get_column_index('boxOf次Member'),
+		gatherObjects(dataframe.get_column('type_ast_expr'), dataframeDefinitions.get_column('boxOf次Member')).rename('list_ast_expr')
+	)
 
-	dataframe["identifierTypeOfNode"] = dataframe["TypeAlias_hasDOTSubcategory"].where(dataframe["overloadDefinition"], dataframe["TypeAlias_hasDOTIdentifier"])
-	dataframe = dataframe.drop(columns=["TypeAlias_hasDOTIdentifier", "TypeAlias_hasDOTSubcategory"])
+def getElementsDOT(_identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, bool, str, list[ast.expr], int, int]]:
+	return cast('list[tuple[str, bool, str, list[ast.expr], int, int]]', _getTableDOT(**keywordArguments).rows())
 
-	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
-		if bool(dataframeTarget["overloadDefinition"]):
-			return [cast("ast.expr", dataframeTarget["type_ast_expr"])]
-		matchingRows: pandas.DataFrame = (
-			dataframe.loc[
-				(dataframe["attribute"] == dataframeTarget["attribute"])
-				& (dataframe["attributeType"] != "No")
-				& (dataframe["versionMinorMinimum"] <= dataframeTarget["versionMinorMinimum"]),
-				["type_ast_expr", "attributeType"],
-			]
-			.drop_duplicates(subset="attributeType")
-			.sort_values("attributeType", key=lambda x: x.str.lower())
+def _getTableGrab(**keywordArguments: Any) -> polars.DataFrame:
+	listColumnsHARDCODED: list[str] = ['attribute', 'type_astSuperClasses', 'versionMinorMinimumAttribute', 'TypeAlias_hasDOTIdentifier', 'type_astSuperClasses_ast_expr']
+	listColumns: list[str] = listColumnsHARDCODED
+	del listColumnsHARDCODED
+	dataframe: polars.DataFrame = (getDataframe(**keywordArguments).lazy()
+		.filter(polars.col('attributeKind') == '_field')
+		.select(listColumns)
+		.sort(listColumns[2], descending=True, maintain_order=True)
+		.sort(polars.col(listColumns[:2]).str.to_lowercase(), maintain_order=True)
+		.unique(subset=listColumns[:2], keep='last', maintain_order=True)
+		.rename({listColumns[1]: 'attributeType', listColumns[2]: 'versionMinorMinimum', listColumns[4]: 'type_ast_expr'})
+		.collect())
+	definitions: polars.LazyFrame = dataframe.lazy().with_row_index('次Definition')
+	values: polars.LazyFrame = definitions.select(
+		'attribute', 'attributeType', polars.col('次Definition').alias('次Member'),
+		polars.col('versionMinorMinimum').alias('versionMinorCandidate')
+	)
+	groups: polars.LazyFrame = (definitions.select('次Definition', 'attribute', 'versionMinorMinimum')
+		.join(values, on='attribute', how='inner', maintain_order='left_right')
+		.filter(polars.col('versionMinorCandidate') <= polars.col('versionMinorMinimum'))
+		.sort('次Definition', polars.col('attributeType').str.to_lowercase(), maintain_order=True)
+		.group_by('次Definition', maintain_order=True).agg(polars.col('次Member').alias('boxOf次Member')))
+	dataframeDefinitions: polars.DataFrame = (definitions.join(groups, on='次Definition', how='left', maintain_order='left')
+		.pipe(_makeColumn_guardVersion, 'attribute')
+		.select('TypeAlias_hasDOTIdentifier', 'boxOf次Member', 'attribute', 'guardVersion', 'versionMinorMinimum')
+		.unique(subset=['attribute', 'guardVersion', 'versionMinorMinimum'], keep='last', maintain_order=True)
+		.collect())
+	return dataframeDefinitions.replace_column(
+		dataframeDefinitions.get_column_index('boxOf次Member'),
+		gatherObjects(dataframe.get_column('type_ast_expr'), dataframeDefinitions.get_column('boxOf次Member')).rename('list_ast_expr')
+	)
+
+def getElementsGrab(_identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:
+	return cast('list[tuple[str, list[ast.expr], str, int, int]]', _getTableGrab(**keywordArguments).rows())
+
+def _getTableMake(**keywordArguments: Any) -> polars.DataFrame:
+	listColumnsHARDCODED: list[str] = ['ClassDefIdentifier', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args', 'listFunctionDef_args', 'kwarg_annotationIdentifier', 'listDefaults', 'classAs_astAttribute', 'listCall_keyword']
+	listColumns: list[str] = listColumnsHARDCODED
+	del listColumnsHARDCODED
+	return (getDataframe(**keywordArguments).lazy()
+		.select(listColumns)
+		.sort(polars.col(listColumns[0]).str.to_lowercase(), *listColumns[1:3], descending=[False, True, True], maintain_order=True)
+		.unique(subset=listColumns[:3], keep='first', maintain_order=True)
+		.rename({listColumns[2]: 'versionMinorMinimum'})
+		.pipe(_makeColumn_guardVersion, 'ClassDefIdentifier')
+		.with_columns(polars.lit(value=False).alias('overloadDefinition'))
+		.select('ClassDefIdentifier', 'listFunctionDef_args', 'kwarg_annotationIdentifier', 'listDefaults', 'classAs_astAttribute',
+			'overloadDefinition', 'listCall_keyword', 'guardVersion', 'versionMinorMinimum')
+		.collect())
+
+def getElementsMake(_identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.arg], str, list[ast.expr], ast.expr, bool, list[ast.keyword], int, int]]:
+	return cast('list[tuple[str, list[ast.arg], str, list[ast.expr], ast.expr, bool, list[ast.keyword], int, int]]', _getTableMake(**keywordArguments).rows())
+
+def _getTableTypeAlias(**keywordArguments: Any) -> polars.DataFrame:
+	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'ClassDefIdentifier', 'versionMinorMinimumAttribute', 'classAs_astAttribute', 'TypeAlias_hasDOTIdentifier', 'list4TypeAlias_value', 'hashable_list4TypeAlias_value', 'list4TypeAliasSubcategories']
+	listColumns: list[str] = listColumnsHARDCODED
+	del listColumnsHARDCODED
+	dataframe: polars.LazyFrame = (getDataframe(**(keywordArguments | {'modifyVersionMinorMinimum': False})).lazy()
+		.filter(polars.col('attributeKind') == '_field')
+		.select(listColumns)
+		.sort(listColumns[3], descending=True, maintain_order=True)
+		.sort(polars.col(listColumns[:3]).str.to_lowercase(), maintain_order=True)
+		.unique(subset=listColumns[:4], keep='last', maintain_order=True)
+		.rename({listColumns[3]: 'versionMinorMinimum'})
+		.sort('versionMinorMinimum', maintain_order=True))
+	if keywordArguments.get('modifyVersionMinorMinimum', True):
+		dataframe = dataframe.with_columns(
+			polars.when(polars.col('versionMinorMinimum') > settingsManufacturing.pythonMinimumVersionMinor)
+			.then('versionMinorMinimum').otherwise(noMinimum).alias('versionMinorMinimum')
 		)
-
-		return matchingRows["type_ast_expr"].tolist()
-
-	dataframe["list_ast_expr"] = dataframe.apply(makeColumn_list_ast_expr, axis="columns")
-	dataframe = dataframe.drop(columns=["type_ast_expr", "attributeType"])
-
-	byColumn: str = "identifierTypeOfNode"
-	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
-
-	dataframe = dataframe[elementsTarget]
-	return dataframe.to_records(index=False).tolist()
-
-def getElementsDocstringGrab(identifierToolClass: str, **keywordArguments: Any) -> dict[str, dict[Any, Any]]:  # ruff: ignore[unused-function-argument]
-	"""Get docstring elements for Grab."""  # ruff: ignore[docstring-missing-returns]
-	return {}
-
-def getElementsGrab(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:  # ruff: ignore[unused-function-argument]
-	listColumnsHARDCODED: list[str] = ["attribute", "type_astSuperClasses", "versionMinorMinimumAttribute", "TypeAlias_hasDOTIdentifier", "type_astSuperClasses_ast_expr"]
-	listColumns: list[str] = listColumnsHARDCODED
-	del listColumnsHARDCODED
-
-	sortBy: list[str] = listColumns[0:3]
-	caseInsensitive: list[bool] = [True, True, False]
-	ascending: list[bool] = caseInsensitive.copy()
-	drop_duplicates: list[str] = listColumns[0:2]
-
-	index_attributeType: int = 1
-	index_type_ast_expr: int = 4
-	index_versionMinorMinimum: int = 2
-
-	dataframe: pandas.DataFrame = getDataframe(**keywordArguments).query("attributeKind == '_field'")[listColumns].pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending).drop_duplicates(drop_duplicates, keep="last").reset_index(drop=True)
-
-	dataframe = dataframe.rename(columns={
-		listColumns[index_attributeType]: "attributeType",
-		listColumns[index_type_ast_expr]: "type_ast_expr",
-		listColumns[index_versionMinorMinimum]: "versionMinorMinimum",
-	})
-
-	del listColumns
-
-	elementsTarget: list[str] = ["TypeAlias_hasDOTIdentifier", "list_ast_expr", "attribute", "guardVersion", "versionMinorMinimum"]
-
-	def makeColumn_list_ast_expr(dataframeTarget: pandas.DataFrame) -> list[ast.expr]:
-		matchingRows: pandas.DataFrame = dataframe.loc[
-			(dataframe["attribute"] == dataframeTarget["attribute"])
-			& (dataframe["versionMinorMinimum"] <= dataframeTarget["versionMinorMinimum"])
-			, ["type_ast_expr", "attributeType"]
-		].sort_values("attributeType", key=lambda x: x.str.lower())
-
-		return matchingRows["type_ast_expr"].tolist()
-
-	dataframe["list_ast_expr"] = dataframe.apply(makeColumn_list_ast_expr, axis="columns")
-
-	byColumn: str = "attribute"
-	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
-
-	dataframe = dataframe[elementsTarget].drop_duplicates(subset=elementsTarget[2:None], keep="last").reset_index(drop=True)
-
-	return dataframe.to_records(index=False).tolist()
-
-def getElementsMake(identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.arg], str, list[ast.expr], ast.expr, bool, list[ast.keyword], int, int]]:  # ruff: ignore[unused-function-argument]
-	listColumnsHARDCODED: list[str] = ["ClassDefIdentifier", "versionMinorMinimumClass", "versionMinorMinimum_match_args", "listFunctionDef_args", "kwarg_annotationIdentifier", "listDefaults", "classAs_astAttribute", "listCall_keyword"]
-	listColumns: list[str] = listColumnsHARDCODED
-	del listColumnsHARDCODED
-
-	sortBy: list[str] = listColumns[0:3]
-	caseInsensitive: list[bool] = [True, False, False]
-	ascending: list[bool] = caseInsensitive.copy()
-	drop_duplicates: list[str] = sortBy.copy()
-
-	index_versionMinorMinimum: int = 2
-
-	dataframe: pandas.DataFrame = (getDataframe(**keywordArguments)[listColumns]
-					.pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending)
-					.drop_duplicates(drop_duplicates).reset_index(drop=True))
-	dataframe = dataframe.rename(columns={listColumns[index_versionMinorMinimum]: "versionMinorMinimum"})
-	del listColumns
-
-	elementsTarget: list[str] = ["ClassDefIdentifier", "listFunctionDef_args", "kwarg_annotationIdentifier", "listDefaults", "classAs_astAttribute", "overloadDefinition", "listCall_keyword", "guardVersion", "versionMinorMinimum"]
-
-	byColumn: str = "ClassDefIdentifier"
-	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
-
-	# TODO Create overloadDefinition flag - False until new logic added
-	dataframe["overloadDefinition"] = False
-
-	dataframe = dataframe[elementsTarget]
-	return dataframe.to_records(index=False).tolist()
+	dataframe = dataframe.unique(subset=['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimum'], keep='last', maintain_order=True)
+	summaries: polars.LazyFrame = (dataframe
+		.filter(polars.col('TypeAlias_hasDOTSubcategory').n_unique().over('attribute') > 1)
+		.unique(subset=['attribute', 'TypeAlias_hasDOTSubcategory'], keep='last', maintain_order=True)
+		.unique(subset=['attribute', 'versionMinorMinimum'], keep='first', maintain_order=True)
+		.select('attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimum', polars.lit(value=True).alias('summary')))
+	return (dataframe.join(summaries, on=['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimum'], how='left', maintain_order='left')
+		.with_columns(polars.when(polars.col('summary').fill_null(value=False))
+			.then(polars.lit([False, True])).otherwise(polars.lit([False])).alias('summary'))
+		.explode('summary')
+		.with_columns(
+			polars.when('summary').then(polars.lit('No')).otherwise('TypeAlias_hasDOTSubcategory').alias('TypeAlias_hasDOTSubcategory'),
+			polars.when('summary').then('list4TypeAliasSubcategories').otherwise('list4TypeAlias_value').alias('list4TypeAlias_value')
+		)
+		.sort('attribute', 'summary', maintain_order=True)
+		.with_columns(polars.when(
+			(polars.col('TypeAlias_hasDOTSubcategory').n_unique().over('attribute') == 1)
+			| (polars.col('TypeAlias_hasDOTSubcategory') == 'No')
+		).then('TypeAlias_hasDOTIdentifier').otherwise('TypeAlias_hasDOTSubcategory').alias('identifierTypeAlias'))
+		.pipe(_makeColumn_guardVersion, 'identifierTypeAlias')
+		.sort('identifierTypeAlias', 'versionMinorMinimum', descending=[False, True], maintain_order=True)
+		.select('identifierTypeAlias', 'list4TypeAlias_value', 'guardVersion', 'versionMinorMinimum')
+		.collect())
 
 def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.expr], int, int]]:
 	"""Retrieve and refine TypeAlias definitions for code generation.
@@ -258,8 +228,7 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 	enough. This function:
 	1. Filters the data to the matching versions.
 	2. Identifies whether a TypeAlias needs multiple version-guarded
-		definitions (via `addRows_hasDOTIdentifier4Subcategories`) or if it can
-		collapse into a single definition.
+		definitions or if it can collapse into a single definition.
 	3. Applies version guards (`_makeColumn_guardVersion`) to the final set.
 
 	It serves as the bridge between the comprehensive, pre-calculated history
@@ -278,88 +247,4 @@ def getElementsTypeAlias(**keywordArguments: Any) -> list[tuple[str, list[ast.ex
 		(Identifier, List of Types, Guard Version, Minimum Minor Version).
 
 	"""
-	listColumnsHARDCODED: list[str] = ["attribute", "TypeAlias_hasDOTSubcategory", "ClassDefIdentifier", "versionMinorMinimumAttribute", "classAs_astAttribute", "TypeAlias_hasDOTIdentifier", "list4TypeAlias_value", "hashable_list4TypeAlias_value", "list4TypeAliasSubcategories"]
-	listColumns: list[str] = listColumnsHARDCODED
-	del listColumnsHARDCODED
-
-	sortBy: list[str] = listColumns[0:4]
-	caseInsensitive: list[bool] = [True, True, True, False]
-	ascending: list[bool] = caseInsensitive.copy()
-	drop_duplicates: list[str] = sortBy.copy()
-
-	index_versionMinorMinimum: int = 3
-
-	dataframe: pandas.DataFrame = (getDataframe(**(keywordArguments | {"modifyVersionMinorMinimum": False})).query("attributeKind == '_field'")[listColumns]
-				.pipe(_sortCaseInsensitive, sortBy, caseInsensitive=caseInsensitive, ascending=ascending)
-				.drop_duplicates(drop_duplicates, keep="last").reset_index(drop=True))
-	dataframe = dataframe.rename(columns={listColumns[index_versionMinorMinimum]: "versionMinorMinimum"})
-	del listColumns
-
-	elementsTarget: list[str] = ["identifierTypeAlias", "list4TypeAlias_value", "guardVersion", "versionMinorMinimum"]
-
-	dataframe = dataframe.sort_values("versionMinorMinimum", kind="stable")
-	if keywordArguments.get("modifyVersionMinorMinimum", True):
-		dataframe["versionMinorMinimum"] = dataframe["versionMinorMinimum"].where(
-			dataframe["versionMinorMinimum"] > settingsManufacturing.pythonMinimumVersionMinor, noMinimum)
-	dataframe = dataframe.drop_duplicates(subset=["attribute", "TypeAlias_hasDOTSubcategory", "versionMinorMinimum"], keep="last")
-
-	def addRows_hasDOTIdentifier4Subcategories(groupBy: pandas.DataFrame) -> pandas.DataFrame:
-		"""Inject summary rows when multiple TypeAlias subcategories coincide.
-
-		(AI generated docstring)
-
-		When the filtered timeframe contains multiple distinct definitions
-		(subcategories) for the same TypeAlias, we cannot just emit them as-is.
-		We often need a 'master' definition that unifies them or directs the
-		generation logic to use the breakdown.
-
-		This function detects if more than one subcategory exists for an
-		attribute in the current result set. If so, it appends a structural row
-		that helps the template engine understand that this TypeAlias splits
-		into version-specific variants.
-
-		Parameters
-		----------
-		groupBy : pandas.DataFrame
-			A subset of the dataframe grouped by `attribute`.
-
-		Returns
-		-------
-		dataframe : pandas.DataFrame
-			The group, potentially augmented with a summary row if multiple
-			subcategories were found.
-
-		"""
-		arrayGroupBy: NDArray[numpy.str_] = groupBy["TypeAlias_hasDOTSubcategory"].to_numpy()
-		if (arrayGroupBy[0] == arrayGroupBy).all():
-			return groupBy
-
-		rows_hasDOTIdentifier: pandas.DataFrame = (groupBy.drop_duplicates(subset="TypeAlias_hasDOTSubcategory", keep="last")
-			.drop_duplicates(subset=["versionMinorMinimum"])
-			.copy()
-		)
-
-		rows_hasDOTIdentifier["attribute"] = groupBy["attribute"].iloc[0]
-		rows_hasDOTIdentifier["TypeAlias_hasDOTSubcategory"] = "No"
-		rows_hasDOTIdentifier["TypeAlias_hasDOTIdentifier"] = groupBy["TypeAlias_hasDOTIdentifier"].iloc[0]
-		rows_hasDOTIdentifier["list4TypeAlias_value"] = [
-			groupBy["list4TypeAliasSubcategories"].iloc[0]
-		] * len(rows_hasDOTIdentifier)
-
-		return pandas.concat([groupBy, rows_hasDOTIdentifier])
-
-	dataframe = dataframe.groupby("attribute")[list(dataframe.columns)].apply(addRows_hasDOTIdentifier4Subcategories).reset_index(drop=True)
-
-	dataframe["identifierTypeAlias"] = dataframe["TypeAlias_hasDOTIdentifier"].where(
-		dataframe.groupby("attribute")["TypeAlias_hasDOTSubcategory"].transform("nunique") == 1
-		, dataframe["TypeAlias_hasDOTSubcategory"].where(dataframe["TypeAlias_hasDOTSubcategory"] != "No"
-														, dataframe["TypeAlias_hasDOTIdentifier"])
-	)
-
-	byColumn: str = "identifierTypeAlias"
-	dataframe = _makeColumn_guardVersion(dataframe, byColumn)
-
-	dataframe = dataframe.sort_values(by=["identifierTypeAlias", "versionMinorMinimum"], ascending=[True, False])
-
-	dataframe = dataframe[elementsTarget]
-	return dataframe.to_records(index=False).tolist()
+	return cast('list[tuple[str, list[ast.expr], int, int]]', _getTableTypeAlias(**keywordArguments).rows())

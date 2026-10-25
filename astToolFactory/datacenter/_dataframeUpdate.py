@@ -28,30 +28,29 @@ from astToolFactory.cpython import getDictionary_match_args
 from astToolFactory.datacenter._dataframeUpdateAnnex import (
 	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, defaultValue__,
 	dictionary_defaultValue_ast_arg_Call_keyword_orElse, move2keywordArguments__)
-from astToolFactory.datacenter._dataServer import _sortCaseInsensitive, getDataframe
+from astToolFactory.datacenter._storage import gatherObjects, writeDataframe
 from astToolkit import (
 	ast_attributes, ast_attributes_int, ast_attributes_type_comment, Be, ConstantValueType as _ConstantValue, DOT, IfThis, Make, NodeChanger,
 	NodeTourist, Then)
 from astToolkit.changeDef import makeDictionaryClassDef
 from astToolkit.filesystem import parsePathFilename2astModule
-from astToolkit.transformationTools import pythonCode2ast_expr
+from astToolkit.ohWow import pythonCode2ast_expr
 from collections.abc import Mapping
 from functools import cache
 from hunterMakesPy import raiseIfNone
+from itertools import repeat
+from operator import attrgetter
 from typing import cast, TYPE_CHECKING, TypeIs
 import ast
 import builtins
-import numpy
-import pandas
+import polars
 import typeshed_client
 
 if TYPE_CHECKING:
-	from astToolFactory import SelectorSpecification
-	from collections.abc import Callable, Hashable
-	from numpy.typing import ArrayLike, NDArray
-	from pandas.api.typing import DataFrameGroupBy
+	from astToolFactory import Column__attribute, SelectorSpecification
+	from collections.abc import Callable
 	from pathlib import Path
-	from typing import Any, Literal
+	from polars.datatypes import DataTypeClass
 
 # TODO `Make.Break`, `Make.Continue`, and `Make.Pass` are missing `**keywordArguments: Unpack[ast_attributes]`.
 
@@ -178,26 +177,22 @@ def _makeDictionaryAnnotations(astClassDef: ast.ClassDef) -> dict[str, str]:
 		dictionary_Attributes[_attribute] = dictionary_Attributes[_attribute].replace(_attributeTypeVar, _attributeTypeVar_default)
 	return dictionary_Attributes
 
-#======== pandas functions =========================================
+#======== Dataframe functions =========================================
 
-def _getDataFromInterpreter() -> pandas.DataFrame:
+def _getDataFromInterpreter() -> polars.DataFrame:
 	pathFilename: Path = settingsPackage.pathPackage / 'datacenter' / 'probeInterpreter.csv'
-	dictionaryColumnTypeInterpreter: dict[str, str] = {
-		'ClassDefIdentifier': 'string',
-		'versionMajorPythonInterpreter': 'int64',
-		'versionMinorPythonInterpreter': 'int64',
-		'versionMicroPythonInterpreter': 'int64',
-		'base': 'string',
+	dictionaryColumnTypeInterpreter: dict[str, DataTypeClass] = {
+		'ClassDefIdentifier': polars.String,
+		'versionMajorPythonInterpreter': polars.Int64,
+		'versionMinorPythonInterpreter': polars.Int64,
+		'versionMicroPythonInterpreter': polars.Int64,
+		'base': polars.String,
 	}
-	dataframe = pandas.read_csv(
-		pathFilename, header=None, names=list(dictionaryColumnTypeInterpreter), dtype=dictionaryColumnTypeInterpreter)
+	return (polars.scan_csv(pathFilename, has_header=False, schema=dictionaryColumnTypeInterpreter)
+		.unique(subset=['ClassDefIdentifier', 'versionMinorPythonInterpreter'], keep='last', maintain_order=True)
+		.collect())
 
-	dataframe.attrs['drop_duplicates'] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
-	return dataframe
-
-#-------- Extract/collect data from outside sources --------------------------------
-
-def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _getDataFromPythonFiles(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Populate the dataframe with AST structure extracted from the `ast.pyi` stub and from low-level ASDL files.
 
 	(AI generated docstring)
@@ -215,12 +210,12 @@ def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The initial dataframe containing `ClassDefIdentifier`s and versions.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe expanded with rows for every field and attribute of
 		every AST class, populated with type information and deprecation status.
 
@@ -242,7 +237,8 @@ def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 			named `deprecated`, `False` otherwise.
 
 		"""
-		return bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(Make.Module(cast('list[ast.stmt]', dictionaryClassDef[ClassDefIdentifier].decorator_list))))
+		return bool(NodeTourist(IfThis.isCallIdentifier('deprecated'), doThat=Then.extractIt).captureLastMatch(dictionaryClassDef[ClassDefIdentifier]))
+
 
 	def getThe_Attributes(ClassDefIdentifier: str) -> dict[str, str]:
 		"""Extract the subset of `_Attributes` that a specific class adopts.
@@ -279,152 +275,97 @@ def _getDataFromPythonFiles(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 				the_Attributes = dictionary_Attributes
 		return the_Attributes
 
-	def newRowsFrom_attributes(dataframeTarget: pandas.DataFrame) -> pandas.DataFrame:
-		"""Generate dataframe rows for attributes defined via `_Attributes`.
+
+	def get_attributeType(dddataframeee: dict[str, str]) -> str:
+		"""Resolve the type annotation of a field from the stub file.
 
 		(AI generated docstring)
 
-		This function finds all the "extra" attributes (like line numbers and
-		column offsets) that are technically part of the class but are defined
-		via the `_Attributes` mechanism in the stub file. It adds them to the
-		dataframe with `attributeKind` set to `_attribute`.
+		This function acts as a resolver that goes back to the `ClassDef` in the
+		parsed stub to find the specific `AnnAssign` for a field found in
+		`match_args`. It uses `eval` to resolve internal `ast` TypeAliases
+		into concrete types for cleaner extraction.
 
 		Parameters
 		----------
-		dataframeTarget : pandas.DataFrame
-			The dataframe containing the classes to process.
+		dddataframeee : dict[str, str]
+			The class identifier and attribute name whose annotation is required.
 
 		Returns
 		-------
-		dataframe : pandas.DataFrame
-			A new dataframe containing only the rows representing these attributes.
+		attributeType : str
+			The string representation of the type annotation for the field.
 
 		"""
-		attributeType__ClassDefIdentifier_attribute: dict[Column__ClassDefIdentifier_attribute, column__value] = {
-			Column__ClassDefIdentifier_attribute(ClassDefIdentifier, attribute)
-			: column__value(column='attributeType', value=attributeType)
-				for ClassDefIdentifier in dataframeTarget['ClassDefIdentifier'].drop_duplicates()
-					for attribute, attributeType in getThe_Attributes(ClassDefIdentifier).items()
-		}
+		def findThis(node: ast.AST) -> TypeIs[Name]:
+			# ruff: ignore[suspicious-eval-usage]
+			return Be.Name(node) and isinstance(eval(node.id), type) and issubclass(eval(node.id), ast.AST)
 
-		return pandas.concat([
-			dataframeTarget[dataframeTarget['ClassDefIdentifier'] == key.ClassDefIdentifier].assign(
-				attribute=key.attribute,
-				attributeKind='_attribute',
-				**{assign.column: assign.value}
-			)
-			for key, assign in attributeType__ClassDefIdentifier_attribute.items()
-		], ignore_index=True)
+		def doThat(node: ast.AST) -> Attribute:
+			# ruff: ignore[suspicious-eval-usage]
+			return Make.Attribute(Make.Name('ast'), eval(node.id).__name__)  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue] # ty: ignore[unresolved-attribute]
+		dddataframeee['attributeType'] = ast.unparse(NodeChanger[ast.Name, ast.expr](findThis, doThat).visit(raiseIfNone(NodeTourist[ast.AnnAssign, ast.expr](
+				findThis=Be.AnnAssign.targetIs(IfThis.isNameIdentifier(dddataframeee['attribute']))
+				, doThat=Then.extractIt(DOT.annotation)
+				).captureLastMatch(dictionaryClassDef[dddataframeee['ClassDefIdentifier']]))))
 
-	def newRowsFrom_match_args(dataframeTarget: pandas.DataFrame) -> pandas.DataFrame:
-		"""Generate dataframe rows for fields defined in `match_args`.
-
-		(AI generated docstring)
-
-		This function explodes the `match_args` tuple for each class into
-		individual rows. These rows represent the primary fields of the AST node
-		(e.g., `body`, `test`, `orelse`). It adds them to the dataframe with
-		`attributeKind` set to `_field`.
-
-		Parameters
-		----------
-		dataframeTarget : pandas.DataFrame
-			The dataframe containing the classes and their `match_args` tuples.
-
-		Returns
-		-------
-		dataframe : pandas.DataFrame
-			A new dataframe containing only the rows representing these fields.
-
-		"""
-		def get_attributeType(dddataframeee: pandas.DataFrame) -> pandas.Series:
-			"""Resolve the type annotation of a field from the stub file.
-
-			(AI generated docstring)
-
-			This function acts as a resolver that goes back to the `ClassDef` in the
-			parsed stub to find the specific `AnnAssign` for a field found in
-			`match_args`. It uses `eval` to resolve internal `ast` TypeAliases
-			into concrete types for cleaner extraction.
-
-			Parameters
-			----------
-			dddataframeee : pandas.DataFrame
-				A dataframe (or series masquerading as one depending on apply context)
-				representing the rows being processed.
-
-			Returns
-			-------
-			attributeType : pandas.Series
-				The string representation of the type annotation for the field.
-
-			"""
-			def findThis(node: ast.AST) -> TypeIs[Name]:
-				# ruff: ignore[suspicious-eval-usage]
-				return Be.Name(node) and isinstance(eval(node.id), type) and issubclass(eval(node.id), ast.AST)
-
-			def doThat(node: ast.AST) -> Attribute:
-				# ruff: ignore[suspicious-eval-usage]
-				return Make.Attribute(Make.Name('ast'), eval(node.id).__name__)  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue] # ty: ignore[unresolved-attribute]
-			dddataframeee['attributeType'] = ast.unparse(NodeChanger[ast.Name, ast.expr](findThis, doThat).visit(raiseIfNone(NodeTourist[ast.AnnAssign, ast.expr](
-					findThis=Be.AnnAssign.targetIs(IfThis.isNameIdentifier(cast('str', dddataframeee['attribute'])))
-					, doThat=Then.extractIt(DOT.annotation)
-					).captureLastMatch(dictionaryClassDef[cast('str', dddataframeee['ClassDefIdentifier'])]))))
-
-			dddataframeee['attributeType'] = dddataframeee['attributeType'].replace('builtins.str', 'str')
+		dddataframeee['attributeType'] = dddataframeee['attributeType'].replace('builtins.str', 'str')
 # https://github.com/python/cpython/issues/143661
 
-			return dddataframeee['attributeType']
-
-		dataframeTarget = dataframeTarget[dataframeTarget['match_args'] != ()]
-
-		# Explode match_args tuples into separate rows
-		dataframeTarget = dataframeTarget.assign(attribute=dataframeTarget['match_args']).explode('attribute').reset_index(drop=True)
-		# Add required columns
-		dataframeTarget['attributeKind'] = '_field'
-
-		dataframeTarget['attributeType'] = dataframeTarget.apply(get_attributeType, axis='columns', result_type='expand')
-
-		return dataframeTarget
+		return dddataframeee['attributeType']
 
 	dictionaryClassDef: dict[str, ast.ClassDef] = makeDictionaryClassDef(_get_astModule_astStub())
 	dictionary_Attributes: dict[str, str] = _makeDictionaryAnnotations(dictionaryClassDef['_Attributes'])
-
-	dataframe['deprecated'] = pandas.Series(data=False, index=dataframe.index, dtype=bool, name='deprecated')
-	dataframe['deprecated'] = dataframe['ClassDefIdentifier'].apply(amIDeprecated)
+	dataframeClass: polars.LazyFrame = polars.DataFrame({
+		'ClassDefIdentifier': list(dictionaryClassDef),
+		'deprecated': list(map(amIDeprecated, dictionaryClassDef)),
+	}).lazy()
+	dictionary_match_args = getDictionary_match_args()
+	dataframe_match_args: polars.LazyFrame = polars.DataFrame(list(dictionary_match_args),
+		schema=['ClassDefIdentifier', 'versionMinorPythonInterpreter', 'deprecated'], orient='row'
+	).lazy().with_columns(polars.Series('match_args', dictionary_match_args.values(), dtype=polars.List(polars.String)))
+	dataframe_match_args = dataframe_match_args.rename({'deprecated': 'deprecatedASDL'})
+	dataframe = (dataframe.lazy().join(dataframeClass, on='ClassDefIdentifier', how='left', maintain_order='left')
+		.join(dataframe_match_args, on=['ClassDefIdentifier', 'versionMinorPythonInterpreter'], how='left', maintain_order='left')
+		.with_columns(polars.coalesce('deprecatedASDL', 'deprecated').alias('deprecated'),
+			polars.col('match_args').fill_null(polars.lit([], dtype=polars.List(polars.String))))
+		.drop('deprecatedASDL')
+		.collect())
 	"""NOTE deprecated classes are not defined in asdl and they do not have match_args in ast.pyi. The match_args values in the dataframe
 	for deprecated classes were created manually. If the dataframe were reset or eliminated, there is not currently a process to
 	recreate the match_args for deprecated classes."""
 
-	dataframe['match_args'] = pandas.Series(data=[()] * len(dataframe), index=dataframe.index, dtype=object, name='match_args')
-	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last')
+	attributeType__ClassDefIdentifier_attribute: dict[Column__ClassDefIdentifier_attribute, column__value] = {
+		Column__ClassDefIdentifier_attribute(ClassDefIdentifier, attribute)
+		: column__value(column='attributeType', value=attributeType)
+			for ClassDefIdentifier in dataframe['ClassDefIdentifier'].unique(maintain_order=True)
+				for attribute, attributeType in getThe_Attributes(ClassDefIdentifier).items()
+	}
+	dataframeAttributes: polars.LazyFrame = polars.DataFrame(list(attributeType__ClassDefIdentifier_attribute),
+		schema=['ClassDefIdentifier', 'attribute'], orient='row'
+	).lazy().with_columns(polars.Series('attributeTypeMetadata',
+		map(attrgetter('value'), attributeType__ClassDefIdentifier_attribute.values()), dtype=polars.String))
+	dataframeFields: polars.DataFrame = (dataframe.lazy().select('ClassDefIdentifier', polars.col('match_args').alias('attribute'))
+		.explode('attribute', empty_as_null=False).unique(maintain_order=True).collect())
+	dataframeFields = dataframeFields.lazy().with_columns(polars.Series('attributeTypeField',
+		map(get_attributeType, dataframeFields.to_dicts()), dtype=polars.String)).collect()
+	return (dataframe.lazy()
+		.join(dataframeAttributes.group_by('ClassDefIdentifier').agg(polars.col('attribute').alias('attributes')),
+			on='ClassDefIdentifier', how='left', maintain_order='left')
+		.join(polars.LazyFrame({'attributeKind': ['No', '_field', '_attribute']}), how='cross', maintain_order='left')
+		.with_columns(polars.when(polars.col('attributeKind') == '_field').then(polars.col('match_args'))
+			.when(polars.col('attributeKind') == '_attribute').then(polars.col('attributes'))
+			.otherwise(polars.lit(['No'])).alias('attribute'))
+		.explode('attribute', empty_as_null=False, keep_nulls=False)
+		.join(dataframeFields.lazy(), on=['ClassDefIdentifier', 'attribute'], how='left', maintain_order='left')
+		.join(dataframeAttributes, on=['ClassDefIdentifier', 'attribute'], how='left', maintain_order='left')
+		.with_columns(polars.when(polars.col('attributeKind') == '_field').then(polars.col('attributeTypeField'))
+			.when(polars.col('attributeKind') == '_attribute').then(polars.col('attributeTypeMetadata'))
+			.otherwise(polars.lit('No')).alias('attributeType'))
+		.drop('attributes', 'attributeTypeField', 'attributeTypeMetadata')
+		.collect())
 
-	new_match_args: pandas.Series = (dataframe[['ClassDefIdentifier', 'versionMinorPythonInterpreter', 'deprecated']]
-		.apply(tuple, axis='columns')
-		.map(getDictionary_match_args())
-		.fillna(dataframe['match_args']))  # NOTE if this logic were better, it would not use `fillna` and there still wouldn't be empty cells.
-	dataframe.loc[:, 'match_args'] = new_match_args
-
-	dataframe.attrs['drop_duplicates'].extend(['match_args'])
-
-	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last')
-
-	dataframe['attribute'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attribute')
-	dataframe.attrs['drop_duplicates'].extend(['attribute'])
-	dataframe['attributeKind'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeKind')
-	dataframe['attributeType'] = pandas.Series(data='No', index=dataframe.index, dtype=str, name='attributeType')
-
-	# NOTE these two functions each create ~4 times more rows than necessary.
-	dataframe = pandas.concat(objs=[dataframe, newRowsFrom_match_args(dataframe)], axis='index', ignore_index=True)
-	dataframe = dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last')
-
-	dataframe = pandas.concat(objs=[dataframe, newRowsFrom_attributes(dataframe)], axis='index', ignore_index=True)
-
-	return dataframe.drop_duplicates(subset=dataframe.attrs['drop_duplicates'], keep='last').reset_index(drop=True)
-
-#-------- Refine and compute data: transformations create distinct values per row --------------------------------
-
-def _fixMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _fixMutable_defaultValue(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Implement the sentinel pattern for mutable default values.
 
 	(AI generated docstring)
@@ -444,45 +385,46 @@ def _fixMutable_defaultValue(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe to transform.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe with updated defaults and arguments for mutable types.
 
-	Raises
-	------
-	ValueError
-		If an attribute is inconsistent across uses or is incorrectly marked
-		as a keyword argument.
-
 	"""
-	for specifiedColumnsAndValues, orElse in dictionary_defaultValue_ast_arg_Call_keyword_orElse.items():
-		selector: pandas.Series[bool] = getSelectorFromSpecification(dataframe, specifiedColumnsAndValues)
+	dictionary: dict[Column__attribute | Column__ClassDefIdentifier_attribute, column__value] = dict(zip(
+		dictionary_defaultValue_ast_arg_Call_keyword_orElse,
+		map(column__value, repeat('orElse'), dictionary_defaultValue_ast_arg_Call_keyword_orElse.values()),
+		strict=True,
+	))
+	dataframe = dictionaryToUpdateDataframe(dictionary,
+		dataframe.lazy().with_columns(polars.lit(None, dtype=polars.Object).alias('orElse')).collect())
+	dataframeMutable: polars.DataFrame = (dataframe.lazy().with_row_index('rowIndex')
+		.filter(polars.col('orElse').is_not_null())
+		.with_columns((polars.when(polars.col('list2Sequence'))
+			.then(polars.col('attributeType').str.replace_all('list', 'Sequence', literal=True))
+			.otherwise(polars.col('attributeType')) + ' | None').alias('attributeType')).collect())
+	dataframeMutable = dataframeMutable.lazy().with_columns(polars.Series('type_ast_expr',
+		map(pythonCode2ast_expr, dataframeMutable['attributeType']), dtype=polars.Object)).collect()
+	dataframeMutable = dataframeMutable.lazy().with_columns(
+		polars.Series('ast_argMutable', map(Make.arg, dataframeMutable['attributeRename'], dataframeMutable['type_ast_expr'], strict=True), dtype=polars.Object),
+		polars.Series('Call_keywordMutable', map(_make_keywordOrList, dataframeMutable.to_dicts()), dtype=polars.Object),
+	).collect()
+	return (dataframe.lazy().with_row_index('rowIndex')
+		.join(dataframeMutable.lazy().select('rowIndex', 'ast_argMutable', 'Call_keywordMutable'),
+			on='rowIndex', how='left', maintain_order='left')
+		.with_columns(
+			polars.when(polars.col('orElse').is_not_null()).then(polars.lit(Make.Constant(None), allow_object=True))
+				.otherwise(polars.col('defaultValue')).alias('defaultValue'),
+			polars.when(polars.col('orElse').is_not_null()).then(polars.col('ast_argMutable'))
+				.otherwise(polars.col('ast_arg')).alias('ast_arg'),
+			polars.when(polars.col('orElse').is_not_null()).then(polars.col('Call_keywordMutable'))
+				.otherwise(polars.col('Call_keyword')).alias('Call_keyword'),
+		).drop('rowIndex', 'orElse', 'ast_argMutable', 'Call_keywordMutable').collect())
 
-		attributePROXY = dataframe.loc[selector, ['attribute', 'attributeType', 'attributeRename', 'move2keywordArguments', 'list2Sequence']].drop_duplicates().to_dict(orient='records')
-
-		if len(attributePROXY) > 1:
-			message: str = f"Your current system assumes attribute '{attributePROXY[0]['attribute']}' is the same whenever it is used, but this function got {len(attributePROXY)} variations."
-			raise ValueError(message)
-
-		attributePROXY = cast('dict[str, str | bool | ast.expr]', attributePROXY[0])
-		if attributePROXY['move2keywordArguments'] != 'False':
-			message = f"Your current system assumes attribute '{attributePROXY['attribute']}' is not a keyword argument, but this function got {attributePROXY}."
-			raise ValueError(message)
-
-		dataframe.loc[selector, 'defaultValue'] = Make.Constant(None)  # pyright: ignore[reportArgumentType, reportCallIssue]  # ty: ignore[invalid-assignment]
-		attributeType: str = cast('str', attributePROXY['attributeType']) + ' | None'
-		if attributePROXY['list2Sequence'] is True:
-			attributeType = attributeType.replace('list', 'Sequence')
-		dataframe.loc[selector, 'ast_arg'] = Make.arg(cast('str', attributePROXY['attributeRename']), annotation=pythonCode2ast_expr(attributeType))  # pyright: ignore[reportArgumentType, reportCallIssue]  # ty: ignore[invalid-assignment]
-		attributePROXY['orElse'] = orElse
-		dataframe.loc[selector, 'Call_keyword'] = _make_keywordOrList(attributePROXY)  # pyright: ignore[reportArgumentType, reportCallIssue]  # ty: ignore[invalid-assignment]
-	return dataframe
-
-def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _makeColumn_ast_arg(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Generate `ast.arg` nodes for function signatures using prepared types.
 
 	(AI generated docstring)
@@ -501,15 +443,15 @@ def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe containing attribute names and their corresponding
 		AST-based type expressions.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe with a new column `ast_arg`, containing `ast.arg` nodes
-		or `'No'` if the attribute is handled via keyword arguments.
+		or null if the attribute is handled via keyword arguments.
 
 	See Also
 	--------
@@ -517,49 +459,34 @@ def _makeColumn_ast_arg(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		the `type_ast_expr` used here.
 
 	"""
-	dataframe['ast_arg'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
+	dataframeArguments: polars.DataFrame = (dataframe.lazy().with_row_index('rowIndex')
+		.filter(polars.col('move2keywordArguments') == 'False')
+		.select('rowIndex', 'attributeRename', 'type_ast_expr').collect())
+	dataframeArguments = dataframeArguments.lazy().with_columns(polars.Series('ast_arg',
+		map(Make.arg, dataframeArguments['attributeRename'], dataframeArguments['type_ast_expr'], strict=True), dtype=polars.Object)).collect()
+	return (dataframe.lazy().with_row_index('rowIndex').join(dataframeArguments.lazy().select('rowIndex', 'ast_arg'),
+		on='rowIndex', how='left', maintain_order='left').drop('rowIndex').collect())
 
-	selectorAttributeArguments: pandas.Series[bool] = dataframe['move2keywordArguments'] == 'False'
+def _makeColumn_kwarg_annotationIdentifier(dataframe: polars.DataFrame) -> polars.DataFrame:
+	list_byColumns: list[str] = ['ClassDefIdentifier', 'versionMinorPythonInterpreter']
+	dataframeAnnotations: polars.LazyFrame = (polars.DataFrame([
+		get_annotations(ast_attributes, format=Format.STRING),
+		get_annotations(ast_attributes_int, format=Format.STRING),
+		get_annotations(ast_attributes_type_comment, format=Format.STRING),
+		{},
+	]).lazy().with_columns(polars.Series('kwarg_annotationIdentifier',
+		['ast_attributes', 'ast_attributes_int', 'ast_attributes_type_comment', 'No']))
+		.unpivot(index='kwarg_annotationIdentifier', variable_name='attributeRename', value_name='attributeType')
+		.group_by('kwarg_annotationIdentifier').agg(polars.struct('attributeRename', 'attributeType')
+			.filter(polars.col('attributeType').is_not_null()).unique().sort().alias('annotations')))
+	dataframeKeywords: polars.LazyFrame = (dataframe.lazy().group_by(list_byColumns)
+		.agg(polars.struct('attributeRename', 'attributeType')
+			.filter((polars.col('attributeKind') == '_attribute') | (polars.col('move2keywordArguments') == 'Unpack'))
+			.unique().sort().alias('annotations'))
+		.join(dataframeAnnotations, on='annotations', how='left').drop('annotations'))
+	return dataframe.lazy().join(dataframeKeywords, on=list_byColumns, how='left', maintain_order='left').collect()
 
-	def make_ast_arg(row: pandas.Series) -> ast.arg:
-		return Make.arg(row['attributeRename'], annotation=cast('ast.expr', row['type_ast_expr']))
-
-	dataframe.loc[selectorAttributeArguments, 'ast_arg'] = dataframe[selectorAttributeArguments].apply(make_ast_arg, axis='columns')  # ty: ignore[no-matching-overload]
-	return dataframe
-
-def _getKwargIdentifier(attributeType: pandas.Series[str], groupBy: DataFrameGroupBy[tuple[Hashable, ...], Literal[True]]) -> str:
-	indices = groupBy.indices[attributeType.name]
-	selector: NDArray[numpy.bool_] = (
-		(groupBy.obj['attributeKind'].to_numpy()[indices] == '_attribute')
-		| (groupBy.obj['move2keywordArguments'].to_numpy()[indices] == 'Unpack')
-	)
-	annotations: frozenset[tuple[str, str]] = frozenset(zip(
-		groupBy.obj['attributeRename'].array[indices][selector]
-		, attributeType.array[selector]
-		, strict=True
-	))
-	if not annotations:
-		return 'No'
-	if annotations == frozenset(get_annotations(ast_attributes, format=Format.STRING).items()):
-		return 'ast_attributes'
-	if annotations == frozenset(get_annotations(ast_attributes_int, format=Format.STRING).items()):
-		return 'ast_attributes_int'
-	if annotations == frozenset(get_annotations(ast_attributes_type_comment, format=Format.STRING).items()):
-		return 'ast_attributes_type_comment'
-	message: str = (
-		f"I could not match keyword arguments for `{attributeType.name = }` to an available TypedDict. "
-		f"Update `_makeColumn_kwarg_annotationIdentifier` to support `{annotations = }`."
-	)
-	#=SIN= raise: This tells me I need to update the package.
-	raise NotImplementedError(message)
-
-def _makeColumn_kwarg_annotationIdentifier(dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	groupBy: DataFrameGroupBy[tuple[Hashable, ...], Literal[True]] = dataframe.groupby(
-		['ClassDefIdentifier', 'versionMinorPythonInterpreter'], sort=False)
-	dataframe['kwarg_annotationIdentifier'] = groupBy['attributeType'].transform(_getKwargIdentifier, groupBy=groupBy)
-	return dataframe
-
-def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _makeColumn_list2Sequence(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Identify attributes that require `list` to `Sequence` covariance transformation.
 
 	(AI generated docstring)
@@ -581,12 +508,12 @@ def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe containing attribute type definitions to analyze.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe with a new boolean column `list2Sequence`, set to `True`
 		for attributes that match the covariant transformation criteria.
 
@@ -598,13 +525,11 @@ def _makeColumn_list2Sequence(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 		build function arguments.
 
 	"""
-	dataframe['list2Sequence'] = (
-		dataframe['attributeType'].str.contains('list', regex=False, na=False)
-		& dataframe['attributeType'].str.contains('|'.join(settingsManufacturing.astSuperClasses), regex=True, na=False)
-	)
-	return dataframe
+	return dataframe.lazy().with_columns((polars.col('attributeType').str.contains('list', literal=True)
+		& polars.col('attributeType').str.contains('|'.join(settingsManufacturing.astSuperClasses)))
+		.alias('list2Sequence')).collect()
 
-def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _makeColumn_type_ast_expr(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Convert type strings into AST expressions, applying covariance logic.
 
 	(AI generated docstring)
@@ -624,13 +549,13 @@ def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe containing raw type strings (`attributeType`) and the
 		covariance flags (`list2Sequence`).
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe with a new column `type_ast_expr`, containing the `ast.expr`
 		representation of the attribute's type.
 
@@ -641,14 +566,14 @@ def _makeColumn_type_ast_expr(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 	`_makeColumn_ast_arg` : The **Usage Step** that consumes these AST expressions.
 
 	"""
-	dataframe['type_ast_expr'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
-	dataframe.loc[dataframe['list2Sequence'], 'type_ast_expr'] = dataframe['attributeType'].str.replace('list', 'Sequence').apply(cast('Any', pythonCode2ast_expr))
-	dataframe.loc[~dataframe['list2Sequence'], 'type_ast_expr'] = dataframe['attributeType'].apply(cast('Any', pythonCode2ast_expr))
+	dataframeTypes: polars.DataFrame = dataframe.lazy().select(polars.when(polars.col('attribute') == 'str')
+		.then(polars.lit('builtins.str'))
+		.when(polars.col('list2Sequence')).then(polars.col('attributeType').str.replace_all('list', 'Sequence', literal=True))
+		.otherwise(polars.col('attributeType')).alias('attributeType')).collect()
+	return dataframe.lazy().with_columns(polars.Series('type_ast_expr',
+		map(pythonCode2ast_expr, dataframeTypes['attributeType']), dtype=polars.Object)).collect()
 
-	dataframe.loc[dataframe['attribute'] == 'str', 'type_ast_expr'] = cast('Any', pythonCode2ast_expr(string='builtins.str'))  # <-- This is called "irony" because the parameter name is `string`, the parameter type is `str`, and I am using this function that I made a long time ago to fix the new `ast.Interpolation.str`. https://github.com/python/cpython/issues/143661
-	return dataframe
-
-def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _makeColumnCall_keyword(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Generate `ast.keyword` nodes for constructor calls; these are used in the call to `ast` not in `Make`.
 
 	(AI generated docstring)
@@ -663,40 +588,43 @@ def _makeColumnCall_keyword(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe with `attributeRename`, `list2Sequence`, and `defaultValue`.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe with a new column `Call_keyword`.
 
 	"""
-	dataframe['Call_keyword'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
+	def make_ast_keywordWith_defaultValue(attribute: str, defaultValue: ast.expr) -> ast.keyword:
+		return Make.keyword(attribute, defaultValue)
 
-	selectorCall_keyword: pandas.Series[bool] = (dataframe['attributeKind'] == '_field') & (dataframe['move2keywordArguments'] != 'No') & (dataframe['move2keywordArguments'] != 'Unpack')
-
-	selector_defaultValue: pandas.Series[bool] = selectorCall_keyword & (dataframe['move2keywordArguments'] == 'True')
-
-	def make_ast_keywordWith_defaultValue(dataframeTarget: pandas.Series) -> ast.keyword:
-		return Make.keyword(dataframeTarget['attribute'], dataframeTarget['defaultValue'])
-
-	dataframe.loc[selector_defaultValue, 'Call_keyword'] = dataframe.loc[selector_defaultValue].apply(make_ast_keywordWith_defaultValue, axis='columns')  # ty: ignore[no-matching-overload]
-
-	selectorNameValue: pandas.Series[bool] = selectorCall_keyword & (dataframe['move2keywordArguments'] != 'True')
-
-	def make_ast_keywordFrom_attributeRename(dataframeTarget: pandas.Series) -> ast.keyword:
-		keywordValue: ast.expr = Make.Name(dataframeTarget['attributeRename'])
-		if dataframeTarget['list2Sequence'] is True:
+	def make_ast_keywordFrom_attributeRename(parameters: tuple[str, str, bool]) -> ast.keyword:
+		attribute, attributeRename, list2Sequence = parameters
+		keywordValue: ast.expr = Make.Name(attributeRename)
+		if list2Sequence:
 			keywordValue = Make.Call(Make.Name('list'), [keywordValue])
-		return Make.keyword(dataframeTarget['attribute'], keywordValue)
+		return Make.keyword(attribute, keywordValue)
 
-	dataframe.loc[selectorNameValue, 'Call_keyword'] = dataframe.loc[selectorNameValue].apply(make_ast_keywordFrom_attributeRename, axis='columns')  # ty: ignore[no-matching-overload]
-	return dataframe
+	dataframeKeywords: polars.DataFrame = (dataframe.lazy().with_row_index('rowIndex')
+		.filter(polars.col('attributeKind') == '_field', ~polars.col('move2keywordArguments').is_in(['No', 'Unpack']))
+		.select('rowIndex', 'attribute', 'attributeRename', 'list2Sequence', 'defaultValue', 'move2keywordArguments').collect())
+	dataframeDefaults: polars.DataFrame = dataframeKeywords.lazy().filter(polars.col('move2keywordArguments') == 'True').collect()
+	dataframeNames: polars.DataFrame = dataframeKeywords.lazy().filter(polars.col('move2keywordArguments') != 'True').collect()
+	dataframeDefaults = dataframeDefaults.lazy().with_columns(polars.Series('Call_keyword_default',
+		map(make_ast_keywordWith_defaultValue, dataframeDefaults['attribute'], dataframeDefaults['defaultValue'], strict=True), dtype=polars.Object)).collect()
+	dataframeNames = dataframeNames.lazy().with_columns(polars.Series('Call_keyword_name',
+		map(make_ast_keywordFrom_attributeRename, zip(dataframeNames['attribute'], dataframeNames['attributeRename'],
+			dataframeNames['list2Sequence'], strict=True)), dtype=polars.Object)).collect()
+	return (dataframe.lazy().with_row_index('rowIndex')
+		.join(dataframeDefaults.lazy().select('rowIndex', 'Call_keyword_default'), on='rowIndex', how='left', maintain_order='left')
+		.join(dataframeNames.lazy().select('rowIndex', 'Call_keyword_name'), on='rowIndex', how='left', maintain_order='left')
+		.with_columns(polars.when(polars.col('move2keywordArguments') == 'True').then(polars.col('Call_keyword_default'))
+			.otherwise(polars.col('Call_keyword_name')).alias('Call_keyword'))
+		.drop('rowIndex', 'Call_keyword_default', 'Call_keyword_name').collect())
 
-#-------- Aggregate data: transformations create identical values in their group ------------
-
-def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _makeColumn_list4TypeAlias(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Pre-compute the constituent AST elements for every TypeAlias variant.
 
 	(AI generated docstring)
@@ -713,66 +641,43 @@ def _makeColumn_list4TypeAlias(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe containing `TypeAlias_hasDOTSubcategory` and version
 		information.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe populated with `list4TypeAlias_value` (the list of AST
 		expressions) and `hashable_list4TypeAlias_value` (for efficient
 		groupings).
 
 	"""
 	dataframe = _makeColumnsVersionMinimum(dataframe, ['ClassDefIdentifier', 'attribute'], 'versionMinorMinimumAttribute')
-	dataframe['list4TypeAlias_value'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
-	dataframe['hashable_list4TypeAlias_value'] = pandas.Series(data='No', index=dataframe.index, dtype=str)
+	list_byColumns: list[str] = ['TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute']
+	dataframeVariants: polars.LazyFrame = (dataframe.lazy().filter(polars.col('attributeKind') == '_field')
+		.select(list_byColumns).unique(maintain_order=True))
+	dataframeMembers: polars.LazyFrame = (dataframe.lazy().with_row_index('rowIndex')
+		.filter(polars.col('attributeKind') == '_field', ~polars.col('deprecated'))
+		.select('TypeAlias_hasDOTSubcategory', 'ClassDefIdentifier', 'rowIndex',
+			polars.col('versionMinorMinimumAttribute').alias('versionAvailable')))
+	dataframeLists: polars.DataFrame = (dataframeVariants
+		.join(dataframeMembers, on='TypeAlias_hasDOTSubcategory', how='left')
+		.filter(polars.col('versionAvailable') <= polars.col('versionMinorMinimumAttribute'))
+		.unique(subset=[*list_byColumns, 'ClassDefIdentifier'], keep='first', maintain_order=True)
+		.sort(polars.col('ClassDefIdentifier').str.to_lowercase(), maintain_order=True)
+		.group_by(list_byColumns).agg(polars.col('rowIndex').alias('indices'),
+			polars.format('[{}]', polars.format("'{}'", polars.col('ClassDefIdentifier')).str.join(', '))
+				.alias('hashable_list4TypeAlias_value'))
+		.join(dataframeVariants, on=list_byColumns, how='right')
+		.with_columns(polars.col('indices').fill_null(polars.lit([], dtype=polars.List(polars.UInt32))),
+			polars.col('hashable_list4TypeAlias_value').fill_null('[]'))
+		.collect())
+	dataframeLists = dataframeLists.lazy().with_columns(gatherObjects(dataframe['classAs_astAttribute'], dataframeLists['indices'])
+		.rename('list4TypeAlias_value')).collect()
+	return (dataframe.lazy().join(dataframeLists.lazy().drop('indices'), on=list_byColumns, how='left', maintain_order='left').collect())
 
-	def compute_list4TypeAliasByRow(dataframeTarget: pandas.DataFrame) -> tuple[list[ast.expr], str]:
-		"""Calculate the type union for a specific TypeAlias configuration.
-
-		(AI generated docstring)
-
-		Finds all rows belonging to the same TypeAlias subcategory that are valid for the current
-		row's version context (less than or equal to `versionMinorMinimumAttribute`). It effectively
-		reconstructs the `Union[...]` of types that exists at that specific point in the version
-		history.
-
-		Parameters
-		----------
-		dataframeTarget : pandas.DataFrame
-			The specific row (as a Series-like DataFrame) being processed.
-
-		Returns
-		-------
-		elementList : tuple[list[ast.expr], str]
-			A tuple containing the list of AST expressions for the types and a hashable string
-			representation of the identifiers.
-
-		"""
-		selectorSubcategory: pandas.Series[bool] = (
-			(dataframe['attributeKind'] == '_field')
-			& ~ (dataframe['deprecated'])
-			& (dataframe['TypeAlias_hasDOTSubcategory'] == dataframeTarget['TypeAlias_hasDOTSubcategory'])
-			& (dataframe['versionMinorMinimumAttribute'] <= dataframeTarget['versionMinorMinimumAttribute'])
-		)
-		if not selectorSubcategory.any():
-			return [], '[]'
-		matchingRows: pandas.DataFrame = (
-			dataframe.loc[selectorSubcategory, ['classAs_astAttribute', 'ClassDefIdentifier']]
-			.drop_duplicates(subset='ClassDefIdentifier')
-			.sort_values('ClassDefIdentifier', key=lambda x: x.str.lower())
-	)
-		return matchingRows['classAs_astAttribute'].tolist(), str(matchingRows['ClassDefIdentifier'].tolist())
-
-	selector_assign: pandas.Series[bool] = dataframe['attributeKind'] == '_field'
-	computed_values: pandas.DataFrame = dataframe[selector_assign].apply(compute_list4TypeAliasByRow, axis='columns', result_type='expand')
-	computed_values.columns = ['list4TypeAlias_value', 'hashable_list4TypeAlias_value']
-	dataframe.loc[selector_assign, ['list4TypeAlias_value', 'hashable_list4TypeAlias_value']] = computed_values
-	return dataframe
-
-def _makeColumn_list4TypeAliasSubcategories(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _makeColumn_list4TypeAliasSubcategories(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Aggregate all possible subcategory identifiers for each TypeAlias.
 
 	(AI generated docstring)
@@ -788,53 +693,29 @@ def _makeColumn_list4TypeAliasSubcategories(dataframe: pandas.DataFrame) -> pand
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe containing `TypeAlias_hasDOTSubcategory`.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe with a new column `list4TypeAliasSubcategories`
 		containing lists of possible variant names.
 
 	"""
-	dataframe['list4TypeAliasSubcategories'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
+	dataframeNames: polars.DataFrame = (dataframe.lazy()
+		.filter(polars.col('attributeKind') == '_field', ~polars.col('deprecated'), polars.col('TypeAlias_hasDOTSubcategory') != 'No')
+		.select('attribute', 'TypeAlias_hasDOTSubcategory').unique(maintain_order=True)
+		.sort(polars.col('TypeAlias_hasDOTSubcategory').str.to_lowercase(), maintain_order=True).collect())
+	dataframeNames = dataframeNames.lazy().with_columns(polars.Series('type_ast_expr',
+		map(Make.Name, dataframeNames['TypeAlias_hasDOTSubcategory']), dtype=polars.Object)).collect()
+	dataframeLists: polars.DataFrame = (dataframeNames.lazy().with_row_index('rowIndex')
+		.group_by('attribute').agg(polars.col('rowIndex').alias('indices')).collect())
+	dataframeLists = dataframeLists.lazy().with_columns(gatherObjects(dataframeNames['type_ast_expr'], dataframeLists['indices'])
+		.rename('list4TypeAliasSubcategories')).collect()
+	return (dataframe.lazy().join(dataframeLists.lazy().drop('indices'), on='attribute', how='left', maintain_order='left').collect())
 
-	selector_field: pandas.Series[bool] = (dataframe['attributeKind'] == '_field')
-
-	def compute_list4TypeAliasSubcategories(groupBy: pandas.DataFrame) -> list[ast.expr]:
-		"""Collect unique subcategory names for a group of related attributes.
-
-		(AI generated docstring)
-
-		Parameters
-		----------
-		groupBy : pandas.DataFrame
-			A subset of the dataframe grouped by `attribute`.
-
-		Returns
-		-------
-		list_names : list[ast.expr]
-			A sorted list of `ast.Name` nodes representing the unique,
-			non-deprecated subcategory identifiers found in the group.
-
-		"""
-		groupBy = groupBy[groupBy['TypeAlias_hasDOTSubcategory'] != 'No']
-		groupBy = groupBy[~groupBy['deprecated']]
-		TypeAlias_hasDOTSubcategory = groupBy['TypeAlias_hasDOTSubcategory'].unique()
-		return [Make.Name(subcategory) for subcategory in sorted(TypeAlias_hasDOTSubcategory, key=lambda x: x.lower())]
-
-	# Create a mapping from attribute to subcategory names
-	list4TypeAliasSubcategories__attributeKind_attribute: dict[str, list[ast.expr]] = {}
-	for attribute, groupBy in dataframe[selector_field].groupby('attribute'):
-		list4TypeAliasSubcategories__attributeKind_attribute[str(attribute)] = compute_list4TypeAliasSubcategories(groupBy)
-
-	# Map the subcategory names to the appropriate rows using pandas map
-	dataframe.loc[selector_field, 'list4TypeAliasSubcategories'] = dataframe.loc[selector_field, 'attribute'].map(list4TypeAliasSubcategories__attributeKind_attribute)
-
-	return dataframe
-
-def _makeColumnsFourLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _makeColumnsFourLists(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Aggregate attributes into lists for class definitions and calls.
 
 	(AI generated docstring)
@@ -853,48 +734,47 @@ def _makeColumnsFourLists(dataframe: pandas.DataFrame) -> pandas.DataFrame:
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe containing individual attribute rows.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe updated with columns containing aggregated lists.
 
 	"""
-	dataframe['listTupleAttributes'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
-	dataframe['listFunctionDef_args'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
-	dataframe['listDefaults'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
-	dataframe['listCall_keyword'] = pandas.Series(data='No', index=dataframe.index, dtype=object)
+	list_byColumns: list[str] = ['ClassDefIdentifier', 'versionMinorMinimum_match_args']
+	dataframeOrder: polars.LazyFrame = (dataframe.lazy().select(*list_byColumns, 'match_args')
+		.unique(subset=list_byColumns, maintain_order=True)
+		.select(*list_byColumns, polars.col('match_args').alias('attribute'),
+			polars.int_ranges(0, polars.col('match_args').list.len()).alias('attributeIndex'))
+		.explode('attribute', 'attributeIndex', empty_as_null=False))
+	dataframeFields: polars.LazyFrame = (dataframe.lazy().with_row_index('rowIndex')
+		.filter(polars.col('attributeKind') == '_field')
+		.join(dataframeOrder, on=[*list_byColumns, 'attribute'], how='left', maintain_order='left')
+		.sort('attributeIndex', 'versionMinorMinimum_match_args', descending=[False, True], maintain_order=True)
+		.unique(subset=[*list_byColumns, 'attribute'], keep='first', maintain_order=True))
+	dataframeGroups: polars.DataFrame = (dataframeFields.group_by(list_byColumns).agg(
+		polars.col('rowIndex').alias('indicesAttributes'),
+		polars.col('rowIndex').filter(polars.col('move2keywordArguments') == 'False').alias('indices_ast_arg'),
+		polars.col('rowIndex').filter(polars.col('defaultValue').is_not_null(),
+			polars.col('move2keywordArguments') == 'False').alias('indicesDefaults'),
+		polars.col('rowIndex').filter(~polars.col('move2keywordArguments').is_in(['No', 'Unpack'])).alias('indices_keyword'),
+	).join(dataframe.lazy().select(list_byColumns).unique(maintain_order=True), on=list_byColumns, how='right')
+		.with_columns(polars.col('indicesAttributes', 'indices_ast_arg', 'indicesDefaults', 'indices_keyword')
+			.fill_null(polars.lit([], dtype=polars.List(polars.UInt32))))
+		.collect())
+	dataframeGroups = dataframeGroups.lazy().with_columns(
+		gatherObjects(polars.Series(dataframe.lazy().select('attribute', 'type_ast_expr', 'versionMinorMinimumAttribute').collect().rows(), dtype=polars.Object),
+			dataframeGroups['indicesAttributes']).rename('listTupleAttributes'),
+		gatherObjects(dataframe['ast_arg'], dataframeGroups['indices_ast_arg']).rename('listFunctionDef_args'),
+		gatherObjects(dataframe['defaultValue'], dataframeGroups['indicesDefaults']).rename('listDefaults'),
+		gatherObjects(dataframe['Call_keyword'], dataframeGroups['indices_keyword']).rename('listCall_keyword'),
+	).collect()
+	return (dataframe.lazy().join(dataframeGroups.lazy().drop('indicesAttributes', 'indices_ast_arg', 'indicesDefaults', 'indices_keyword'),
+		on=list_byColumns, how='left', maintain_order='left').collect())
 
-	dictionaryTupleAttributes: dict[tuple[str, int], list[tuple[str, ast.expr, int]]] = {}
-	dictionaryFunctionDef_args: dict[tuple[str, int], list[ast.arg]] = {}
-	dictionaryDefaults: dict[tuple[str, int], list[ast.expr]] = {}
-	dictionaryCall_keyword: dict[tuple[str, int], list[ast.keyword]] = {}
-
-	for (ClassDefIdentifier, versionMinorMinimum_match_args), dataframeGroupBy in dataframe.groupby(['ClassDefIdentifier', 'versionMinorMinimum_match_args']):
-		groupKey: tuple[str, int] = (ClassDefIdentifier, versionMinorMinimum_match_args)  # pyright: ignore[reportAssignmentType]  # ty: ignore[invalid-assignment]
-		match_argsCategoricalSort: tuple[str, ...] = dataframeGroupBy['match_args'].iloc[0]
-		dataframeGroupBy = dataframeGroupBy[dataframeGroupBy['attributeKind'] == '_field']
-		dataframeGroupBy['attribute'] = pandas.Categorical(dataframeGroupBy['attribute'], categories=match_argsCategoricalSort, ordered=True)
-		dataframeGroupBy: pandas.DataFrame = dataframeGroupBy.sort_values(['attribute', 'versionMinorMinimum_match_args'], ascending=[True, False])
-		dictionaryTupleAttributes[groupKey] = (dataframeGroupBy.copy().drop_duplicates(subset='attribute')[['attribute', 'type_ast_expr', 'versionMinorMinimumAttribute']].apply(tuple, axis='columns').tolist())
-
-		dictionaryFunctionDef_args[groupKey] = (dataframeGroupBy[dataframeGroupBy['move2keywordArguments'] == 'False']
-																.copy().drop_duplicates(subset='attribute')['ast_arg'].tolist())
-
-		dictionaryDefaults[groupKey] = (dataframeGroupBy[(dataframeGroupBy['defaultValue'] != 'No')
-			& (dataframeGroupBy['move2keywordArguments'] == 'False')].copy().drop_duplicates(subset='attribute')['defaultValue'].tolist())
-
-		dictionaryCall_keyword[groupKey] = (dataframeGroupBy[(dataframeGroupBy['move2keywordArguments'] != 'No')
-			& (dataframeGroupBy['move2keywordArguments'] != 'Unpack')].drop_duplicates(subset='attribute')['Call_keyword'].tolist())
-	dataframe['listTupleAttributes'] = (dataframe[['ClassDefIdentifier', 'versionMinorMinimum_match_args']].apply(tuple, axis='columns').map(dictionaryTupleAttributes).fillna(dataframe['listTupleAttributes']))
-	dataframe['listFunctionDef_args'] = (dataframe[['ClassDefIdentifier', 'versionMinorMinimum_match_args']].apply(tuple, axis='columns').map(dictionaryFunctionDef_args).fillna(dataframe['listFunctionDef_args']))
-	dataframe['listDefaults'] = (dataframe[['ClassDefIdentifier', 'versionMinorMinimum_match_args']].apply(tuple, axis='columns').map(dictionaryDefaults).fillna(dataframe['listDefaults']))
-	dataframe['listCall_keyword'] = (dataframe[['ClassDefIdentifier', 'versionMinorMinimum_match_args']].apply(tuple, axis='columns').map(dictionaryCall_keyword).fillna(dataframe['listCall_keyword']))
-	return dataframe
-
-def _makeColumnTypeAlias_hasDOTSubcategory(dataframe: pandas.DataFrame) -> pandas.DataFrame:
+def _makeColumnTypeAlias_hasDOTSubcategory(dataframe: polars.DataFrame) -> polars.DataFrame:
 	"""Construct unique identifiers for TypeAlias sub-variants based on type signatures.
 
 	(AI generated docstring)
@@ -910,23 +790,24 @@ def _makeColumnTypeAlias_hasDOTSubcategory(dataframe: pandas.DataFrame) -> panda
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe containing `TypeAlias_hasDOTIdentifier` and raw
 		`attributeType` strings.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe with a new column `TypeAlias_hasDOTSubcategory`
 		containing the generated identifiers.
 
 	"""
-	dataframe['TypeAlias_hasDOTSubcategory'] = 'No'
-	selector_hasDOTIdentifier: pandas.Series[bool] = dataframe['TypeAlias_hasDOTIdentifier'] != 'No'
-	dataframe.loc[selector_hasDOTIdentifier, 'TypeAlias_hasDOTSubcategory'] = dataframe['TypeAlias_hasDOTIdentifier'] + '_' + dataframe['attributeType'].str.replace('|', 'Or').str.replace('[', '_').str.replace('[\\] ]', '', regex=True).str.replace('ast.', '')
-	return dataframe
+	return dataframe.lazy().with_columns(polars.when(polars.col('TypeAlias_hasDOTIdentifier') != 'No')
+		.then(polars.col('TypeAlias_hasDOTIdentifier') + '_' + polars.col('attributeType')
+			.str.replace_all('|', 'Or', literal=True).str.replace_all('[', '_', literal=True)
+			.str.replace_all('[\\] ]', '').str.replace_all('ast.', '', literal=True))
+		.otherwise(polars.lit('No')).alias('TypeAlias_hasDOTSubcategory')).collect()
 
-def _makeColumnsVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list[str], columnNameTarget: str) -> pandas.DataFrame:
+def _makeColumnsVersionMinimum(dataframe: polars.DataFrame, list_byColumns: list[str], columnNameTarget: str) -> polars.DataFrame:
 	"""Calculate the minimum Python version required for a feature.
 
 	(AI generated docstring)
@@ -941,7 +822,7 @@ def _makeColumnsVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe to process.
 	list_byColumns : list[str]
 		List of column names to group by (identifying the feature).
@@ -950,21 +831,16 @@ def _makeColumnsVersionMinimum(dataframe: pandas.DataFrame, list_byColumns: list
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
+	dataframe : polars.DataFrame
 		The dataframe with the new minimum version column.
 
 	"""
-	dataframe[columnNameTarget] = numpy.where(
-		dataframe.groupby(list_byColumns)['versionMinorPythonInterpreter'].transform('min') == settingsManufacturing.versionMinor_astMinimumSupported
-		, noMinimum
-		, dataframe.groupby(list_byColumns)['versionMinorPythonInterpreter'].transform('min')
-	)
-	return dataframe
+	versionMinimum: polars.Expr = polars.col('versionMinorPythonInterpreter').min().over(list_byColumns)
+	return dataframe.lazy().with_columns(polars.when(versionMinimum == settingsManufacturing.versionMinor_astMinimumSupported)
+		.then(noMinimum).otherwise(versionMinimum).alias(columnNameTarget)).collect()
 
-#-------- Generalized functions ----------------------------------------
-
-def dictionaryToUpdateDataframe(dictionary: Mapping[SelectorSpecification, column__value], dataframe: pandas.DataFrame) -> pandas.DataFrame:
-	"""Apply a selector-to-assignment dictionary to update dataframe cells in place.
+def dictionaryToUpdateDataframe(dictionary: Mapping[SelectorSpecification, column__value], dataframe: polars.DataFrame) -> polars.DataFrame:
+	"""Apply a selector-to-assignment dictionary to update dataframe cells.
 
 	(AI generated docstring)
 
@@ -981,47 +857,48 @@ def dictionaryToUpdateDataframe(dictionary: Mapping[SelectorSpecification, colum
 		Mapping from selector specifications to assignment tuples. Each selector
 		specification selects rows by matching column values. Each `column__value` specifies the target
 		column and the value to assign.
-	dataframe : pandas.DataFrame
-		Dataframe to update. Modified in place and also returned.
+	dataframe : polars.DataFrame
+		Dataframe to update.
 
 	Returns
 	-------
-	dataframe : pandas.DataFrame
-		The same dataframe, modified with all assignments applied.
+	dataframe : polars.DataFrame
+		The dataframe with all assignments applied. Later matching assignments take precedence.
 
 	See Also
 	--------
-	`getSelectorFromSpecification` : Converts a selector specification to a boolean `pandas.Series`.
+	`getSelectorFromSpecification` : Converts a selector specification to a boolean `polars.Expr`.
 	`astToolFactory.datacenter._dataframeUpdateAnnex` : Module docstring explains
 		the complete selector-based dataframe update system.
 
 	"""
+	assignments: dict[str, polars.Expr] = {}
 	for specifiedColumnsAndValues, assign in dictionary.items():
-		dataframe.loc[getSelectorFromSpecification(dataframe, specifiedColumnsAndValues), assign.column] = assign.value
-	return dataframe
+		assignments[assign.column] = (polars.when(getSelectorFromSpecification(specifiedColumnsAndValues))
+			.then(polars.lit(assign.value, allow_object=True))
+			.otherwise(assignments.get(assign.column, polars.col(assign.column))).alias(assign.column))
+	return dataframe.lazy().with_columns(*assignments.values()).collect()
 
-def getSelectorFromSpecification(dataframe: pandas.DataFrame, specifiedColumnsAndValues: SelectorSpecification) -> pandas.Series:
+def getSelectorFromSpecification(specifiedColumnsAndValues: SelectorSpecification) -> polars.Expr:
 	"""Convert a selector specification to a boolean row selector for a dataframe.
 
 	(AI generated docstring)
 
 	This function translates the declarative selector specification into an executable boolean
-	`pandas.Series`. Each field in the tuple becomes an equality test against the
+	`polars.Expr`. Each field in the tuple becomes an equality test against the
 	corresponding dataframe column. All tests are combined with logical AND, so a
 	row is selected only if *all* field values match.
 
 	Parameters
 	----------
-	dataframe : pandas.DataFrame
-		Dataframe to build the selector for.
 	specifiedColumnsAndValues : SelectorSpecification
 		A `NamedTuple` whose field names are column names and whose field values
 		are the values to match.
 
 	Returns
 	-------
-	selector : pandas.Series
-		Boolean series with `True` for rows matching all conditions.
+	selector : polars.Expr
+		Boolean expression selecting rows matching all conditions.
 
 	See Also
 	--------
@@ -1030,9 +907,7 @@ def getSelectorFromSpecification(dataframe: pandas.DataFrame, specifiedColumnsAn
 		the complete selector-based dataframe update system.
 
 	"""
-	return pandas.concat([*[dataframe[column] == value for column, value in specifiedColumnsAndValues._asdict().items()]], axis=1).all(axis=1)
-
-#======== The Function ======================================================
+	return polars.all_horizontal(polars.col(column) == value for column, value in specifiedColumnsAndValues._asdict().items())
 
 def updateDataframe() -> None:
 	"""Orchestrate the creation and population of the AST dataframe.
@@ -1050,40 +925,35 @@ def updateDataframe() -> None:
 	5. **Aggregation** groups per-class values into lists for template use.
 	6. **Persistence** saves the result to a pickle file.
 
-	The function modifies data in place and relies heavily on this module's stages and
+	The function prepares a new dataframe using this module's stages and
 	`_dataframeUpdateAnnex` configuration dictionaries.
 
 	"""
-	dataframe: pandas.DataFrame = getDataframe(includeDeprecated=True, versionMinorMaximum=settingsManufacturing.versionMinorMaximum, modifyVersionMinorMinimum=False)
-
-	# Think of a clever, simple way to optionally apply this instead of toggling comments.
-	# columns: reorder; drop columns, but they might be recreated later in the flow.
-	# dataframe = dataframe[_columns]  # ruff: ignore[commented-out-code]
-
-	dataframe = _getDataFromInterpreter()
-
-	dataframe = _getDataFromPythonFiles(dataframe)
-
-	dataframe['attributeRename'] = pandas.Series(data=dataframe['attribute'], index=dataframe.index, dtype=str, name='attributeRename', copy=True)
+	dataframe: polars.DataFrame = _getDataFromPythonFiles(_getDataFromInterpreter())
+	dataframe = dataframe.lazy().with_columns(polars.col('attribute').alias('attributeRename'),
+		polars.lit('False').alias('move2keywordArguments'), polars.lit(None, dtype=polars.Object).alias('defaultValue')).collect()
 	dataframe = dictionaryToUpdateDataframe(attributeRename__, dataframe)
-
-	dataframe['move2keywordArguments'] = pandas.Series(data='False', index=dataframe.index, dtype=str, name='move2keywordArguments')
 	dataframe = dictionaryToUpdateDataframe(move2keywordArguments__, dataframe)
-
 	dataframe = dictionaryToUpdateDataframe(attributeType__ClassDefIdentifier_attribute, dataframe)
-
-	dataframe['defaultValue'] = pandas.Series(data='No', index=dataframe.index, dtype=object, name='defaultValue')
 	dataframe = dictionaryToUpdateDataframe(defaultValue__, dataframe)
-
 	dataframe = _makeColumn_kwarg_annotationIdentifier(dataframe)
-
-	dataframe['classAs_astAttribute'] = dataframe['ClassDefIdentifier'].astype(str).map(_make_astAttribute)
+	dataframe = dataframe.lazy().with_columns(polars.Series('classAs_astAttribute',
+		map(_make_astAttribute, dataframe['ClassDefIdentifier']), dtype=polars.Object)).collect()
 	dataframe = _makeColumn_list2Sequence(dataframe)
 	dataframe = _makeColumn_type_ast_expr(dataframe)
-	dataframe['type_astSuperClasses'] = dataframe['attributeType'].replace({f'ast.{ClassDefIdentifier}': identifierTypeVar for ClassDefIdentifier, identifierTypeVar in settingsManufacturing.astSuperClasses.items()}, regex=True)
+	dataframe = dataframe.lazy().with_columns(polars.col('attributeType').str.replace_many(
+		list(map('ast.'.__add__, settingsManufacturing.astSuperClasses)), list(settingsManufacturing.astSuperClasses.values()), leftmost=True)
+		.alias('type_astSuperClasses')).collect()
 	dataframe = _makeColumn_ast_arg(dataframe)
-	dataframe['type_astSuperClasses_ast_expr'] = numpy.where(dataframe['type_astSuperClasses'] == 'No', 'No', cast('ArrayLike', dataframe['type_astSuperClasses'].apply(cast('Any', pythonCode2ast_expr))))
-	dataframe['TypeAlias_hasDOTIdentifier'] = numpy.where(dataframe['attributeKind'] == '_field', 'hasDOT' + cast('str', dataframe['attribute']), 'No')
+	dataframeTypes: polars.DataFrame = (dataframe.lazy().with_row_index('rowIndex')
+		.filter(polars.col('type_astSuperClasses') != 'No').select('rowIndex', 'type_astSuperClasses').collect())
+	dataframeTypes = dataframeTypes.lazy().with_columns(polars.Series('type_astSuperClasses_ast_expr',
+		map(pythonCode2ast_expr, dataframeTypes['type_astSuperClasses']), dtype=polars.Object)).collect()
+	dataframe = (dataframe.lazy().with_row_index('rowIndex')
+		.join(dataframeTypes.lazy().select('rowIndex', 'type_astSuperClasses_ast_expr'), on='rowIndex', how='left', maintain_order='left')
+		.drop('rowIndex').collect())
+	dataframe = dataframe.lazy().with_columns(polars.when(polars.col('attributeKind') == '_field')
+		.then(polars.lit('hasDOT') + polars.col('attribute')).otherwise(polars.lit('No')).alias('TypeAlias_hasDOTIdentifier')).collect()
 	dataframe = _makeColumnTypeAlias_hasDOTSubcategory(dataframe)
 	dataframe = _makeColumn_list4TypeAlias(dataframe)
 	dataframe = _makeColumn_list4TypeAliasSubcategories(dataframe)
@@ -1091,11 +961,11 @@ def updateDataframe() -> None:
 	dataframe = _makeColumnsVersionMinimum(dataframe, ['ClassDefIdentifier'], 'versionMinorMinimumClass')
 	dataframe = _makeColumnCall_keyword(dataframe)
 	dataframe = _fixMutable_defaultValue(dataframe)
-	dataframe = _sortCaseInsensitive(dataframe, ['ClassDefIdentifier', 'versionMinorPythonInterpreter', 'attribute'], caseInsensitive=[True, False, True], ascending=[True, False, True])
+	dataframe = dataframe.lazy().sort(polars.col('ClassDefIdentifier').str.to_lowercase(), 'versionMinorPythonInterpreter',
+		polars.col('attribute').str.to_lowercase(), descending=[False, True, False], maintain_order=True).collect()
 	# TODO Figure out overload for `Make`
 	dataframe = _makeColumnsFourLists(dataframe)
-
-	dataframe.to_pickle(settingsManufacturing.pathFilenameDataframeAST)
+	writeDataframe(dataframe.lazy().select(_columns).collect(), settingsManufacturing.pathFilenameDataframeAST)
 
 if __name__ == '__main__':
 	updateDataframe()

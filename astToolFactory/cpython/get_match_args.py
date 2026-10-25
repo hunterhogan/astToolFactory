@@ -64,7 +64,7 @@ class asdlParsedProtocol(Protocol):
 	dfns: Sequence[_asdlTypeDefinitionProtocol]
 
 def getPath_asdl(versionMinor: int) -> Path:
-	"""Create physical path for Python.asdl file."""  # ruff: ignore[docstring-missing-returns]
+	"""Create physical path for Python.asdl file."""
 	return settingsPackage.pathPackage / relativePathCpython / f'3.{versionMinor}'
 
 def extract_match_argsForVersion(versionMinor: int) -> dict[str, tuple[str, ...]]:
@@ -141,7 +141,7 @@ def extract_match_args() -> dict[int, dict[str, tuple[str, ...]]]:
 	return dictionaryByVersion
 
 def getDictionary_match_args() -> dict[tuple[str, int, Literal[False]], tuple[str, ...]]:
-	"""Create dictionary structured as ClassDefIdentifier -> versionMinorPythonInterpreter -> match_args."""  # ruff: ignore[docstring-missing-returns]
+	"""Create dictionary structured as ClassDefIdentifier -> versionMinorPythonInterpreter -> match_args."""
 	dictionaryByVersion: dict[int, dict[str, tuple[str, ...]]] = extract_match_args()
 
 	match_args__ClassDefIdentifier_versionMinorPythonInterpreter_deprecated: dict[tuple[str, int, Literal[False]], tuple[str, ...]] = {}

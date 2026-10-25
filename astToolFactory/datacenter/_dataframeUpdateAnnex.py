@@ -28,9 +28,9 @@ The system has three components.
 
 3. **Executor functions** (in `astToolFactory.datacenter._dataframeUpdate`).
 	- `getSelectorFromSpecification` converts a selector specification to a boolean row
-		selector `pandas.Series`.
-	- `dictionaryToUpdateDataframe` iterates a mapping of
-		selector specification to `column__value` and applies each update.
+		selector `polars.Expr`.
+	- `dictionaryToUpdateDataframe` applies a mapping of selector specifications to
+		`column__value`. Later matching assignments take precedence.
 
 Naming Convention
 -----------------
@@ -64,8 +64,8 @@ Usage Pattern
 
 	dataframe = dictionaryToUpdateDataframe(attributeRename__, dataframe)
 
-This sets `dataframe.loc[dataframe['attribute'] == 'ctx', 'attributeRename'] = 'context'`
-and `dataframe.loc[dataframe['attribute'] == 'func', 'attributeRename'] = 'callee'`.
+This assigns `'context'` to `attributeRename` where `attribute` is `'ctx'`, and assigns
+`'callee'` to `attributeRename` where `attribute` is `'func'`.
 
 Dictionaries in This Module
 ---------------------------

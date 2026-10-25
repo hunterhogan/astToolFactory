@@ -20,14 +20,13 @@ classifiers = [
 ]
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
 dependencies = [
-  "astToolkit==0.12.0",
+  "astToolkit==0.12.1",
   "hunterMakesPy>=0.8.1",
-  "pandas>=3.0.0",
-  "pyarrow",
+  "polars>=2.0.0",
   "tomli",
   "typeshed_client",
 ]
-optional-dependencies = { development = ["ipykernel", "pyarrow-stubs", "pytest-cov", "PyGithub"], testing = ["pytest-xdist", "pytest"] }
+optional-dependencies = { development = ["ipykernel", "pytest-cov", "PyGithub"], testing = ["pytest-xdist", "pytest"] }
 
 [build-system]
 requires = ["setuptools"]
