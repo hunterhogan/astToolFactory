@@ -240,14 +240,6 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, Make.Import("ast")
 		, Make.Import("builtins")  # https://github.com/python/cpython/issues/143661
 		, Make.Import("sys")
-		, Make.If(
-			Make.Compare(
-				Make.Attribute(Make.Name("sys"), "version_info")
-				, [Make.GtE()]  # TODO Change to `<`.
-				, [Make.Tuple([Make.Constant(3), Make.Constant(14)])]
-			)
-			, body=[Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("hasDOTstr")])]
-		)
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
@@ -309,13 +301,6 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("cast")])
 		, Make.Import("ast")
 		, Make.Import("sys")
-		, Make.If(
-			Make.Compare(Make.Attribute(Make.Name("sys"), "version_info")
-				, [Make.GtE()]  # TODO Change to `<`.
-				, [Make.Tuple([Make.Constant(3), Make.Constant(14)])]
-			)
-			, body=[Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("hasDOTstr")])]
-		)
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
