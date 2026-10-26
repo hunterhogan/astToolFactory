@@ -10,8 +10,10 @@ from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
 	FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index, FunctionDefMake_Attribute,
 	list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
-from astToolkit import IfThis, Make, NodeChanger, Then
-from astToolkit.containers import LedgerOfImports
+from astToolkit import Be, DOT, Grab, IfThis, Make, NodeChanger, NodeTourist, Then
+from astToolkit.changeDef import extractFunctionDef
+from astToolkit.containers import IngredientsFunction, IngredientsModule, LedgerOfImports
+from astToolkit.filesystem import parseLogicalPath2astModule, parsePathFilename2astModule
 from astToolkit.ohWow import unjoinBinOP
 from hunterMakesPy import raiseIfNone
 from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT, writePython
@@ -19,6 +21,7 @@ from pathlib import PurePosixPath
 from textwrap import indent
 from typing import cast, TYPE_CHECKING
 import ast
+import typeshed_client
 
 if TYPE_CHECKING:
 	from collections.abc import Sequence
@@ -125,7 +128,8 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 			list4ClassDefBody.append(ast_stmt)
 		else:
-			list4subClassDefBody: list[ast.stmt] = [Make.FunctionDef("__call__"
+			list4subClassDefBody: list[ast.stmt] = [docstrings[identifierToolClass][ClassDefIdentifier]
+				, Make.FunctionDef("__call__"
 				, Make.arguments(list_arg=[Make.arg("self"), Make.arg("node", annotation=astASTastAttribute)])
 				, body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
 				, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute))]
@@ -145,9 +149,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 				list4subClassDefBody.append(ast_stmt)
 
 			list_ast_stmt: list[ast.stmt] = [
-				Make.ClassDef(f"_{ClassDefIdentifier}", body=list4subClassDefBody)
-				, Make.Assign([Make.Name(ClassDefIdentifier, context=Make.Store())], value=Make.Call(Make.Name(f"_{ClassDefIdentifier}")))
-				, docstrings[identifierToolClass][ClassDefIdentifier]]
+				Make.ClassDef(ClassDefIdentifier, body=list4subClassDefBody, decorator_list=[Make.Name("call")])]
 
 			if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
 				list_ast_stmt = [_makeSimpleGuardVersion(list_ast_stmt, versionMinorMinimum)]
@@ -155,6 +157,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 			list4ClassDefBody.extend(list_ast_stmt)
 
 	list4ModuleBody: list[ast.stmt] = [
+		Make.ImportFrom("operator", [Make.alias("call")]),
 		Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("TypeIs")]),
 		Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")]),
 		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("木")]),
@@ -241,6 +244,47 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
+
+def makeToolDump(identifierModule: str = '_tool_dump') -> None:  # ruff: ignore[undocumented-public-function]
+	# DOCUMENT
+	ingredientsFunction: IngredientsFunction = IngredientsFunction(
+		raiseIfNone(extractFunctionDef(parseLogicalPath2astModule('ast'), 'dump')))
+	astModuleStub: ast.Module = parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file('ast'
+		, search_context=typeshed_client.get_search_context(typeshed=settingsManufacturing.pathRoot_typeshed))))
+	dictionaryArguments: dict[str, ast.arg] = {}
+	NodeTourist(IfThis.isFunctionDefIdentifier('dump')
+		, NodeTourist(Be.arg, Then.updateKeyValueIn(DOT.arg, Then.extractIt, dictionaryArguments)).visit).visit(astModuleStub)
+	NodeChanger(Be.arguments, Grab.andDoAllOf([
+		Grab.argsAttribute(Then.replaceWith(list(map(dictionaryArguments.__getitem__
+			, map(DOT.arg, ingredientsFunction.astFunctionDef.args.args)))))
+		, Grab.kwonlyargsAttribute(Then.replaceWith(list(map(dictionaryArguments.__getitem__
+			, map(DOT.arg, ingredientsFunction.astFunctionDef.args.kwonlyargs)))))
+	])).visit(ingredientsFunction.astFunctionDef.args)
+	NodeChanger(IfThis.isFunctionDefIdentifier('dump')
+		, Grab.returnsAttribute(Then.replaceWith(raiseIfNone(extractFunctionDef(astModuleStub, 'dump')).returns))
+	).visit(ingredientsFunction.astFunctionDef)
+
+	NodeChanger(IfThis.isNameIdentifier('AST')
+		, Then.replaceWith(Make.Attribute(Make.Name('ast'), 'AST'))).visit(ingredientsFunction.astFunctionDef)
+	NodeChanger(IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('cls_name'))
+		, Grab.valueAttribute(Then.replaceWith(Make.JoinedStr([
+			Make.FormattedValue(Make.Attribute(Make.Name('t'), 'node'), -1)
+			, Make.Constant('ast.')
+			, Make.FormattedValue(Make.Attribute(Make.Name('cls'), '__name__'), -1)
+			, Make.FormattedValue(Make.Attribute(Make.Name('t'), 'reset'), -1)
+		])))).visit(ingredientsFunction.astFunctionDef)
+
+	NodeChanger(Be.For.iterIs(IfThis.astIs(Make.Attribute(Make.Name('node'), '_fields')))
+		, NodeChanger(Be.If.testIs(Be.BoolOp.opIs(Be.And))
+			, NodeChanger(Be.BoolOp, Grab.valuesAttribute([
+				Make.UnaryOp(Make.Not(), Make.Name('show_empty'))].__add__)).visit).visit
+	).visit(ingredientsFunction.astFunctionDef)
+	NodeChanger(Be.If.testIs(IfThis.astIs(Make.Call(Make.Name('isinstance'), [Make.Name('value'), Make.Name('Load')])))
+		, Then.removeIt).visit(ingredientsFunction.astFunctionDef)
+
+	ingredientsFunction.imports.addImport_asStr('ast')
+	ingredientsModule: IngredientsModule = IngredientsModule(ingredientsFunction)
+	ingredientsModule.write_astModule(settingsManufacturing.pathPackage / (identifierModule + settingsManufacturing.fileExtension))
 
 def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write `class` `Grab`.
@@ -470,6 +514,7 @@ def manufactureTools(settingsManufacturing: ManufacturedPackageSettings) -> None
 	"""
 	makeToolBe(settingsManufacturing.identifiers['Be'])
 	makeToolDOT(settingsManufacturing.identifiers['DOT'])
+	makeToolDump()
 	makeToolGrab(settingsManufacturing.identifiers['Grab'])
 	makeToolMake(settingsManufacturing.identifiers['Make'])
 	write_theSSOT(settingsManufacturing.identifiers['SSOT'])
