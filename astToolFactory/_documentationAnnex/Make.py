@@ -119,12 +119,11 @@ listDocstring.append(Docstring(f"{identifierToolClass}.AsyncWith"
 
 listDocstring.append(Docstring(f"{identifierToolClass}.Attribute"
     , aDocument("Make an `ast.Attribute` object for dot notation attribute access.")
-    , aDocument("""The `ast.Attribute` object represents attribute access using dot notation such as `object.method` or `module.Class`. The `*attribute` variadic parameter accepts multiple names to chain attribute accesses, producing `value.first.second.third` from a single `Make.Attribute` call.""")
+    , aDocument("""The `ast.Attribute` object represents attribute access using dot notation such as `object.method` or `module.Class`.""")
     , {'value': aDocument("Base expression providing the object on which attribute access begins.", 'ast.expr')
-        , 'attribute': aDocument("One or more attribute name strings to access in sequence. Multiple names generate a chain of nested `ast.Attribute` objects.", 'str')
-        , 'context': aDocument(f"({diminutive2etymology['ctx']}) Expression context for the final attribute in the chain. Use `ast.Load()` to read, `ast.Store()` to assign, or `ast.Del()` ({diminutive2etymology['Del']}) to delete. Defaults to `ast.Load()`. This parameter corresponds to `ast.Attribute.ctx`.", 'ast.expr_context | None = None')}
-    , {'attributeAccess': aDocument("An `ast.Attribute` object representing the final attribute in the chain.", 'ast.Attribute')}
-    , {'Chained Attribute Access': aDocument("""`Make.Attribute(value, 'first', 'second', context=ctx)` produces `ast.Attribute(ast.Attribute(value, 'first', ctx=ast.Load()), 'second', ctx=ctx)`. Only the final `ast.Attribute` node in the chain uses the supplied `context`; all intermediate nodes use `ast.Load()`.""")}
+        , 'attribute': aDocument("Attribute name string to access.", 'str')
+        , 'context': aDocument(f"({diminutive2etymology['ctx']}) Expression context for the attribute access. Use `ast.Load()` to read, `ast.Store()` to assign, or `ast.Del()` ({diminutive2etymology['Del']}) to delete. Defaults to `ast.Load()`. This parameter corresponds to `ast.Attribute.ctx`.", 'ast.expr_context | None = None')}
+    , {'attributeAccess': aDocument("An `ast.Attribute` object representing the attribute access.", 'ast.Attribute')}
 ))
 
 listDocstring.append(Docstring(f"{identifierToolClass}.AugAssign"

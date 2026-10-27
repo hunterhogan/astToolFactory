@@ -8,7 +8,7 @@ from astToolFactory.datacenter import getElementsBe, getElementsDOT, getElements
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
-	FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index, FunctionDefMake_Attribute,
+	FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index,
 	list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import Be, DOT, Grab, IfThis, Make, NodeChanger, NodeTourist, Then
 from astToolkit.changeDef import extractFunctionDef
@@ -347,6 +347,12 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
+# TODO The remaining failures expose a concrete Make.Attribute defect: with chained access, it puts
+# Store or Del on intermediate attributes as well as the final attribute. Those intermediate
+# expressions require Load. I’m keeping those assertions explicit. The abstract AST constructors are
+# now tested in the warning partition, since Python 3.15 deprecates constructing them.
+
+# I don't think I've ever used more than one attribute. I can probably drop this feature.
 def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write `class` `Make`.
 
@@ -386,9 +392,6 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 				Make.ClassDef(ClassDefIdentifier
 					, bases=[Make.Attribute(Make.Name("ast"), ClassDefIdentifier)]
 					, body=[docstrings[identifierToolClass][ClassDefIdentifier], FunctionDef_join_operator]))
-			continue
-		elif ClassDefIdentifier == "Attribute":
-			list4ClassDefBody.append(FunctionDefMake_Attribute)
 			continue
 		elif ClassDefIdentifier == "keyword":
 			list4ClassDefBody.extend(listOverloads_keyword)
