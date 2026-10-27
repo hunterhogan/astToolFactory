@@ -8,8 +8,8 @@ from astToolFactory.datacenter import getElementsBe, getElementsDOT, getElements
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
-	FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index,
-	list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
+	FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index, list_argMake_Import,
+	listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import Be, DOT, Grab, IfThis, Make, NodeChanger, NodeTourist, Then
 from astToolkit.changeDef import extractFunctionDef
 from astToolkit.containers import IngredientsFunction, IngredientsModule, LedgerOfImports

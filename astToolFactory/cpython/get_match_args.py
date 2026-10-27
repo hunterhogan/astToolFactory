@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 
 #======== Configuration ========
 rangeVersionMinor: range = range(settingsManufacturing.versionMinor_astMinimumSupported, settingsManufacturing.versionMinorMaximum + inclusive)
-relativePathCpython: str = 'cpython'
+relativePathCpython: str = '../data'
 filename_asdlData: str = 'Python.asdl'
 filename_asdlDOTpy: identifierDotAttribute = 'asdl.py'
 
