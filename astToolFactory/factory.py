@@ -12,8 +12,7 @@ from astToolFactory.factoryAnnex import (
 	listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import Be, DOT, Grab, IfThis, Make, NodeChanger, NodeTourist, Then
 from astToolkit.changeDef import extractFunctionDef
-from astToolkit.containers import IngredientsFunction, IngredientsModule
-from astToolkit.filesystem import parseLogicalPath2astModule, parsePathFilename2astModule
+from astToolkit.filesystem import parseLogicalPath2astModule, parsePathFilename2astModule, write_astModule
 from astToolkit.ohWow import unjoinBinOP
 from hunterMakesPy import raiseIfNone
 from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT, writePython
@@ -246,10 +245,10 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-def makeToolDump(identifierModule: str = '_tool_dump') -> None:  # ruff: ignore[undocumented-public-function]
-	# DOCUMENT
-	ingredientsFunction: IngredientsFunction = IngredientsFunction(
-		raiseIfNone(extractFunctionDef(parseLogicalPath2astModule('ast'), 'dump')))
+def makeToolDump(identifierModule: str = '_tool_dump') -> None:
+	"""Transform ast.dump to print full attribute names, all empty items, and not default context."""
+	astModule: ast.Module = parseLogicalPath2astModule('ast')
+	astFunctionDef: ast.FunctionDef = raiseIfNone(extractFunctionDef(astModule, 'dump'))
 	astModuleStub: ast.Module = parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file('ast'
 		, search_context=typeshed_client.get_search_context(typeshed=settingsManufacturing.pathRoot_typeshed))))
 	dictionaryArguments: dict[str, ast.arg] = {}
@@ -257,35 +256,35 @@ def makeToolDump(identifierModule: str = '_tool_dump') -> None:  # ruff: ignore[
 		, NodeTourist(Be.arg, Then.updateKeyValueIn(DOT.arg, Then.extractIt, dictionaryArguments)).visit).visit(astModuleStub)
 	NodeChanger(Be.arguments, Grab.andDoAllOf([
 		Grab.argsAttribute(Then.replaceWith(list(map(dictionaryArguments.__getitem__
-			, map(DOT.arg, ingredientsFunction.astFunctionDef.args.args)))))
+			, map(DOT.arg, astFunctionDef.args.args)))))
 		, Grab.kwonlyargsAttribute(Then.replaceWith(list(map(dictionaryArguments.__getitem__
-			, map(DOT.arg, ingredientsFunction.astFunctionDef.args.kwonlyargs)))))
-	])).visit(ingredientsFunction.astFunctionDef.args)
+			, map(DOT.arg, astFunctionDef.args.kwonlyargs)))))
+	])).visit(astFunctionDef.args)
 	NodeChanger(IfThis.isFunctionDefIdentifier('dump')
 		, Grab.returnsAttribute(Then.replaceWith(raiseIfNone(extractFunctionDef(astModuleStub, 'dump')).returns))
-	).visit(ingredientsFunction.astFunctionDef)
+	).visit(astFunctionDef)
 
 	NodeChanger(IfThis.isNameIdentifier('AST')
-		, Then.replaceWith(Make.Attribute(Make.Name('ast'), 'AST'))).visit(ingredientsFunction.astFunctionDef)
+		, Then.replaceWith(Make.Attribute(Make.Name('ast'), 'AST'))).visit(astFunctionDef)
 	NodeChanger(IfThis.isAssignAndTargets0Is(IfThis.isNameIdentifier('cls_name'))
 		, Grab.valueAttribute(Then.replaceWith(Make.JoinedStr([
 			Make.FormattedValue(Make.Attribute(Make.Name('t'), 'node'), -1)
 			, Make.Constant('ast.')
 			, Make.FormattedValue(Make.Attribute(Make.Name('cls'), '__name__'), -1)
 			, Make.FormattedValue(Make.Attribute(Make.Name('t'), 'reset'), -1)
-		])))).visit(ingredientsFunction.astFunctionDef)
+		])))).visit(astFunctionDef)
 
 	NodeChanger(Be.For.iterIs(IfThis.astIs(Make.Attribute(Make.Name('node'), '_fields')))
 		, NodeChanger(Be.If.testIs(Be.BoolOp.opIs(Be.And))
 			, NodeChanger(Be.BoolOp, Grab.valuesAttribute([
 				Make.UnaryOp(Make.Not(), Make.Name('show_empty'))].__add__)).visit).visit
-	).visit(ingredientsFunction.astFunctionDef)
+	).visit(astFunctionDef)
 	NodeChanger(Be.If.testIs(IfThis.astIs(Make.Call(Make.Name('isinstance'), [Make.Name('value'), Make.Name('Load')])))
-		, Then.removeIt).visit(ingredientsFunction.astFunctionDef)
+		, Then.removeIt).visit(astFunctionDef)
 
-	ingredientsFunction.imports.addImport_asStr('ast')
-	ingredientsModule: IngredientsModule = IngredientsModule(ingredientsFunction)
-	ingredientsModule.write_astModule(settingsManufacturing.pathPackage / (identifierModule + settingsManufacturing.fileExtension))
+	astModule.body = [astFunctionDef]
+	astModule.body.insert(0, Make.Import('ast'))
+	write_astModule(astModule, settingsManufacturing.pathPackage / (identifierModule + settingsManufacturing.fileExtension))
 
 def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write `class` `Grab`.
