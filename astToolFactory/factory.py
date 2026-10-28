@@ -12,7 +12,7 @@ from astToolFactory.factoryAnnex import (
 	listHandmade_astTypes, listOverloads_keyword)
 from astToolkit import Be, DOT, Grab, IfThis, Make, NodeChanger, NodeTourist, Then
 from astToolkit.changeDef import extractFunctionDef
-from astToolkit.containers import IngredientsFunction, IngredientsModule, LedgerOfImports
+from astToolkit.containers import IngredientsFunction, IngredientsModule
 from astToolkit.filesystem import parseLogicalPath2astModule, parsePathFilename2astModule
 from astToolkit.ohWow import unjoinBinOP
 from hunterMakesPy import raiseIfNone
@@ -86,11 +86,12 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
 	list4ModuleBody: list[ast.stmt] = []
-	ledgerOfImports: LedgerOfImports = LedgerOfImports(Make.Module([
+	list4ModuleImports: list[ast.stmt] = [
 		Make.ImportFrom("types", [Make.alias("EllipsisType")])
 		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("TypeAlias", "typing_TypeAlias"), Make.alias("TypedDict"), Make.alias("TypeVar", "typing_TypeVar")])
 		, Make.Import("ast")
-		, Make.Import("sys")]))
+		, Make.Import("sys")
+	]
 
 	for identifierTypeAlias, list4TypeAlias_value, guardVersion, versionMinorMinimum in getElementsTypeAlias(**keywordArguments):  # ruff:ignore[unused-loop-control-variable]
 		ast_stmt = Make.TypeAlias(Make.Name(identifierTypeAlias, Make.Store()), type_params=[], value=Make.BitOr.join(list4TypeAlias_value))
@@ -102,7 +103,7 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 
 	astModule: ast.Module = Make.Module([
 		docstringWarning
-		, *ledgerOfImports.makeList_ast()
+		, *list4ModuleImports
 		, *listHandmade_astTypes
 		, *list4ModuleBody])
 
@@ -347,12 +348,6 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
-# TODO The remaining failures expose a concrete Make.Attribute defect: with chained access, it puts
-# Store or Del on intermediate attributes as well as the final attribute. Those intermediate
-# expressions require Load. I’m keeping those assertions explicit. The abstract AST constructors are
-# now tested in the warning partition, since Python 3.15 deprecates constructing them.
-
-# I don't think I've ever used more than one attribute. I can probably drop this feature.
 def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write `class` `Make`.
 
@@ -364,14 +359,15 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 		Override `ManufacturedPackageSettings`.
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
-	ledgerOfImports: LedgerOfImports = LedgerOfImports(Make.Module([
+	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any")])
 		, Make.Import("ast")
-		, Make.Import("builtins")]))  # https://github.com/python/cpython/issues/143661
-	ledgerOfImports.addImportFrom_asStr(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", "ConstantValueType")
-	ledgerOfImports.addImportFrom_asStr(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", "ast_attributes")
-	ledgerOfImports.addImportFrom_asStr('hunterMakesPy', "identifierDotAttribute")
+		, Make.Import("builtins")  # https://github.com/python/cpython/issues/143661
+		, Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("ConstantValueType")])
+		, Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("ast_attributes")])
+		, Make.ImportFrom("hunterMakesPy", [Make.alias("identifierDotAttribute")])
+	]
 
 	list4ClassDefBody: list[ast.stmt] = [
 		docstrings[identifierToolClass][identifierToolClass]
@@ -395,12 +391,11 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 			continue
 		elif ClassDefIdentifier == "keyword":
 			list4ClassDefBody.extend(listOverloads_keyword)
-			ledgerOfImports.addImportFrom_asStr("typing", "overload")
+			list4ModuleBody.append(Make.ImportFrom("typing", [Make.alias("overload")]))
 
 		if kwarg_annotationIdentifier != "No":
 			listCall_keyword.append(keywordKeywordArguments4Call)
-			ledgerOfImports.addImportFrom_asStr(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", kwarg_annotationIdentifier)
-			ledgerOfImports.addImportFrom_asStr("typing", 'Unpack')
+			list4ModuleBody.extend((Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias(kwarg_annotationIdentifier)]), Make.ImportFrom("typing", [Make.alias("Unpack")])))
 			kwarg: ast.arg | None = Make.arg(settingsManufacturing.keywordArgumentsIdentifier
 				, annotation=Make.Subscript(Make.Name("Unpack"), slice=Make.Name(kwarg_annotationIdentifier)))
 		else:
@@ -428,11 +423,10 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 		if guardVersion:
 			_makeNestedGuardVersions()
-			ledgerOfImports.addImport_asStr("sys")
+			list4ModuleBody.append(Make.Import("sys"))
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ClassDefBody.append(ast_stmt)
 
-	list4ModuleBody: list[ast.stmt] = [*ledgerOfImports.makeList_ast()]
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
 
 def write_theSSOT(identifierModule: str) -> None:
