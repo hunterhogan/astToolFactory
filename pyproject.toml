@@ -20,7 +20,7 @@ classifiers = [
 ]
 urls = { Donate = "https://www.patreon.com/integrated", Homepage = "https://github.com/hunterhogan/astToolFactory", Repository = "https://github.com/hunterhogan/astToolFactory.git" }
 dependencies = [
-  "astToolkit==0.12.1",
+  "astToolkit==0.13.0",
   "hunterMakesPy>=0.8.1",
   "polars>=2.0.0",
   "tomli",

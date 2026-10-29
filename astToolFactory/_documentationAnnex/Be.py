@@ -10,7 +10,11 @@ from __future__ import annotations
 from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import (
 	dictionary_astClasses, diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators)
-from astToolkit import identifierDotAttribute, Make
+from astToolkit import Make
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+	from hunterMakesPy import identifierDotAttribute
 
 ImaIndent4aMethod: str = ' ' * 8
 identifierToolClass: str = 'Be'

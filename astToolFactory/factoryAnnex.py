@@ -163,6 +163,8 @@ listOverloads_keyword: list[ast.stmt] = [
 		, returns=Make.Attribute(Make.Name('ast'), ClassDefIdentifier))]
 del ClassDefIdentifier
 
+ignoreAbstractClassWarning: ast.Expr = Make.Expr(Make.Call(Make.Attribute(Make.Name('warnings'), attribute='filterwarnings'), listParameters=[Make.Constant('ignore')], list_keyword=[Make.keyword('category', value=Make.Name('DeprecationWarning')), Make.keyword('message', value=Make.Constant('Instantiating abstract AST node class*'))]))
+
 #======== `theSSOT` =====================================================================
 astModule_theSSOT: ast.Module = Make.Module([
 	Make.ImportFrom('__future__', list_alias=[Make.alias('annotations')])
@@ -174,14 +176,8 @@ astModule_theSSOT: ast.Module = Make.Module([
 
 #======== `TypeAlias` =====================================================================
 listHandmade_astTypes: list[ast.stmt] = [
-	# If I were to automate the creation of ConstantValueType from ast.pyi `_ConstantValue`, their definition doesn't include or `range`.
-	# And, I would change the identifier to `ast_ConstantValue`.
-	Make.TypeAlias(Make.Name('ConstantValueType', Make.Store()), type_params=[]
-		, value=Make.BitOr().join(Make.Name(identifier)
-			for identifier in ['bool', 'bytes', 'complex', 'EllipsisType', 'float', 'int', 'None', 'range', 'str']))
-	, Make.TypeAlias(Make.Name('astASTattributes', Make.Store()), type_params=[]
-		, value=Make.BitOr().join([astASTastAttribute, Make.Name('ConstantValueType'), Make.Subscript(Make.Name('list'), astASTastAttribute), Make.Subscript(Make.Name('list'), Make.BitOr.join([astASTastAttribute, Make.Constant(None)])), Make.Subscript(Make.Name('list'), Make.Name('str'))]))
-	, Make.TypeAlias(Make.Name('identifierDotAttribute', Make.Store()), type_params=[], value=Make.Name('str'))
+	Make.TypeAlias(Make.Name('astASTattributes', Make.Store()), type_params=[]
+		, value=Make.BitOr().join([astASTastAttribute, Make.Name('ast_ConstantValue'), Make.Subscript(Make.Name('list'), astASTastAttribute), Make.Subscript(Make.Name('list'), Make.BitOr.join([astASTastAttribute, Make.Constant(None)])), Make.Subscript(Make.Name('list'), Make.Name('str'))]))
 ]
 
 typeVariables: dict[str, dataTypeVariables] = {

@@ -8,17 +8,16 @@ from astToolFactory.datacenter import getElementsBe, getElementsDOT, getElements
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
 	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
-	FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index, list_argMake_Import,
-	listHandmade_astTypes, listOverloads_keyword)
+	FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index, ignoreAbstractClassWarning,
+	list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
+from astToolFactory.filesystem import writeModule
 from astToolkit import Be, DOT, Grab, IfThis, Make, NodeChanger, NodeTourist, Then
 from astToolkit.changeDef import extractFunctionDef
 from astToolkit.filesystem import parseLogicalPath2astModule, parsePathFilename2astModule, write_astModule
 from astToolkit.ohWow import unjoinBinOP
 from hunterMakesPy import raiseIfNone
-from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT, writePython
-from pathlib import PurePosixPath
 from textwrap import indent
-from typing import cast, TYPE_CHECKING
+from typing import TYPE_CHECKING
 import ast
 import typeshed_client
 
@@ -84,6 +83,11 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 		Override `ManufacturedPackageSettings`.
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
+	astModuleStub: ast.Module = parsePathFilename2astModule(raiseIfNone(typeshed_client.get_stub_file('ast'
+		, search_context=typeshed_client.get_search_context(typeshed=settingsManufacturing.pathRoot_typeshed))))
+	ast_expr: ast.expr = raiseIfNone(NodeTourist(
+		Be.AnnAssign.targetIs(IfThis.isNameIdentifier('_ConstantValue')), DOT.value
+	).captureLastMatch(astModuleStub))
 	list4ModuleBody: list[ast.stmt] = []
 	list4ModuleImports: list[ast.stmt] = [
 		Make.ImportFrom("types", [Make.alias("EllipsisType")])
@@ -103,6 +107,7 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 	astModule: ast.Module = Make.Module([
 		docstringWarning
 		, *list4ModuleImports
+		, Make.TypeAlias(Make.Name('ast_ConstantValue', Make.Store()), type_params=[], value=ast_expr)
 		, *listHandmade_astTypes
 		, *list4ModuleBody])
 
@@ -362,8 +367,9 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
 		, Make.ImportFrom("typing", [Make.alias("Any")])
 		, Make.Import("ast")
+		, Make.Import("warnings")
 		, Make.Import("builtins")  # https://github.com/python/cpython/issues/143661
-		, Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("ConstantValueType")])
+		, Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("ast_ConstantValue")])
 		, Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("ast_attributes")])
 		, Make.ImportFrom("hunterMakesPy", [Make.alias("identifierDotAttribute")])
 	]
@@ -426,7 +432,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ClassDefBody.append(ast_stmt)
 
-	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
+	writeClass(identifierToolClass, list4ClassDefBody, [*list4ModuleBody, ignoreAbstractClassWarning])
 
 def write_theSSOT(identifierModule: str) -> None:
 	"""Write the SSOT module to disk.
@@ -437,48 +443,6 @@ def write_theSSOT(identifierModule: str) -> None:
 		The logical identifier of the SSOT module.
 	"""
 	writeModule(astModule_theSSOT, identifierModule)
-
-def writeModule(astModule: ast.Module, identifierModule: str) -> None:
-	"""Write an AST module to disk, handling type ignores and formatting.
-
-	Parameters
-	----------
-	astModule : ast.Module
-		The AST module to write.
-	identifierModule : str
-		The stem for the module file.
-	"""
-	ast.fix_missing_locations(astModule)
-	pythonSource: str = ast.unparse(astModule)
-# TODO https://github.com/hunterhogan/astToolFactory/issues/3
-	if "Grab" in identifierModule:
-		pythonSource = "# ruff: noqa: B009, B010\n" + pythonSource
-
-	if "Make" in identifierModule:
-
-		listTypeIgnore: list[ast.TypeIgnore] = []
-		lineno: int = 0
-		for astClass, tag in [
-			("keyword", "[reportInconsistentOverload]"),
-			("MatchClass", "[reportSelfClsParameterName]"),
-			("MatchSingleton", "FBT001"),
-		]:
-			for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
-				if "def " + astClass in line:
-					# get the last occurrence of the match in the source code
-					lineno = splitlinesNumber + 1
-			listTypeIgnore.append(Make.TypeIgnore(lineno, tag))
-		astModule = ast.parse(pythonSource)
-		astModule.type_ignores.extend(listTypeIgnore)
-		ast.fix_missing_locations(astModule)
-		pythonSource = ast.unparse(astModule)
-		pythonSource = "# ruff: noqa: A002\n" + pythonSource
-		pythonSource = pythonSource.replace("# type: ignore[", "# pyright: ignore[")
-		pythonSource = pythonSource.replace("# type: ignore", "# noqa: ")
-	pathFilenameModule: PurePosixPath = PurePosixPath(settingsManufacturing.pathPackage, identifierModule + settingsManufacturing.fileExtension)
-	settings: dict[str, dict[str, list[str] | bool]] = {'autoflake': settings_autoflakeDEFAULT}
-	cast("list[str]", settings['autoflake']['additional_imports']).append(settingsManufacturing.identifierPackage)
-	writePython(pythonSource, pathFilenameModule)
 
 def writeClass(identifierClass: str, list4ClassDefBody: list[ast.stmt], list4ModuleBody: list[ast.stmt], identifierModulePrefix: str | None = '_tool') -> None:
 	"""Write a class definition and its module to disk.

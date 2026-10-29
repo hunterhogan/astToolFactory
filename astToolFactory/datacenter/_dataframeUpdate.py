@@ -28,10 +28,9 @@ from astToolFactory.cpython import getDictionary_match_args
 from astToolFactory.datacenter._dataframeUpdateAnnex import (
 	_columns, attributeRename__, attributeType__ClassDefIdentifier_attribute, defaultValue__,
 	dictionary_defaultValue_ast_arg_Call_keyword_orElse, move2keywordArguments__)
-from astToolFactory.datacenter._storage import gatherObjects, writeDataframe
+from astToolFactory.filesystem import gatherObjects, writeDataframe
 from astToolkit import (
-	ast_attributes, ast_attributes_int, ast_attributes_type_comment, Be, ConstantValueType as _ConstantValue, DOT, IfThis, Make, NodeChanger,
-	NodeTourist, Then)
+	ast_attributes, ast_attributes_int, ast_attributes_type_comment, Be, DOT, IfThis, Make, NodeChanger, NodeTourist, Then)
 from astToolkit.changeDef import makeDictionaryClassDef
 from astToolkit.filesystem import parsePathFilename2astModule
 from astToolkit.ohWow import pythonCode2ast_expr
@@ -283,8 +282,8 @@ def _getDataFromPythonFiles(dataframe: polars.DataFrame) -> polars.DataFrame:
 
 		This function acts as a resolver that goes back to the `ClassDef` in the
 		parsed stub to find the specific `AnnAssign` for a field found in
-		`match_args`. It uses `eval` to resolve internal `ast` TypeAliases
-		into concrete types for cleaner extraction.
+		`match_args`. It qualifies AST classes with `ast` and replaces the
+		private typeshed constant-value alias with `ast_ConstantValue`.
 
 		Parameters
 		----------
@@ -298,12 +297,13 @@ def _getDataFromPythonFiles(dataframe: polars.DataFrame) -> polars.DataFrame:
 
 		"""
 		def findThis(node: ast.AST) -> TypeIs[Name]:
-			# ruff: ignore[suspicious-eval-usage]
-			return Be.Name(node) and isinstance(eval(node.id), type) and issubclass(eval(node.id), ast.AST)
+			return Be.Name(node) and (node.id == '_ConstantValue'
+				or (node.id in vars(ast) and isinstance(getattr(ast, node.id), type) and issubclass(getattr(ast, node.id), ast.AST)))
 
-		def doThat(node: ast.AST) -> Attribute:
-			# ruff: ignore[suspicious-eval-usage]
-			return Make.Attribute(Make.Name('ast'), eval(node.id).__name__)  # pyright: ignore[reportUnknownArgumentType, reportUnknownMemberType, reportAttributeAccessIssue] # ty: ignore[unresolved-attribute]
+		def doThat(node: ast.Name) -> ast.expr:
+			if node.id == '_ConstantValue':
+				return Make.Name('ast_ConstantValue')
+			return Make.Attribute(Make.Name('ast'), node.id)
 		dddataframeee['attributeType'] = ast.unparse(NodeChanger[ast.Name, ast.expr](findThis, doThat).visit(raiseIfNone(NodeTourist[ast.AnnAssign, ast.expr](
 				findThis=Be.AnnAssign.targetIs(IfThis.isNameIdentifier(dddataframeee['attribute']))
 				, doThat=Then.extractIt(DOT.annotation)

@@ -263,7 +263,7 @@ listDocstring.append(Docstring(f"{identifierToolClass}.comprehension"
 listDocstring.append(Docstring(f"{identifierToolClass}.Constant"
     , aDocument("Make an `ast.Constant` object for a literal value in Python source.")
     , aDocument("""The `ast.Constant` object is the unified representation for all Python literal constants: integers, floats, complex numbers, strings, bytes, booleans, and `None`. `ast.Constant` replaced the deprecated node types `ast.Num`, `ast.Str`, `ast.Bytes`, `ast.NameConstant`, and `ast.Ellipsis` starting in Python 3.8.""")
-    , {'value': aDocument("The literal constant value. May be any type accepted by `ast.Constant.value`: `int`, `float`, `complex`, `str`, `bytes`, `bool`, `None`, or `...` (Ellipsis).", 'ConstantValueType')
+    , {'value': aDocument("The literal constant value. May be any type accepted by `ast.Constant.value`: `int`, `float`, `complex`, `str`, `bytes`, `bool`, `None`, or `...` (Ellipsis).", 'ast_ConstantValue')
         , 'kind': aDocument('Optional string hint preserved for compatibility with `u`-prefixed string literals (`u"..."``). Pass `None` for all other constant types.', 'str | None = None')}
     , {'constantValue': aDocument("An `ast.Constant` object holding the specified literal value.", 'ast.Constant')}
     , {'Deprecated Predecessors': aDocument("""Before Python 3.8, separate node classes represented each constant category: `ast.Num` for numeric literals, `ast.Str` for string literals, `ast.Bytes` for bytes literals, `ast.NameConstant` for `True`, `False`, and `None`, and `ast.Ellipsis` for `...`. These classes were removed in Python 3.12. All literal constants are now uniformly represented by `ast.Constant`.""")}

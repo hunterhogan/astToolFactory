@@ -9,8 +9,8 @@ from typing import Any, Literal, Protocol, TYPE_CHECKING
 import sys
 
 if TYPE_CHECKING:
-	from astToolkit import identifierDotAttribute
 	from collections.abc import Callable, Sequence
+	from hunterMakesPy import identifierDotAttribute
 	from pathlib import Path
 
 #======== Configuration ========
