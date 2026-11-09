@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from astToolFactory import settingsManufacturing
 from astToolkit import Make
-from hunterMakesPy.filesystemToolkit import settings_autoflakeDEFAULT, writePython
+from hunterMakesPy.kitFilesystem import settings_autoflakeDEFAULT, writePython
 from pathlib import PurePosixPath
 from typing import cast, TYPE_CHECKING
 import ast

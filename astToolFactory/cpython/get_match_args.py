@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from astToolFactory import inclusive, settingsManufacturing, settingsPackage
-from hunterMakesPy.filesystemToolkit import importPathFilename2Identifier
+from hunterMakesPy.kitFilesystem import importPathFilename2Identifier
 from pprint import pprint
 from typing import Any, Literal, Protocol, TYPE_CHECKING
 import sys
