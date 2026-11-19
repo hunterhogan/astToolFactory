@@ -109,41 +109,45 @@ class Docstring:
 			)
 		)
 
-def make1docstring(data: Docstring, ImaIndent: str = ' ' * 4, firstIndent: int = 0) -> str:
+def make1docstring(data: Docstring, ImaIndent: str = ' ' * 4, firstIndent: int = 0, lineWidth: int = 120) -> str:
 	"""Make a docstring from a Docstring dataclass."""
 	indentTo: str = ImaIndent * firstIndent
-	paragraph = textwrap.TextWrapper(width=120, initial_indent=indentTo, subsequent_indent=indentTo
-		, expand_tabs=True, tabsize=4, replace_whitespace=True, break_long_words=False, drop_whitespace=True)
-	paragraphFormatted = textwrap.TextWrapper(width=160, initial_indent=indentTo, subsequent_indent=indentTo
-		, expand_tabs=True, tabsize=4, replace_whitespace=False, break_long_words=False, drop_whitespace=True)
-	paragraphParameter = textwrap.TextWrapper(width=120, initial_indent=indentTo + ImaIndent, subsequent_indent=indentTo + ImaIndent
-		, expand_tabs=True, tabsize=4, replace_whitespace=False, break_long_words=False, drop_whitespace=True)
+	lineWidth -= len(indentTo)
+	paragraph = textwrap.TextWrapper(width=lineWidth
+		, expand_tabs=True, tabsize=4, break_long_words=False, break_on_hyphens=False)
+	paragraphParameter = textwrap.TextWrapper(width=lineWidth, initial_indent=ImaIndent
+		, subsequent_indent=ImaIndent, expand_tabs=True, tabsize=4
+		, break_long_words=False, break_on_hyphens=False)
 	docstring: str = f"{data.summary.description}"
 	if data.summary.AIgenerated:
-		docstring += '\n\n' + paragraph.fill('(AI generated docstring.)')
+		docstring += '\n\n' + paragraph.fill('(AI generated docstring)')
 	if data.uncategorized:
-		docstring += '\n\n' + paragraph.fill(data.uncategorized.description)
+		docstring += '\n\n' + '\n\n'.join(map(paragraph.fill, data.uncategorized.description.split('\n\n')))
 # TODO type annotations and default values can usually be read from the signature. But some default values are in the logic,
 # not the signature.
 	if data.Parameters:
 		docstring += '\n\n' + paragraph.fill('Parameters')
 		docstring += '\n' + paragraph.fill('----------')
 		for parameter, description in data.Parameters.items():
-			docstring += '\n' + paragraph.fill(f"{parameter} : {description.subtitle}")
+			docstring += '\n' + f"{parameter} : {description.subtitle}"
 			docstring += '\n' + paragraphParameter.fill(description.description)
 	if data.Returns:
 		docstring += '\n\n' + paragraph.fill('Returns')
 		docstring += '\n' + paragraph.fill('-------')
 		for returnIdentifier, description in data.Returns.items():
-			docstring += '\n' + paragraph.fill(f"{returnIdentifier} : {description.subtitle}")
+			docstring += '\n' + f"{returnIdentifier} : {description.subtitle}"
 			docstring += '\n' + paragraphParameter.fill(description.description)
 	if data.categories:
 		for category, description in data.categories.items():
 			docstring += '\n\n' + paragraph.fill(category)
 			docstring += '\n' + paragraph.fill(len(category) * '-')
-			docstring += '\n' + paragraphFormatted.fill(description.description)
+			if category in {'Examples', 'References', 'See Also'}:
+				docstring += '\n' + description.description
+			else:
+				docstring += '\n' + '\n\n'.join(map(paragraph.fill, description.description.split('\n\n')))
 	if len(docstring.splitlines()) > 1:
-		docstring += '\n' + indentTo
+		summary, _, description = docstring.partition('\n')
+		docstring = summary + '\n' + textwrap.indent(description, indentTo) + '\n' + indentTo
 	return docstring
 
 def getMoreDocstrings() -> None:

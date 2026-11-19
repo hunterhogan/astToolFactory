@@ -1,13 +1,16 @@
 from __future__ import annotations
 
 from astToolFactory import settingsManufacturing
-from astToolkit import Make
-from hunterMakesPy.kitFilesystem import settings_autoflakeDEFAULT, writePython
+from astToolkit import Be, Make, NodeChanger
+from hunterMakesPy.kitFilesystem import settings_autoflakeDEFAULT, settings_isortDEFAULT, writePython
+from inspect import cleandoc
 from pathlib import PurePosixPath
+from textwrap import indent
 from typing import cast, TYPE_CHECKING
 import ast
 import pickle
 import polars
+import re as regex
 
 if TYPE_CHECKING:
 	from pathlib import Path
@@ -26,6 +29,15 @@ def writeDataframe(dataframe: polars.DataFrame, pathFilename: Path) -> None:
 def gatherObjects(values: polars.Series, indices: polars.Series) -> polars.Series:
 	return polars.Series(values.name, map(polars.Series.to_list, map(values.gather, indices)), dtype=polars.Object)
 
+def _indentDocstring(astExpr: ast.Expr) -> ast.Expr:
+	if Be.Constant(astExpr.value) and isinstance(docstring := astExpr.value.value, str) and '\n' in docstring:
+		astExpr.value.value = cleandoc(docstring)
+		summary, newline, description = astExpr.value.value.partition('\n')
+		if newline:
+			indentation: str = ' ' * astExpr.col_offset
+			astExpr.value.value = summary + newline + indent(description, indentation) + newline + indentation
+	return astExpr
+
 def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 	"""Write an AST module to disk, handling type ignores and formatting.
 
@@ -37,7 +49,9 @@ def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 		The stem for the module file.
 	"""
 	ast.fix_missing_locations(astModule)
-	pythonSource: str = ast.unparse(astModule)
+	# The first unparse establishes the column of each docstring in the generated source.
+	astModule = ast.parse(ast.unparse(astModule), type_comments=True)
+	pythonSource: str = ast.unparse(NodeChanger(Be.Expr, _indentDocstring).visit(astModule))
 # TODO https://github.com/hunterhogan/astToolFactory/issues/3
 	if "Grab" in identifierModule:
 		pythonSource = "# ruff: noqa: B009, B010\n" + pythonSource
@@ -52,7 +66,7 @@ def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 			("MatchSingleton", "FBT001"),
 		]:
 			for splitlinesNumber, line in enumerate(pythonSource.splitlines()):
-				if "def " + astClass in line:
+				if line.lstrip().startswith(f"def {astClass}("):
 					# get the last occurrence of the match in the source code
 					lineno = splitlinesNumber + 1
 			listTypeIgnore.append(Make.TypeIgnore(lineno, tag))
@@ -61,9 +75,15 @@ def writeModule(astModule: ast.Module, identifierModule: str) -> None:
 		ast.fix_missing_locations(astModule)
 		pythonSource = ast.unparse(astModule)
 		pythonSource = "# ruff: noqa: A002\n" + pythonSource
-		pythonSource = pythonSource.replace("# type: ignore[", "# pyright: ignore[")
-		pythonSource = pythonSource.replace("# type: ignore", "# noqa: ")
+		pythonSource = regex.sub(r"(?m)^([ ]+def (?:keyword|MatchClass)\(.*) # type: ignore(?=\[)"
+			, r"\1 # pyright: ignore", pythonSource)
+		pythonSource = regex.sub(r"(?m)^([ ]+def MatchSingleton\(.*) # type: ignore(?=FBT001$)"
+			, r"\1 # noqa: ", pythonSource)
 	pathFilenameModule: PurePosixPath = PurePosixPath(settingsManufacturing.pathPackage, identifierModule + settingsManufacturing.fileExtension)
-	settings: dict[str, dict[str, list[str] | bool]] = {'autoflake': settings_autoflakeDEFAULT}
-	cast("list[str]", settings['autoflake']['additional_imports']).append(settingsManufacturing.identifierPackage)
-	writePython(pythonSource, pathFilenameModule)
+	writePython(pythonSource, pathFilenameModule, settings={
+		'autoflake': {
+			**settings_autoflakeDEFAULT,
+			'additional_imports': [*cast('list[str]', settings_autoflakeDEFAULT['additional_imports']), settingsManufacturing.identifierPackage],
+		},
+		'isort': {**settings_isortDEFAULT, 'indent': '    '},
+	})

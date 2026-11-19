@@ -11,15 +11,15 @@ import ast
 #======== `Be` =======================================================================
 FunctionDefBe_at: ast.stmt = Make.FunctionDef('at'
 	, Make.arguments(list_arg=[Make.arg('index', annotation=Make.Name('int')), Make.arg('predicate', annotation=Make.Subscript(Make.Name('Callable')
-				, Make.Tuple([Make.List([Make.Name('Any')]), Make.Subscript(Make.Name('TypeIs'), Make.Name('木'))])))])
+				, Make.Tuple([Make.List([astASTastAttribute]), Make.Name('bool')])))])
 	, body=[Make.FunctionDef('workhorse'
-			, Make.arguments(list_arg=[Make.arg('node', annotation=Make.Subscript(Make.Name('Sequence'), Make.Attribute(Make.Name('ast'), 'AST')))])
+			, Make.arguments(list_arg=[Make.arg('node', annotation=Make.Subscript(Make.Name('Sequence'), astASTastAttribute))])
 			, body=[Make.Return(Make.Call(Make.Name('predicate'), listParameters=[Make.Subscript(Make.Name('node'), Make.Name('index'))]))]
-			, returns=Make.Subscript(Make.Name('TypeIs'), Make.Name('木')))
+			, returns=Make.Name('bool'))
 		, Make.Return(Make.Name('workhorse'))]
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Subscript(Make.Name('Callable')
-		, Make.Tuple([Make.List([Make.Subscript(Make.Name('Sequence'), Make.Attribute(Make.Name('ast'), 'AST'))]), Make.Subscript(Make.Name('TypeIs'), Make.Name('木'))])))
+		, Make.Tuple([Make.List([Make.Subscript(Make.Name('Sequence'), astASTastAttribute)]), Make.Name('bool')])))
 
 #======== `Grab` =====================================================================
 FunctionDefGrab_andDoAllOf: ast.stmt = Make.FunctionDef('andDoAllOf'
@@ -132,14 +132,11 @@ FunctionDef_operatorJoinMethod: ast.stmt = Make.FunctionDef(settingsManufacturin
 	, decorator_list=[astName_staticmethod]
 	, returns=Make.Attribute(Make.Name('ast'), 'expr'))
 
-ClassDefIdentifier: str = 'Import'  # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
+# `Make.Import` replaces the manufactured `names` parameter with `dotModule` and `asName`; "factory.py" appends the other manufactured parameters, such as `is_lazy`.
 list_argMake_Import: list[ast.arg] = [Make.arg('dotModule', annotation=Make.Name('identifierDotAttribute'))
 		, Make.arg('asName', annotation=Make.BitOr().join([Make.Name('str'), Make.Constant(None)]))]
-FunctionDef_bodyMake_Import: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers['Make']][ClassDefIdentifier]
-	, Make.Return(Make.Call(Make.Attribute(Make.Name('ast'), ClassDefIdentifier)
-		, list_keyword=[Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias')
-			, listParameters=[Make.Name('dotModule'), Make.Name('asName')])])), keywordKeywordArguments4Call]))]
-del ClassDefIdentifier
+keywordMake_Import_names: ast.keyword = Make.keyword('names', Make.List([Make.Call(Make.Attribute(Make.Name('Make'), 'alias')
+	, listParameters=[Make.Name('dotModule'), Make.Name('asName')])]))
 
 ClassDefIdentifier: str = 'keyword'  # `ClassDefIdentifier` and not `FunctionDefIdentifier` to be consistent with `makeToolMake` in "factory.py".
 listOverloads_keyword: list[ast.stmt] = [

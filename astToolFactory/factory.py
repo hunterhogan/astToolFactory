@@ -4,11 +4,14 @@ from __future__ import annotations
 from astToolFactory import (
 	astASTastAttribute, astAttribute_builtins_str, astName_overload, astName_staticmethod, GuardIfThen, keywordKeywordArguments4Call,
 	ManufacturedPackageSettings, settingsManufacturing)
-from astToolFactory.datacenter import getElementsBe, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias
+from astToolFactory._documentationAnnex.Be import makeDocstringBe
+from astToolFactory._documentationAnnex.Grab import makeDocstringGrab
+from astToolFactory.datacenter import (
+	getAttributesBe, getElementsBe, getElementsDOT, getElementsGrab, getElementsMake, getElementsTypeAlias, getFieldTypesGrab)
 from astToolFactory.documentation import docstrings, docstringWarning
 from astToolFactory.factoryAnnex import (
-	astModule_theSSOT, FunctionDef_bodyMake_Import, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator,
-	FunctionDef_operatorJoinMethod, FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index, ignoreAbstractClassWarning,
+	astModule_theSSOT, FunctionDef_boolopJoinMethod, FunctionDef_join_boolop, FunctionDef_join_operator, FunctionDef_operatorJoinMethod,
+	FunctionDefBe_at, FunctionDefGrab_andDoAllOf, FunctionDefGrab_index, ignoreAbstractClassWarning, keywordMake_Import_names,
 	list_argMake_Import, listHandmade_astTypes, listOverloads_keyword)
 from astToolFactory.filesystem import writeModule
 from astToolkit import Be, DOT, Grab, IfThis, Make, NodeChanger, NodeTourist, Then
@@ -16,7 +19,6 @@ from astToolkit.changeDef import extractFunctionDef
 from astToolkit.filesystem import parseLogicalPath2astModule, parsePathFilename2astModule, write_astModule
 from astToolkit.ohWow import unjoinBinOP
 from hunterMakesPy import raiseIfNone
-from textwrap import indent
 from typing import TYPE_CHECKING
 import ast
 import typeshed_client
@@ -90,7 +92,8 @@ def make_astTypes(identifierModule: str, **keywordArguments: Any) -> None:
 	).captureLastMatch(astModuleStub))
 	list4ModuleBody: list[ast.stmt] = []
 	list4ModuleImports: list[ast.stmt] = [
-		Make.ImportFrom("types", [Make.alias("EllipsisType")])
+		Make.ImportFrom('__future__', [Make.alias('annotations')])
+		, Make.ImportFrom("types", [Make.alias("EllipsisType")])
 		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("TypeAlias", "typing_TypeAlias"), Make.alias("TypedDict"), Make.alias("TypeVar", "typing_TypeVar")])
 		, Make.Import("ast")
 		, Make.Import("sys")
@@ -117,13 +120,15 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""Generate and write `class` `Be`."""
 	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]
 		, FunctionDefBe_at]
+	lookupAttributes = getAttributesBe(**keywordArguments)
 
 	for ClassDefIdentifier, versionMinorMinimum, classAs_astAttribute, listTupleAttributes in getElementsBe(identifierToolClass, **keywordArguments):
+		astExprDocstring: ast.Expr = makeDocstringBe(ClassDefIdentifier, lookupAttributes[ClassDefIdentifier, versionMinorMinimum])
 		if not listTupleAttributes:
 			ast_stmt: ast.stmt = Make.FunctionDef(
 				ClassDefIdentifier
 				, Make.arguments(list_arg=[Make.arg("node", annotation=astASTastAttribute)])
-				, body=[docstrings[identifierToolClass][ClassDefIdentifier]
+				, body=[astExprDocstring
 					, Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
 				, decorator_list=[astName_staticmethod]
 				, returns=Make.Subscript(Make.Name("TypeIs"), slice=classAs_astAttribute))
@@ -133,7 +138,7 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 			list4ClassDefBody.append(ast_stmt)
 		else:
-			list4subClassDefBody: list[ast.stmt] = [docstrings[identifierToolClass][ClassDefIdentifier]
+			list4subClassDefBody: list[ast.stmt] = [astExprDocstring
 				, Make.FunctionDef("__call__"
 				, Make.arguments(list_arg=[Make.arg("self"), Make.arg("node", annotation=astASTastAttribute)])
 				, body=[Make.Return(Make.Call(Make.Name("isinstance"), listParameters=[Make.Name("node"), classAs_astAttribute]))]
@@ -163,11 +168,13 @@ def makeToolBe(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 	list4ModuleBody: list[ast.stmt] = [
 		Make.ImportFrom("operator", [Make.alias("call")]),
-		Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("TypeIs")]),
-		Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")]),
-		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("木")]),
+		Make.ImportFrom('typing', [Make.alias('TYPE_CHECKING')]),
 		Make.Import("ast"),
 		Make.Import("sys"),
+		Make.If(Make.Name('TYPE_CHECKING'), body=[
+			Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')]),
+			Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('TypeIs')]),
+		]),
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
@@ -184,11 +191,16 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
 	list4ClassDefBody: list[ast.stmt] = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][settingsManufacturing.identifiers[identifierToolClass]]]
-	list4ModuleBody: list[ast.stmt] = []
+	list4TypeCheckingBody: list[ast.stmt] = [
+		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias('*')]),
+		Make.ImportFrom('collections.abc', [Make.alias('Sequence')]),
+		Make.Import('ast'),
+		Make.Import('builtins'),  # https://github.com/python/cpython/issues/143661
+	]
 
 	for identifierTypeOfNode, overloadDefinition, attribute, list_ast_expr, guardVersion, versionMinorMinimum in getElementsDOT(identifierToolClass, **keywordArguments):
 		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
-			list4ModuleBody.append(_makeSimpleGuardVersion([
+			list4TypeCheckingBody.append(_makeSimpleGuardVersion([
 				Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias(identifierTypeOfNode)])
 			], versionMinorMinimum))
 		decorator_list: list[ast.expr] = [astName_staticmethod]
@@ -239,13 +251,10 @@ def makeToolDOT(identifierToolClass: str, **keywordArguments: Any) -> None:
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ClassDefBody.append(ast_stmt)
 
-	list4ModuleBody[:0] = [
-		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("*")])
-		, Make.ImportFrom("collections.abc", [Make.alias("Sequence")])
-		, Make.ImportFrom("typing", [Make.alias("overload")])
-		, Make.Import("ast")
-		, Make.Import("builtins")  # https://github.com/python/cpython/issues/143661
-		, Make.Import("sys")
+	list4ModuleBody: list[ast.stmt] = [
+		Make.ImportFrom('typing', [Make.alias('overload'), Make.alias('TYPE_CHECKING')]),
+		Make.Import('sys'),
+		Make.If(Make.Name('TYPE_CHECKING'), body=list4TypeCheckingBody),
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
@@ -287,8 +296,7 @@ def makeToolDump(identifierModule: str = '_tool_dump') -> None:
 	NodeChanger(Be.If.testIs(IfThis.astIs(Make.Call(Make.Name('isinstance'), [Make.Name('value'), Make.Name('Load')])))
 		, Then.removeIt).visit(astFunctionDef)
 
-	astModule.body = [astFunctionDef]
-	astModule.body.insert(0, Make.Import('ast'))
+	astModule.body = [Make.ImportFrom('__future__', [Make.alias('annotations')]), Make.Import('ast'), astFunctionDef]
 	write_astModule(astModule, settingsManufacturing.pathPackage / (identifierModule + settingsManufacturing.fileExtension))
 
 def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
@@ -307,24 +315,30 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		, FunctionDefGrab_andDoAllOf
 		, FunctionDefGrab_index
 		]
-	list4ModuleBody: list[ast.stmt] = []
+	list4TypeCheckingBody: list[ast.stmt] = [
+		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias('*')]),
+		Make.ImportFrom('collections.abc', [Make.alias('Callable'), Make.alias('Sequence')]),
+		Make.ImportFrom('typing', [Make.alias('Any')]),
+		Make.Import('ast'),
+	]
+	lookupFieldTypes = getFieldTypesGrab(**keywordArguments)
 
 	for identifierTypeOfNode, list_ast_expr, attribute, guardVersion, versionMinorMinimum in getElementsGrab(
 		identifierToolClass, **keywordArguments
 	):
 		if versionMinorMinimum > settingsManufacturing.pythonMinimumVersionMinor:
-			list4ModuleBody.append(_makeSimpleGuardVersion([
+			list4TypeCheckingBody.append(_makeSimpleGuardVersion([
 				Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias(identifierTypeOfNode)])
 			], versionMinorMinimum))
 		astNameTypeOfNode: ast.Name = Make.Name(identifierTypeOfNode)
+		ast_exprReturns: ast.expr = Make.Subscript(Make.Name("Callable"), Make.Tuple([Make.List([astNameTypeOfNode]), astNameTypeOfNode]))
 
 		type_params: list[ast.type_param] | None = None
 # DEVELOPMENT Make.TypeVar, name = type_astSuperClasses?, bound = type_astSuperClasses_ast_expr?. But, only for some functions. Maybe crossref with dictionary_astSuperClasses.
 
-		denting: str = '    ' * bool(guardVersion)
 		ast_stmt = Make.FunctionDef(attribute + "Attribute"
 			, Make.arguments(list_arg=[Make.arg("action", annotation=Make.BitOr.join([Make.Subscript(Make.Name("Callable"), Make.Tuple([Make.List([ast_expr]), ast_expr])) for ast_expr in list_ast_expr]))])
-			, body=[Make.Expr(Make.Constant((indent(docstrings[settingsManufacturing.identifiers[identifierToolClass]][attribute].value.value, denting) + denting)[len(denting):None]))  # ty:ignore[unresolved-attribute] # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType, reportUnknownArgumentType]
+			, body=[makeDocstringGrab(attribute, ast_exprReturns, lookupFieldTypes[attribute, versionMinorMinimum])
 				, Make.FunctionDef("workhorse"
 				, Make.arguments(list_arg=[Make.arg("node", annotation=astNameTypeOfNode)])
 				, body=[Make.Expr(Make.Call(Make.Name("setattr"), listParameters=[Make.Name("node"), Make.Constant(f"{attribute}")
@@ -334,7 +348,7 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 				, returns=astNameTypeOfNode)
 				, Make.Return(Make.Name("workhorse"))]
 			, decorator_list=[astName_staticmethod]
-			, returns=Make.Subscript(Make.Name("Callable"), Make.Tuple([Make.List([astNameTypeOfNode]), astNameTypeOfNode]))
+			, returns=ast_exprReturns
 			, type_params=type_params)
 
 		if guardVersion:
@@ -342,12 +356,10 @@ def makeToolGrab(identifierToolClass: str, **keywordArguments: Any) -> None:
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ClassDefBody.append(ast_stmt)
 
-	list4ModuleBody[:0] = [
-		Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("*")])
-		, Make.ImportFrom("collections.abc", [Make.alias("Callable"), Make.alias("Sequence")])
-		, Make.ImportFrom("typing", [Make.alias("Any"), Make.alias("cast")])
-		, Make.Import("ast")
-		, Make.Import("sys")
+	list4ModuleBody: list[ast.stmt] = [
+		Make.ImportFrom('typing', [Make.alias('TYPE_CHECKING')]),
+		Make.Import('sys'),
+		Make.If(Make.Name('TYPE_CHECKING'), body=list4TypeCheckingBody),
 	]
 
 	writeClass(identifierToolClass, list4ClassDefBody, list4ModuleBody)
@@ -364,14 +376,16 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 	"""
 	global ast_stmt, guardVersion, versionMinorMinimum  # ruff:ignore[global-statement]
 	list4ModuleBody: list[ast.stmt] = [
-		Make.ImportFrom("collections.abc", [Make.alias("Iterable"), Make.alias("Sequence")])
-		, Make.ImportFrom("typing", [Make.alias("Any")])
+		Make.ImportFrom('typing', [Make.alias('TYPE_CHECKING')])
 		, Make.Import("ast")
 		, Make.Import("warnings")
+	]
+	list4TypeCheckingBody: list[ast.stmt] = [
+		Make.ImportFrom('collections.abc', [Make.alias('Iterable'), Make.alias('Sequence')])
+		, Make.ImportFrom('hunterMakesPy', [Make.alias('identifierDotAttribute')])
+		, Make.ImportFrom('typing', [Make.alias('Any'), Make.alias('Unpack')])
 		, Make.Import("builtins")  # https://github.com/python/cpython/issues/143661
-		, Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("ast_ConstantValue")])
-		, Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias("ast_attributes")])
-		, Make.ImportFrom("hunterMakesPy", [Make.alias("identifierDotAttribute")])
+		, Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias('ast_ConstantValue'), Make.alias('ast_attributes')])
 	]
 
 	list4ClassDefBody: list[ast.stmt] = [
@@ -400,7 +414,7 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 
 		if kwarg_annotationIdentifier != "No":
 			listCall_keyword.append(keywordKeywordArguments4Call)
-			list4ModuleBody.extend((Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias(kwarg_annotationIdentifier)]), Make.ImportFrom("typing", [Make.alias("Unpack")])))
+			list4TypeCheckingBody.append(Make.ImportFrom(f"{settingsManufacturing.identifierPackage}.{settingsManufacturing.identifiers['types']}", [Make.alias(kwarg_annotationIdentifier)]))
 			kwarg: ast.arg | None = Make.arg(settingsManufacturing.keywordArgumentsIdentifier
 				, annotation=Make.Subscript(Make.Name("Unpack"), slice=Make.Name(kwarg_annotationIdentifier)))
 		else:
@@ -411,13 +425,13 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 		if overloadDefinition:
 			decorator_list.append(astName_overload)
 			body: list[ast.stmt] = [Make.Expr(Make.Constant(value=...))]
-		elif ClassDefIdentifier == "Import":
-			listFunctionDef_args: list[ast.arg] = list_argMake_Import
-			defaults = [Make.Constant(None)]
-			body = FunctionDef_bodyMake_Import
 		else:
-			denting: str = '    ' * bool(guardVersion)
-			body = [Make.Expr(Make.Constant((indent(docstrings[settingsManufacturing.identifiers[identifierToolClass]][ClassDefIdentifier].value.value, denting) + denting)[len(denting):None]))  # ty:ignore[unresolved-attribute] # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType, reportAttributeAccessIssue]
+			if ClassDefIdentifier == "Import":
+				# Replace the manufactured `names` parameter with the prefabricated `dotModule` and `asName`; keep the other manufactured parameters.
+				listFunctionDef_args = [*list_argMake_Import, *listFunctionDef_args[1:None]]
+				defaults = [Make.Constant(None), *defaults[1:None]]
+				listCall_keyword = [keywordMake_Import_names, *listCall_keyword[1:None]]
+			body = [docstrings[settingsManufacturing.identifiers[identifierToolClass]][ClassDefIdentifier]
 				, Make.Return(Make.Call(classAs_astAttribute, list_keyword=listCall_keyword))]
 
 		ast_stmt = Make.FunctionDef(ClassDefIdentifier
@@ -432,7 +446,11 @@ def makeToolMake(identifierToolClass: str, **keywordArguments: Any) -> None:
 		if ast_stmt is not None:  # pyright: ignore[reportUnnecessaryComparison]
 			list4ClassDefBody.append(ast_stmt)
 
-	writeClass(identifierToolClass, list4ClassDefBody, [*list4ModuleBody, ignoreAbstractClassWarning])
+	writeClass(identifierToolClass, list4ClassDefBody, [
+		*list4ModuleBody,
+		Make.If(Make.Name('TYPE_CHECKING'), body=list4TypeCheckingBody),
+		ignoreAbstractClassWarning,
+	])
 
 def write_theSSOT(identifierModule: str) -> None:
 	"""Write the SSOT module to disk.
@@ -460,7 +478,12 @@ def writeClass(identifierClass: str, list4ClassDefBody: list[ast.stmt], list4Mod
 	"""
 	identifierModule: str = (identifierModulePrefix or "") + identifierClass
 	return writeModule(
-		Make.Module([docstringWarning, *list4ModuleBody, Make.ClassDef(identifierClass, body=list4ClassDefBody)])
+		Make.Module([
+			docstringWarning,
+			Make.ImportFrom('__future__', [Make.alias('annotations')]),
+			*list4ModuleBody,
+			Make.ClassDef(identifierClass, body=list4ClassDefBody),
+		])
 		, identifierModule
 	)
 

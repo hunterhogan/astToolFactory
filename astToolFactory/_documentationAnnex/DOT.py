@@ -1,10 +1,4 @@
-"""A warehouse for docstrings added to manufactured ast tools.
-
-NOTE Use special indentation in this file.
-    1. The generated files use spaces, not tabs, so use spaces here.
-    2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So,
-        indent one or two levels as appropriate.
-"""
+"""A warehouse for docstrings added to manufactured ast tools."""
 from __future__ import annotations
 
 from astToolFactory import settingsManufacturing

@@ -126,7 +126,7 @@ map2PythonOperators: dict[str, str] = {
 'MatchSingleton': '',
 'MatchStar': '*',
 'MatchValue': '',
-'MatMult': '',
+'MatMult': '@',
 'mod': '',
 'Mod': '%',
 'Module': '',

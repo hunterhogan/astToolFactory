@@ -61,7 +61,7 @@ def getDataframe(*indices: str, **keywordArguments: Any) -> polars.DataFrame:
 	return dataframe.collect()
 
 def _getTableBe(**keywordArguments: Any) -> polars.DataFrame:
-	listColumnsHARDCODED: list[str] = ['ClassDefIdentifier', 'versionMinorMinimumClass', 'classAs_astAttribute', 'listTupleAttributes']
+	listColumnsHARDCODED: list[str] = ['ClassDefIdentifier', 'versionMinorMinimumClass', 'classAs_astAttribute', 'listTupleAttributes', 'match_args']
 	listColumns: list[str] = listColumnsHARDCODED
 	del listColumnsHARDCODED
 	return (getDataframe(**keywordArguments).lazy()
@@ -71,7 +71,12 @@ def _getTableBe(**keywordArguments: Any) -> polars.DataFrame:
 		.collect())
 
 def getElementsBe(_identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, int, ast.expr, list[tuple[str, ast.expr, int]]]]:
-	return cast('list[tuple[str, int, ast.expr, list[tuple[str, ast.expr, int]]]]', _getTableBe(**keywordArguments).rows())
+	return cast('list[tuple[str, int, ast.expr, list[tuple[str, ast.expr, int]]]]', _getTableBe(**keywordArguments).drop('match_args').rows())
+
+def getAttributesBe(**keywordArguments: Any) -> dict[tuple[str, int], list[str]]:
+	return {(ClassDefIdentifier, versionMinorMinimum): boxOfAttributes
+		for ClassDefIdentifier, versionMinorMinimum, boxOfAttributes in _getTableBe(**keywordArguments)
+			.select('ClassDefIdentifier', 'versionMinorMinimumClass', 'match_args').iter_rows()}
 
 def _getTableDOT(**keywordArguments: Any) -> polars.DataFrame:
 	listColumnsHARDCODED: list[str] = ['attribute', 'TypeAlias_hasDOTSubcategory', 'versionMinorMinimumAttribute', 'type_ast_expr', 'attributeType', 'TypeAlias_hasDOTIdentifier']
@@ -154,6 +159,22 @@ def _getTableGrab(**keywordArguments: Any) -> polars.DataFrame:
 
 def getElementsGrab(_identifierToolClass: str, **keywordArguments: Any) -> list[tuple[str, list[ast.expr], str, int, int]]:
 	return cast('list[tuple[str, list[ast.expr], str, int, int]]', _getTableGrab(**keywordArguments).rows())
+
+def getFieldTypesGrab(**keywordArguments: Any) -> dict[tuple[str, int], list[tuple[str, str, list[str]]]]:
+	fields: polars.LazyFrame = (getDataframe(**keywordArguments).lazy()
+		.filter(polars.col('attributeKind') == '_field')
+		.select('attribute', 'attributeType', 'type_astSuperClasses', 'ClassDefIdentifier', 'versionMinorMinimumAttribute'))
+	versions: polars.LazyFrame = fields.select(
+		'attribute', polars.col('versionMinorMinimumAttribute').alias('versionMinorMinimum')).unique()
+
+	return cast('dict[tuple[str, int], list[tuple[str, str, list[str]]]]',
+		fields.join(versions, on='attribute', how='inner')
+		.filter(polars.col('versionMinorMinimumAttribute') <= polars.col('versionMinorMinimum'))
+		.group_by('attribute', 'versionMinorMinimum', 'attributeType', 'type_astSuperClasses')
+		.agg(polars.col('ClassDefIdentifier').unique().sort())
+		.sort('attributeType', 'type_astSuperClasses')
+		.collect()
+		.rows_by_key(key=['attribute', 'versionMinorMinimum']))
 
 def _getTableMake(**keywordArguments: Any) -> polars.DataFrame:
 	listColumnsHARDCODED: list[str] = ['ClassDefIdentifier', 'versionMinorMinimumClass', 'versionMinorMinimum_match_args', 'listFunctionDef_args', 'kwarg_annotationIdentifier', 'listDefaults', 'classAs_astAttribute', 'listCall_keyword']

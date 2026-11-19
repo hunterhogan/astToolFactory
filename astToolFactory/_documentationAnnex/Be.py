@@ -1,22 +1,18 @@
-"""A warehouse for docstrings added to manufactured ast tools.
-
-NOTE Use special indentation in this file.
-    1. The generated files use spaces, not tabs, so use spaces here.
-    2. As of this writing, I only know how to _manually_ align the indentation of the docstrings with the associated code. So,
-        indent one or two levels as appropriate.
-"""
+"""A warehouse for docstrings added to manufactured ast tools."""
 from __future__ import annotations
 
 from astToolFactory import settingsManufacturing
 from astToolFactory.documentation import (
 	dictionary_astClasses, diminutive2etymology, docstrings, map2PythonDelimiters, map2PythonKeywords, map2PythonOperators)
 from astToolkit import Make
+from textwrap import fill
 from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
+	from collections.abc import Sequence
 	from hunterMakesPy import identifierDotAttribute
+	import ast
 
-ImaIndent4aMethod: str = ' ' * 8
 identifierToolClass: str = 'Be'
 identifierClass = identifierMethod = settingsManufacturing.identifiers[identifierToolClass]
 
@@ -81,10 +77,11 @@ docstrings[identifierClass][identifierMethod] = Make.Expr(Make.Constant(
 """
     ClassDefIdentifier: str = 'For'
 """
-for ClassDefIdentifier, astClassInfo in dictionary_astClasses.items():
-
-    matchesClasses: list[identifierDotAttribute] = astClassInfo['matchesClasses']
-    parentClass: identifierDotAttribute = astClassInfo['parentClass']
+def makeDocstringBe(ClassDefIdentifier: str, boxOfAttributes: Sequence[str]) -> ast.Expr:
+    astClassInfo = dictionary_astClasses.get(ClassDefIdentifier)
+    matchesClasses: list[identifierDotAttribute] = [f"`ast.{ClassDefIdentifier}`"]
+    if astClassInfo is not None:
+        matchesClasses = astClassInfo['matchesClasses']
 
     ImaDocstring: str = f"`{identifierToolClass}.{ClassDefIdentifier}`"
     if (etymology := diminutive2etymology.get(ClassDefIdentifier, None)):
@@ -105,7 +102,7 @@ for ClassDefIdentifier, astClassInfo in dictionary_astClasses.items():
 
     two = 2
     if indexConjunction:
-        ImaDocstring += f"\n{ImaIndent4aMethod}This `class` is associated with"
+        ImaDocstring += "\nThis `class` is associated with"
         if associatedKeywords:
             ImaDocstring += f" Python keywords {associatedKeywords}"
             if indexConjunction > two:
@@ -123,8 +120,18 @@ for ClassDefIdentifier, astClassInfo in dictionary_astClasses.items():
             ImaDocstring += f" Python operators '{associatedOperators}'"
         ImaDocstring += "."
 
-    ImaDocstring += f"\n{ImaIndent4aMethod}It is a subclass of {parentClass}.\n{ImaIndent4aMethod}"
+    if astClassInfo is not None:
+        parentClass: identifierDotAttribute = astClassInfo['parentClass']
+        ImaDocstring += f"\nIt is a subclass of {parentClass}."
 
     """Not to be confused with"""
 
-    docstrings[identifierClass][ClassDefIdentifier] = Make.Expr(Make.Constant(ImaDocstring))
+    if len(boxOfAttributes) == 1:
+        descriptionAttributes: str = f"Its AST field is `{boxOfAttributes[0]}`."
+    elif boxOfAttributes:
+        descriptionAttributes = f"Its AST fields are {', '.join(f'`{attribute}`' for attribute in boxOfAttributes)}."
+    else:
+        descriptionAttributes = "It has no AST fields."
+
+    ImaDocstring += '\n\n' + fill(descriptionAttributes, width=94)
+    return Make.Expr(Make.Constant(ImaDocstring))
