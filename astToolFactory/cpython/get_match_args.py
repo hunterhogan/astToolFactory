@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from astToolFactory import inclusive, settingsManufacturing, settingsPackage
+from astToolFactory import inclusive, settingsManufacturing
+from astToolFactory._theSSOT import pathCpythonData
 from hunterMakesPy.kitFilesystem import importPathFilename2Identifier
 from pprint import pprint
 from typing import Any, Literal, Protocol, TYPE_CHECKING
@@ -15,7 +16,6 @@ if TYPE_CHECKING:
 
 #======== Configuration ========
 rangeVersionMinor: range = range(settingsManufacturing.versionMinor_astMinimumSupported, settingsManufacturing.versionMinorMaximum + inclusive)
-relativePathCpython: str = '../data'
 filename_asdlData: str = 'Python.asdl'
 filename_asdlDOTpy: identifierDotAttribute = 'asdl.py'
 
@@ -65,7 +65,7 @@ class asdlParsedProtocol(Protocol):
 
 def getPath_asdl(versionMinor: int) -> Path:
 	"""Create physical path for Python.asdl file."""
-	return settingsPackage.pathPackage / relativePathCpython / f'3.{versionMinor}'
+	return pathCpythonData / f'3.{versionMinor}'
 
 def extract_match_argsForVersion(versionMinor: int) -> dict[str, tuple[str, ...]]:
 	"""Extract `__match_args__` tuples for a specific Python version.

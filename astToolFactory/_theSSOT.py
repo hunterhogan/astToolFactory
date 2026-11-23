@@ -20,7 +20,7 @@ pathRootPackageToManufactureHARDCODED: Path = Path('/apps')
 #======== Settings for the package ===============================
 
 identifierPackagePACKAGING = "astToolFactory"
-settingsPackage = PackageSettings(identifierPackageFALLBACK=identifierPackagePACKAGING)
+settingsPackage = PackageSettings(identifierPackage=identifierPackagePACKAGING)
 """Settings for the `astToolFactory` package itself.
 
 (AI generated docstring)
@@ -35,6 +35,8 @@ pathPackage : Path
     The resolved path to the package root.
 
 """
+
+pathCpythonData: Path = settingsPackage.pathPackage / 'cpython' / 'data'
 
 #======== Settings for manufacturing ===============================
 

@@ -48,6 +48,22 @@ The astToolFactory manufactures all the ast manufacturing that manufacturing-gra
 
 astToolFactory manufactures astToolkit's tools that refactor Python's ast.AST abstract syntax trees through systematic manufacturing processes. Whether you need to factor ast trees, refactor ast nodes, manufacture ast data, or factory-build ast code, astToolkit's manufactured ast tools help you ast through industrial-grade manufacturing.
 
+## Contributing
+
+From the repository root, use an activated Python 3.14 or 3.15 environment with pip 25.1 or newer.
+
+Install the project and its test dependencies, then run the suite.
+
+```sh
+pip install --group testing .
+pytest
+```
+
+For an editable install with the test tools, notebook kernel, and CPython sync dependencies, run
+`pip install --group dev -e .`. These commands replace the former `.[testing]` and
+`.[development]` extras. The ASDL sync workflow uses `pip install --group asdl-sync -e .`
+to install its own dependency group.
+
 ## I'm tired
 
 I'm tired of being homeless and in pain all the time. If you like my work, please consider supporting me on [Patreon](https://www.patreon.com/integrated) so I can recover.

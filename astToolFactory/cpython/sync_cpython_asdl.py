@@ -1,6 +1,7 @@
 # ruff: file-ignore[undocumented-public-module, undocumented-public-function]
 from __future__ import annotations
 
+from astToolFactory._theSSOT import pathCpythonData
 from github import Auth, Github
 from github.InputGitTreeElement import InputGitTreeElement
 from operator import attrgetter, methodcaller
@@ -26,7 +27,7 @@ def check_asdl() -> None:
 	listPathRelativeFilenamesWritten: list[PurePosixPath] = []
 	listPathRelativeFilenamesDeleted: list[PurePosixPath] = []
 
-	for path_asdl in Path(__file__).parent.glob('3.*'):
+	for path_asdl in pathCpythonData.glob('3.*'):
 		filesUpdated, filesDeleted = checkBranch(repositoryCpython, path_asdl.relative_to(Path.cwd()))
 		listPathRelativeFilenamesWritten.extend(filesUpdated)
 		listPathRelativeFilenamesDeleted.extend(filesDeleted)

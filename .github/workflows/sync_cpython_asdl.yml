@@ -44,5 +44,5 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           set -e
-          pip install PyGithub
+          pip install --group asdl-sync -e .
           python astToolFactory/cpython/sync_cpython_asdl.py
