@@ -27,11 +27,14 @@ dependencies = [
   "tomli",
   "typeshed_client",
 ]
-optional-dependencies = { development = ["ipykernel", "pytest-cov", "PyGithub"], testing = ["pytest-xdist", "pytest"] }
 
 [build-system]
-requires = ["setuptools"]
+requires = ["setuptools>=77.0.1"]
 build-backend = "setuptools.build_meta"
+
+[dependency-groups]
+development = ["ipykernel", "pytest-cov", "PyGithub"]
+testing = ["pytest-xdist", "pytest"]
 
 [tool.coverage]
 report = { exclude_lines = ["if TYPE_CHECKING:", "if __name__ == \"__main__\":"], ignore_errors = false }
@@ -297,7 +300,7 @@ skip-magic-trailing-comma = true
 
 [tool.setuptools]
 package-data = { "*" = ["py.typed"] }
-packages = { find = {} }
+packages = { find = { include = ["astToolFactory*"], namespaces = false } }
 
 # === DO_NOT_EDIT: path-sync hunterhogan ===
 [tool.tombi.format.rules]
