@@ -17,6 +17,11 @@ if TYPE_CHECKING:
 	from github.Repository import Repository
 
 def check_asdl() -> None:
+	boxOfPathsASDL: tuple[Path, ...] = tuple(Path('data').glob('3.*/'))
+	if not boxOfPathsASDL:
+		message: str = f"I could not find any `data/3.*/` directories under `{Path.cwd()}`."
+		raise FileNotFoundError(message)
+
 	githubToken: str | None = os.environ.get('GH_TOKEN') or os.environ.get('GITHUB_TOKEN')
 	if githubToken:
 		githubClient: Github = Github(auth=Auth.Token(githubToken))
@@ -26,8 +31,8 @@ def check_asdl() -> None:
 	listPathRelativeFilenamesWritten: list[PurePosixPath] = []
 	listPathRelativeFilenamesDeleted: list[PurePosixPath] = []
 
-	for path_asdl in Path(__file__).parent.glob('3.*'):
-		filesUpdated, filesDeleted = checkBranch(repositoryCpython, path_asdl.relative_to(Path.cwd()))
+	for path_asdl in boxOfPathsASDL:
+		filesUpdated, filesDeleted = checkBranch(repositoryCpython, path_asdl)
 		listPathRelativeFilenamesWritten.extend(filesUpdated)
 		listPathRelativeFilenamesDeleted.extend(filesDeleted)
 

@@ -21,12 +21,12 @@ jobs:
   sync:
     runs-on: ubuntu-latest
     steps:
-      - name: Check two-week interval
+      - name: Check three-week interval
         id: interval
         run: |
           anchor=$(date -u -d '2026-10-26' +%s)
           today=$(date -u +%s)
-          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] || (( (today / 86400 - anchor / 86400) % 14 == 0 )); then
+          if [[ "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]] || (( (today - anchor) / 604800 % 3 == 0 )); then
             echo "due=true" >> "$GITHUB_OUTPUT"
           fi
 
