@@ -1,3 +1,4 @@
+<!-- path-sync copy -n hunterhogan -->
 # astToolFactory
 
 The astToolFactory manufactures what manufacturers manufacture: manufactured tools. These tools refactor code that refactors other code, creating a factory line where each factory specializes in factoring ast nodes into manageable factors.
@@ -52,10 +53,15 @@ astToolFactory manufactures astToolkit's tools that refactor Python's ast.AST ab
 
 I'm tired of being homeless and in pain all the time. If you like my work, please consider supporting me on [Patreon](https://www.patreon.com/integrated) so I can recover.
 
-[![CC-BY-NC-4.0](https://raw.githubusercontent.com/hunterhogan/astToolFactory/refs/heads/main/.github/CC-BY-NC-4.0.png)](https://creativecommons.org/licenses/by-nc/4.0/)
+<!-- === DO_NOT_EDIT: path-sync hunterhogan === -->
+## My recovery
 
-By law, authors retain their copyrights unless they grant exceptions. The [Attribution-NonCommercial 4.0 International Deed](https://github.com/hunterhogan/astToolFactory#License-1-ov-file) outlines how you may use this work.
+[![2011 August: Homeless since](https://img.shields.io/badge/2011_August-Homeless_since-blue?style=flat)](https://HunterThinks.com/support)
+![License: CC BY-NC 4.0](https://img.shields.io/badge/license-CC%20BY--NC%204.0-blue.svg)
+
+By law, authors retain their copyrights unless they grant exceptions. The Creative Commons Attribution-NonCommercial 4.0 International Deed outlines how you may use this work.
 
 The restriction on commercial use (without a license) limits advantage-taking, unjust enrichment, and exploitation. You would be morally wrong if you were to enrich yourself by using this work while I am denied healthcare, housing, security of property, and the safety of my person.
 
 To obtain and retain the right to use this work, you incur the cost of attributing the work to me. Your nominal cost might accrue as a benefit that mitigates my suffering or saves my life.
+<!-- === OK_EDIT: path-sync hunterhogan === -->
